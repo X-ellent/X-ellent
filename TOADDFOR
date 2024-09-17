@@ -1,0 +1,5 @@
+running .cshrc
+player.c:		    (!(p->ptarg->flags&FLG_CLOAKING))) {
+player.c:			    (!(p->ptarg->flags&FLG_CLOAKING))) {
+targetter.c:		    (!(p->ptarg->flags&FLG_CLOAKING))) {
+targetter.c:    if (p->ptarg&&p->ptarg->flags&FLG_CLOAKING) next_target(p);

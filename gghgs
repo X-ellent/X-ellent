@@ -1,0 +1,22 @@
+#!/bin/sh
+MYHOME=/dcs/90/cheesey/
+SCORE=$MYHOME/etc/src/X11/eliteism/player.data.file
+HISCORE=$MYHOME/xellent.hiscore
+XPROC=`ps -x | egrep runme.bak | egrep -v egrep | cut '-d ' -f1`
+kill -USR1 $XPROC
+sleep 5
+echo "            X-ellent hiscores saved : "`date` > $HISCORE
+echo "" >> $HISCORE
+echo "        Players ranked by score..........................." > $HISCORE.1
+echo "" >> $HISCORE.1
+egrep \[a-z]/\.\*/\[0-9] $SCORE | sort -t/ -r -n +3 | cut -d/ -f1,4 | cat -n >> $HISCORE.1
+echo "        Players ranked by rating..........................." > $HISCORE.2
+echo "" >> $HISCORE.2
+egrep \[a-z]/\.\*/\[0-9] $SCORE | sort -t/ -r -n +5 | cut -d/ -f1,6 | cat -n >> $HISCORE.2
+sed -e 's:/\(.*\):!\1...................................:'  $HISCORE.1 | col | cut -c1-35 | sed -e "s/!\([0-9][0-9]*\)\(.*\)$/ \2\1/" | tr ".!" "  " > $HISCORE.1b
+sed -e 's:/\(.*\):!\1...................................:'  $HISCORE.2 | col | cut -c1-35 | sed -e "s/!\([0-9][0-9]*\)\(.*\)$/ \2\1/" | tr ".!" "  " > $HISCORE.2b
+paste $HISCORE.1b $HISCORE.2b >> $HISCORE
+echo "" >> $HISCORE
+rm -f $HISCORE.1 $HISCORE.2 $HISCORE.1b $HISCORE.2b
+chmod a+r $HISCORE
+cat $HISCORE
