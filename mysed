@@ -1,0 +1,2 @@
+cat terminal.h | sed -ne 's/#define.*OP_\([A-Z][A-Z]*\).*/    if (strcmp(str,"\1")==0) {rom[pc++]=OP_\1;return pc;};/p'
+

@@ -1,0 +1,245 @@
+running .cshrc
+draw.c:		    switch ((e=find_extra(l,ix,iy))->type) {
+draw.c:		switch((e=find_extra(l,x,y))->type) {
+draw.c:	we=what_extra(p->lvl,(int)p->x/128,(int)p->y/128);
+events.c:		switch (what_extra(p->lvl,(int) p->x/128,(int) p->y/128)) {
+events.c:		if(what_extra(p->lvl,(int) p->x/128,(int) p->y/128)==
+events.c:		if(what_extra(p->lvl,(int) p->x/128,(int) p->y/128)==
+events.c:		if(what_extra(p->lvl,(int) p->x/128,(int) p->y/128)==
+home.c:	if ((struct extra*)find_extra(p->lvl,x/128,y/128)==p->home) {
+map.c:		    add_extra(l,x,y,buf[x-1]);
+map.c:extern struct extra *alloc_extra()
+map.c:extern void add_extra(int d,int x,int y,char c)
+map.c:    e=alloc_extra();
+map.c:extern int what_extra(int l,int x,int y)
+map.c:extern struct extra *find_extra(int l,int x,int y)
+map.c:    e=find_extra(l,xx,yy);
+map.c:    if (what_extra(d,l->x,l->y)!=XTRA_HOLE) {
+map.c:    if (what_extra(d,l->x,l->y)!=XTRA_HOLE) {
+map.c:    find_extra(l->l,l->x,l->y)->type=XTRA_HOLE;
+map.c:    find_extra(l->l,l->x,l->y)->type=XTRA_LIFT;
+map.c:    if (what_extra(d,l->x,l->y)!=XTRA_HOLE) {
+map.c:    if (what_extra(d,l->x,l->y)!=XTRA_HOLE) {
+map.h:extern void add_extra(int d,int x,int y,char c);
+map.h:extern struct extra *find_extra(int l,int x,int y);
+map.h:extern int what_extra(int l,int x,int y);
+particle.c:		if (e=find_extra(l,(int) t->x/128,(int) t->y/128)) {
+player.c:	if(what_extra(p->lvl,(int) p->x/128,(int) p->y/128)==
+player.c:		(what_extra(p->lvl,(int)p->x/128,(int)p->y/128)!=XTRA_HOLE)) {
+player.c:		e=find_extra(p->lvl,cx/128,cy/128);
+turret.c:	find_extra(t->d,t->x,t->y)->flags|=XFLG_DESTROYED;
+turret.c:		find_extra(t->d,t->x,t->y)->flags&=~XFLG_DESTROYED;
+
+cd /dcs/90/cheesey/etc/src/X11/eliteism/
+make -k
+running .cshrc
+sed -n -e '1,/**START**/p' terminal.c > terminal.temp
+sed -n -e 's/#define.*OP_\([A-Z][A-Z]*\).*/    if (strcmp(str,"\1")==0) {rom[pc++]=OP_\1;return pc;};/p' terminal.h >> terminal.temp
+sed -n -e '/**END**/,$p' terminal.c >> terminal.temp
+/gnu/bin/cp -f terminal.temp terminal.c
+/gnu/bin/gcc -O -Wall -pipe -DTEST -DEBUG -DLIB=\"/dcs/90/cheesey/etc/src/X11/eliteism/\" -DNON_ANSI_HEADERS -I/usr/local/include -c init.c
+/gnu/bin/gcc -O -Wall -pipe -DTEST -DEBUG -DLIB=\"/dcs/90/cheesey/etc/src/X11/eliteism/\" -DNON_ANSI_HEADERS -I/usr/local/include -c main.c
+/gnu/bin/gcc -O -Wall -pipe -DTEST -DEBUG -DLIB=\"/dcs/90/cheesey/etc/src/X11/eliteism/\" -DNON_ANSI_HEADERS -I/usr/local/include -c mymath.c
+/gnu/bin/gcc -O -Wall -pipe -DTEST -DEBUG -DLIB=\"/dcs/90/cheesey/etc/src/X11/eliteism/\" -DNON_ANSI_HEADERS -I/usr/local/include -c debug.c
+/gnu/bin/gcc -O -Wall -pipe -DTEST -DEBUG -DLIB=\"/dcs/90/cheesey/etc/src/X11/eliteism/\" -DNON_ANSI_HEADERS -I/usr/local/include -c xsetup.c
+/gnu/bin/gcc -O -Wall -pipe -DTEST -DEBUG -DLIB=\"/dcs/90/cheesey/etc/src/X11/eliteism/\" -DNON_ANSI_HEADERS -I/usr/local/include -c draw.c
+draw.c: In function draw_map:
+draw.c:112: warning: implicit declaration of function `find_extra'
+draw.c:112: warning: assignment of pointer from integer lacks a cast
+draw.c:112: dereferencing pointer to incomplete type
+draw.c:113: `XTRA_LIFT' undeclared (first use this function)
+draw.c:113: (Each undeclared identifier is reported only once
+draw.c:113: for each function it appears in.)
+draw.c:116: `XTRA_HOLE' undeclared (first use this function)
+draw.c:119: `XTRA_HOME' undeclared (first use this function)
+draw.c:122: `XTRA_TERM' undeclared (first use this function)
+draw.c:127: `XTRA_SHOP' undeclared (first use this function)
+draw.c:132: `XTRA_FUEL' undeclared (first use this function)
+draw.c:137: `XTRA_TURRET' undeclared (first use this function)
+draw.c:138: dereferencing pointer to incomplete type
+draw.c:138: `XFLG_DESTROYED' undeclared (first use this function)
+draw.c:141: dereferencing pointer to incomplete type
+draw.c:141: array subscript is not an integer
+draw.c:142: dereferencing pointer to incomplete type
+draw.c:142: array subscript is not an integer
+draw.c:145: dereferencing pointer to incomplete type
+draw.c:146: dereferencing pointer to incomplete type
+draw.c: In function draw_map_level:
+draw.c:480: warning: assignment of pointer from integer lacks a cast
+draw.c:480: dereferencing pointer to incomplete type
+draw.c:481: `XTRA_LIFT' undeclared (first use this function)
+draw.c:486: `XTRA_HOLE' undeclared (first use this function)
+draw.c:490: `XTRA_SHOP' undeclared (first use this function)
+draw.c:496: `XTRA_HOME' undeclared (first use this function)
+draw.c:500: `XTRA_FUEL' undeclared (first use this function)
+draw.c:506: `XTRA_TERM' undeclared (first use this function)
+draw.c:512: `XTRA_TURRET' undeclared (first use this function)
+draw.c:513: dereferencing pointer to incomplete type
+draw.c:513: `XFLG_DESTROYED' undeclared (first use this function)
+draw.c: In function draw_me:
+draw.c:709: warning: implicit declaration of function `what_extra'
+draw.c:727: `XTRA_LIFT' undeclared (first use this function)
+draw.c:727: `XTRA_HOLE' undeclared (first use this function)
+draw.c:735: dereferencing pointer to incomplete type
+draw.c:735: dereferencing pointer to incomplete type
+draw.c:736: dereferencing pointer to incomplete type
+make: *** [draw.o] Error 1
+/gnu/bin/gcc -O -Wall -pipe -DTEST -DEBUG -DLIB=\"/dcs/90/cheesey/etc/src/X11/eliteism/\" -DNON_ANSI_HEADERS -I/usr/local/include -c player.c
+player.c: In function setup_player:
+player.c:94: dereferencing pointer to incomplete type
+player.c:94: `XFLG_TAKEN' undeclared (first use this function)
+player.c:94: (Each undeclared identifier is reported only once
+player.c:94: for each function it appears in.)
+player.c:98: warning: implicit declaration of function `pick_home'
+player.c:98: warning: assignment of pointer from integer lacks a cast
+player.c:130: dereferencing pointer to incomplete type
+player.c:131: dereferencing pointer to incomplete type
+player.c:132: dereferencing pointer to incomplete type
+player.c:133: dereferencing pointer to incomplete type
+player.c: In function update_player:
+player.c:204: warning: implicit declaration of function `what_extra'
+player.c:205: `XTRA_FUEL' undeclared (first use this function)
+player.c:286: `XTRA_HOLE' undeclared (first use this function)
+player.c: In function do_player_collisions:
+player.c:481: warning: implicit declaration of function `find_extra'
+player.c:481: warning: assignment of pointer from integer lacks a cast
+player.c:482: dereferencing pointer to incomplete type
+player.c:483: `XTRA_TURRET' undeclared (first use this function)
+player.c:484: dereferencing pointer to incomplete type
+player.c:484: `XFLG_DESTROYED' undeclared (first use this function)
+player.c: In function away_stuff:
+player.c:612: dereferencing pointer to incomplete type
+player.c:612: `XFLG_TAKEN' undeclared (first use this function)
+player.c:626: dereferencing pointer to incomplete type
+player.c:627: dereferencing pointer to incomplete type
+player.c:630: dereferencing pointer to incomplete type
+make: *** [player.o] Error 1
+/gnu/bin/gcc -O -Wall -pipe -DTEST -DEBUG -DLIB=\"/dcs/90/cheesey/etc/src/X11/eliteism/\" -DNON_ANSI_HEADERS -I/usr/local/include -c object.c
+/gnu/bin/gcc -O -Wall -pipe -DTEST -DEBUG -DLIB=\"/dcs/90/cheesey/etc/src/X11/eliteism/\" -DNON_ANSI_HEADERS -I/usr/local/include -c map.c
+map.c: In function alloc_extra:
+map.c:149: invalid use of undefined type `struct extra'
+map.c:150: dereferencing pointer to incomplete type
+map.c:150: structure has no member named `ex'
+map.c:151: structure has no member named `ex'
+map.c: In function add_extra:
+map.c:160: dereferencing pointer to incomplete type
+map.c:160: dereferencing pointer to incomplete type
+map.c:160: dereferencing pointer to incomplete type
+map.c:164: dereferencing pointer to incomplete type
+map.c:164: `XTRA_HOLE' undeclared (first use this function)
+map.c:164: (Each undeclared identifier is reported only once
+map.c:164: for each function it appears in.)
+map.c:166: dereferencing pointer to incomplete type
+map.c:166: `XTRA_LIFT' undeclared (first use this function)
+map.c:175: dereferencing pointer to incomplete type
+map.c:176: dereferencing pointer to incomplete type
+map.c:176: `XTRA_HOME' undeclared (first use this function)
+map.c:176: dereferencing pointer to incomplete type
+map.c:176: `starts' undeclared (first use this function)
+map.c:177: dereferencing pointer to incomplete type
+map.c:177: `XTRA_TERM' undeclared (first use this function)
+map.c:178: dereferencing pointer to incomplete type
+map.c:178: `XTRA_SHOP' undeclared (first use this function)
+map.c:179: dereferencing pointer to incomplete type
+map.c:179: `XTRA_FUEL' undeclared (first use this function)
+map.c:180: dereferencing pointer to incomplete type
+map.c:180: `XTRA_TURRET' undeclared (first use this function)
+map.c:180: dereferencing pointer to incomplete type
+map.c: In function what_extra:
+map.c:187: `XTRA_NONE' undeclared (first use this function)
+map.c:188: structure has no member named `ex'
+map.c:188: dereferencing pointer to incomplete type
+map.c:189: dereferencing pointer to incomplete type
+map.c:189: dereferencing pointer to incomplete type
+map.c:189: dereferencing pointer to incomplete type
+map.c:189: dereferencing pointer to incomplete type
+map.c:186: warning: `e' may be used uninitialized in this function
+map.c: In function find_extra:
+map.c:196: structure has no member named `ex'
+map.c:196: dereferencing pointer to incomplete type
+map.c:197: dereferencing pointer to incomplete type
+map.c:197: dereferencing pointer to incomplete type
+map.c:197: dereferencing pointer to incomplete type
+map.c:195: warning: `e' may be used uninitialized in this function
+map.c: In function pick_home:
+map.c:206: `starts' undeclared (first use this function)
+map.c:206: dereferencing pointer to incomplete type
+map.c:207: dereferencing pointer to incomplete type
+map.c:207: `XFLG_TAKEN' undeclared (first use this function)
+map.c:210: dereferencing pointer to incomplete type
+map.c:211: dereferencing pointer to incomplete type
+map.c:204: warning: `e' may be used uninitialized in this function
+map.c: In function is_hole:
+map.c:233: dereferencing pointer to incomplete type
+map.c:233: `XTRA_HOLE' undeclared (first use this function)
+map.c: In function move_lift_up:
+map.c:297: `XTRA_HOLE' undeclared (first use this function)
+map.c: In function move_lift_down:
+map.c:320: `XTRA_HOLE' undeclared (first use this function)
+map.c: In function move_lift_to:
+map.c:333: dereferencing pointer to incomplete type
+map.c:333: `XTRA_HOLE' undeclared (first use this function)
+map.c:353: dereferencing pointer to incomplete type
+map.c:353: `XTRA_LIFT' undeclared (first use this function)
+map.c: In function can_lift_descend:
+map.c:369: `XTRA_HOLE' undeclared (first use this function)
+map.c: In function can_lift_ascend:
+map.c:387: `XTRA_HOLE' undeclared (first use this function)
+make: *** [map.o] Error 1
+/gnu/bin/gcc -O -Wall -pipe -DTEST -DEBUG -DLIB=\"/dcs/90/cheesey/etc/src/X11/eliteism/\" -DNON_ANSI_HEADERS -I/usr/local/include -c events.c
+events.c: In function key_press:
+events.c:243: warning: implicit declaration of function `what_extra'
+events.c:244: `XTRA_SHOP' undeclared (first use this function)
+events.c:244: (Each undeclared identifier is reported only once
+events.c:244: for each function it appears in.)
+events.c:245: `XTRA_TERM' undeclared (first use this function)
+events.c:252: `XTRA_HOLE' undeclared (first use this function)
+events.c:266: `XTRA_LIFT' undeclared (first use this function)
+make: *** [events.o] Error 1
+/gnu/bin/gcc -O -Wall -pipe -DTEST -DEBUG -DLIB=\"/dcs/90/cheesey/etc/src/X11/eliteism/\" -DNON_ANSI_HEADERS -I/usr/local/include -c particle.c
+particle.c: In function move_particles:
+particle.c:80: warning: implicit declaration of function `find_extra'
+particle.c:80: warning: assignment of pointer from integer lacks a cast
+particle.c:81: dereferencing pointer to incomplete type
+particle.c:81: `XFLG_DESTROYED' undeclared (first use this function)
+particle.c:81: (Each undeclared identifier is reported only once
+particle.c:81: for each function it appears in.)
+particle.c:82: dereferencing pointer to incomplete type
+particle.c:83: `XTRA_TURRET' undeclared (first use this function)
+particle.c:88: dereferencing pointer to incomplete type
+make: *** [particle.o] Error 1
+/gnu/bin/gcc -O -Wall -pipe -DTEST -DEBUG -DLIB=\"/dcs/90/cheesey/etc/src/X11/eliteism/\" -DNON_ANSI_HEADERS -I/usr/local/include -c message.c
+/gnu/bin/gcc -O -Wall -pipe -DTEST -DEBUG -DLIB=\"/dcs/90/cheesey/etc/src/X11/eliteism/\" -DNON_ANSI_HEADERS -I/usr/local/include -c mines.c
+/gnu/bin/gcc -O -Wall -pipe -DTEST -DEBUG -DLIB=\"/dcs/90/cheesey/etc/src/X11/eliteism/\" -DNON_ANSI_HEADERS -I/usr/local/include -c shop.c
+/gnu/bin/gcc -O -Wall -pipe -DTEST -DEBUG -DLIB=\"/dcs/90/cheesey/etc/src/X11/eliteism/\" -DNON_ANSI_HEADERS -I/usr/local/include -c telnet.c
+/gnu/bin/gcc -O -Wall -pipe -DTEST -DEBUG -DLIB=\"/dcs/90/cheesey/etc/src/X11/eliteism/\" -DNON_ANSI_HEADERS -I/usr/local/include -c terminal.c
+terminal.c: In function get_playerinfo:
+terminal.c:651: dereferencing pointer to incomplete type
+terminal.c:652: dereferencing pointer to incomplete type
+terminal.c:653: dereferencing pointer to incomplete type
+make: *** [terminal.o] Error 1
+/gnu/bin/gcc -O -Wall -pipe -DTEST -DEBUG -DLIB=\"/dcs/90/cheesey/etc/src/X11/eliteism/\" -DNON_ANSI_HEADERS -I/usr/local/include -c turret.c
+turret.c: In function damage_turret:
+turret.c:63: warning: implicit declaration of function `find_extra'
+turret.c:63: invalid type argument of `->'
+turret.c:63: `XFLG_DESTROYED' undeclared (first use this function)
+turret.c:63: (Each undeclared identifier is reported only once
+turret.c:63: for each function it appears in.)
+turret.c: In function update_turrets:
+turret.c:86: invalid type argument of `->'
+turret.c:86: `XFLG_DESTROYED' undeclared (first use this function)
+make: *** [turret.o] Error 1
+/gnu/bin/gcc -O -Wall -pipe -DTEST -DEBUG -DLIB=\"/dcs/90/cheesey/etc/src/X11/eliteism/\" -DNON_ANSI_HEADERS -I/usr/local/include -c bonus.c
+/gnu/bin/gcc -O -Wall -pipe -DTEST -DEBUG -DLIB=\"/dcs/90/cheesey/etc/src/X11/eliteism/\" -DNON_ANSI_HEADERS -I/usr/local/include -c home.c
+home.c: In function home_quit:
+home.c:183: dereferencing pointer to incomplete type
+home.c:183: `XFLG_TAKEN' undeclared (first use this function)
+home.c:183: (Each undeclared identifier is reported only once
+home.c:183: for each function it appears in.)
+home.c: In function go_home:
+home.c:206: warning: implicit declaration of function `find_extra'
+make: *** [home.o] Error 1
+/gnu/bin/gcc -O -Wall -pipe -DTEST -DEBUG -DLIB=\"/dcs/90/cheesey/etc/src/X11/eliteism/\" -DNON_ANSI_HEADERS -I/usr/local/include -static -o myclient client.o -lX11 -lm
+make: Target `all' not remade because of errors.
+
+Compilation exited abnormally with code 1 at Wed Jun  3 12:20:44

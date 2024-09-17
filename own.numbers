@@ -1,0 +1,13 @@
+#define OWN_CLOAKING        0
+#define OWN_INVIS           1
+#define OWN_MINESWEEP       2
+#define OWN_ENERGY          3
+#define OWN_COMPASS         4
+#define OWN_CARTRIDGE       5
+
+    own_name[OWN_COMPASS]="Compass";own_dam[OWN_COMPASS]=20;
+    own_name[OWN_INVIS]="Invisibility";own_dam[OWN_INVIS]=10;
+    own_name[OWN_MINESWEEP]="Minesweeper";own_dam[OWN_MINESWEEP]=10;
+    own_name[OWN_ENERGY]="Energy Unit";own_dam[OWN_ENERGY]=10;
+    own_name[OWN_CLOAKING]="Cloaking Device";own_dam[OWN_CLOAKING]=10;
+    own_name[OWN_CARTRIDGE]="Memory Cartridge";own_dam[OWN_CARTRIDGE]=20;

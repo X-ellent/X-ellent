@@ -1,0 +1,23 @@
+step:           1
+thrust:         40
+spin:           100
+altthrust:      100
+altspin:        100
+slots:          off
+messages:       on
+status:         on
+instruments:    on
+ident:          on
+fuel:           150
+
+red:            orangered
+green:          green4
+grey:           grey30
+blue:           royalblue1
+yellow:         yellow1
+black:          black
+white:          white
+ice:            lightcyan
+termlo:         yellow3
+termhi:         yellow
+
