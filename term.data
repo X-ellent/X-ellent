@@ -1,0 +1,96 @@
+Display welcome information...
+#1
+C
+"Welcome to the XLNT terminal network"/
+'Login from terminal at '*3$/
+'User '*7*0$' based '*2$/
+
+G2
+/
+#
+
+Main menu...
+#2
+/"XLNT Information Systems: Main Menu"/
+"Please select your desired option:"/
+.
+'   1  Map information'/
+'   2  Player information'/
+"  ESC Log Out"/
+'>'
+?p/
+e1[g3G2]
+e2[g4G2]
+e9[g5G2]
+e10[E]
+/"Invalid option!"' choose one of:'/
+j1
+#
+
+Map information...
+#3
+/"XLNT Information Systems: Map Menu"/
+"Please select your desired option:"/
+.
+'   1  View Map'/
+"  ESC Return to main menu"/
+'>'
+?p/
+e1[*100.?e10[G3]j1]
+e10[E]
+/"Invalid option!"' choose one of:'/
+j2
+#
+
+Player info
+#4
+/"XLNT Information Systems: Map Menu"/
+"Please select your desired option:"/
+.
+'   1  View List Of Stats'/
+'   2  Buy Player Information ($50)'/
+"  ESC Return to main menu"/
+*7
+'    You currently have $'*10$/
+'>'
+?p/
+e1[g6G4]
+e2[g5G4]
+e10[E]
+/"Invalid option!"' choose one of:'/
+j2
+#
+
+My test thing
+#5
+/"Enter username:"
+I/
+"Scanning for "$/
+*8e1[
+L50*12e0[
+"Player   :"*1$/
+"Shield   :"*9$/
+"Cash     :"*10$/
+"Fuel     :"*11$/
+E
+]
+/"You cannot afford that..."/
+E
+]
+/"User not known..."/
+E#
+
+Player list
+#6
+/"  Usercode Deaths Kills Turrets Rating Score"/
+*4.
+*6
+$/
+*5e1[j1]
+" Hit <esc> or a number."?/E
+#
+
+End of file
+#0
+
+

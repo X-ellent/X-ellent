@@ -1,0 +1,98 @@
+		   XLNT Terminal Processor Instruction Set
+
+Instruction	Description			Stack change (if any)
+						Before		After
+    RTS		Returns from a subroutiune	
+    JMP		Jump to address			... adr		...
+    JSR		Jump to subroutine at address	... adr 	...
+    BEQ		Branch to address if EQ		... adr		...
+    BMI		Branch to address if MI		... adr		...
+    BNE		Branch to address if not EQ	... adr		...
+    BPL		Branch to address if not MI	... adr		...
+
+    CLS		Clear screen			
+    NEW		New line			
+    THI		Set brightness to high		
+    TLO		Set brightness to low
+    SPC		Print whitespace
+    TAB		Move to x position num if <num	... num		...
+    BAT		Move to x position num		... num		...
+    POS		Get screen X position		...		... num
+
+    STR		Print string at address		... adr		...
+    NUM		Print value			... num		...
+
+    INN		Read in digit (or escape -1)	...		... num
+    INS		Read in string of len at adr	... adr len	...
+    KEY		Get keypress			...		... key
+
+    POP		Pop top value and discard	... val		...
+    POPA	Pop number into A		... num		...
+    POPB	Pop number into B		... num
+    PSHA	Push number from A		...		... num
+    PSHB	Push number from B		...		... num
+
+    DUP		Duplicates top item on stack	... num		... num num
+    ROT		Rotate top three values		... ccc bbb aaa	... bbb aaa ccc
+    SWAP	Swap top two values		... bbb aaa	... aaa bbb
+    NEG		Negate the top value		... num		... -num
+
+    INC		Increment number		... num		... num+1
+    INCA	Increment A
+    INCB	Increment B
+    DEC		Decrement number		... num		... num-1
+    DECA	Decrement A
+    DECB	Decrement B
+    ADD		Adds:	    aaa+bbb		... aaa bbb	... aaa+bbb
+    SUB		Subtracts:  aaa-bbb		... aaa bbb	... aaa-bbb
+    MULT	Multiplies: aaa*bbb		... aaa bbb	... aaa*bbb
+    DIV		Divides:    aaa/bbb		... aaa bbb	... aaa/bbb
+    MOD		Modulo:	    aaa%bbb		... aaa bbb	... aaa%bbb
+
+    CMP		Compare: EQ aaa=bbb MI aaa<bbb	... bbb aaa	... bbb
+    CMPA	Compare: EQ num=A   MI num<A	... num		...
+    CMPB	Compare: EQ num=B   MI num<B	... num		...
+
+    BIT		Tests bit num of val setting EQ	... val num	... val
+    BITA	Tests bit num of A		... num		...
+    BITB	Tests bit num of B		... num		...
+
+    SYSTEM	System call 			... [vals] num	... [return]
+
+    STO		Store value at address		... num adr	...
+    STOA	Store A at address		... adr		...
+    STOB	Store B at address		... adr       	...
+    FET		Fetch num from address		... adr		... num
+    FETA	Fetch A from address		... adr		...
+    FETB	Fetch B from address		... adr		...
+
+    NOP		Do nothing
+
+System calls
+
+Call.	Input		Description				Output
+0	... lev		Draws the map				
+1	... ply adr	Reads info from ply to adr		
+2			Get the pointer to player one		... ply
+3	... ply		Returns the next player			... nxt
+4	... adr		Finds the player from string at adr	... ply
+5	... num		Subtracts num from player's cash
+6	... ad2 ad1	Compares strings and returns value	... res
+7	... ad2 ad1	Copies string at ad2 to ad1
+8	... adr		Turns string at adr into an integer	... num
+9	... ad2 ad1	Concatenates string at ad2 to ad1
+10	... adr ply	Displays message to player ply
+11	... adr		Displays message to all players
+12	... num ply	Adds num to player's cash
+13	... num adr	Gets info on lift num to address adr
+			Sets EQ if successful (otherwise clrs)
+
+
+Lift structure:		Size - 32
+	0	number		Id number of lift
+	4	number		Level lift is on
+	8	number		X coordinate of lift
+	12	number		Y coordinate of lift
+	16	number		Target level of lift
+	20	string		Password to lift (Length 6)
+	28	number		Flags *not in yet*

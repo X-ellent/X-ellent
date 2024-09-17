@@ -1,0 +1,871 @@
+bonus.c:** some acknowledgement of the source (ie me!) 8-)
+bonus.c:    y=random()%(map.hgt-2)*128+192;
+bonus.c:	firstbonus=o->has.same;
+bonus.c:	for (n=firstbonus;(n)&&(n->has.same!=o);n=n->has.same);
+bonus.c:    for (o=firstbonus;o;o=o->has.same) {
+bonus.c:	o->count--;
+bonus.c:	    sprintf(txt,"** BONUS On level %d at %d,%d!! **",o->l,
+bonus.c:		    (int)o->x/128,(int)o->y/128);
+bonus.c:	    txt="BOGUS!!!! Most un-excellent dude!";
+bonus.c:    explode(p->lvl,(int) p->x,(int) p->y,8+8*s,400*s,0,0);
+bonus.c:	    default:p->size[i]=1;break;
+bonus.c:	    switch(p->slots[i]) {
+bonus.h:** some acknowledgement of the source (ie me!) 8-)
+client.c:** some acknowledgement of the source (ie me!) 8-)
+client.c:    name=getpwuid(getuid())->pw_name;
+client.c:	    str[strlen(str)-1]=0;
+client.c:    if ((fd=socket(AF_INET,SOCK_STREAM,0))==-1) {
+client.c:	r=write(fd,&buf[n],256-n);
+constants.h:** some acknowledgement of the source (ie me!) 8-)
+constants.h: /* Sometimes i really mourn the non-availablility of such wonderful */
+debug.c:** some acknowledgement of the source (ie me!) 8-)
+debug.h:** some acknowledgement of the source (ie me!) 8-)
+draw.c:** some acknowledgement of the source (ie me!) 8-)
+draw.c:    white=p->d.gc_white;
+draw.c:    XFillRectangle(d,w,p->d.gc_black,0,0,WINWID,WINHGT);
+draw.c:	for (e=bang_first;e;e=e->next) {
+draw.c:		XDrawArc(d,w,white,ddx+mx-e->r,ddy-e->r+my,e->r*2,e->r*2,0,
+draw.c:		    if (tur->flags&TFLG_DESTROYED) {
+draw.c:			tco=cs[(360+tur->rot-a)%360];
+draw.c:			tsi=sn[(360+tur->rot-a)%360];
+draw.c:			XDrawArc(d,w,white,cx-25,cy-25,50,50,0,360*64);
+draw.c:			XDrawLine(d,w,white,cx+25*tsi,cy-25*tco,
+draw.c:				  cx+(40-5*tur->frame)*tsi,
+draw.c:				  cy-(40-5*tur->frame)*tco);
+draw.c:	    case MAP_LWALL:XDrawLine(d,w,white,xc,yc,xc-dy,yc+dx);break;
+draw.c:	for (u=obj_first;u;u=u->next)
+draw.c:		    switch(u->type) {
+draw.c:			XDrawArc(d,w,white,mx+ddx-8,mx+ddy-8,16,16,0,360*64);
+draw.c:	for (u=parts[l];u;u=u->next) {
+draw.c:	for (e=bang_first;e;e=e->next) {
+draw.c:		XDrawArc(d,w,white,ddx+mx-e->r,ddy-e->r+my,e->r*2,e->r*2,0,360*64);
+draw.c:		XFillRectangle(p->d.disp,p->d.backing,p->d.gc_black,0,0,
+draw.c:			XDrawString(p->d.disp,p->d.backing,p->d.gc_yellow,
+draw.c:		XDrawString(p->d.disp,p->d.backing,p->d.gc_black,WINWID/2-
+draw.c:    white=p->d.gc_white;
+draw.c:    XFillRectangle(d,w,p->d.gc_black,0,0,WINWID,WINHGT);
+draw.c:    XDrawString(d,w,p->d.gc_red,20,p->d.fh,txt,strlen(txt));
+draw.c:    px=(int) p->x/128;
+draw.c:    py=(int) p->y/128;
+draw.c:    for (y=1;y<(map.hgt-1);y++)
+draw.c:		    XDrawRectangle(d,w,p->d.gc_ice,mx+x*wx+wx/4,my+y*wx+wx/4,
+draw.c:		    XFillRectangle(d,w,p->d.gc_fblue,mx+x*wx+wx/4,
+draw.c:		    XFillRectangle(d,w,p->d.gc_fred,mx+x*wx+wx/4,
+draw.c:		    XFillRectangle(d,w,p->d.gc_fdgrey,mx+x*wx+wx/4,
+draw.c:		    if (!(tur->flags&TFLG_DESTROYED)) {
+draw.c:    white=p->d.gc_white;
+draw.c:	XDrawRectangle(d,w,red,mx-100,my-100,200,200);
+draw.c:	XDrawRectangle(d,w,blue,mx-100,my-100,200,200);
+draw.c:    XDrawArc(d,w,white,mx-rd/4,my-rd/4,rd/2,rd/2,0,360*64);
+draw.c:	XDrawArc(d,w,white,mx-rd,my-rd,rd*2,rd*2,0,360*64);
+draw.c:    XDrawLine(d,w,white,mx,my-rd/4,mx,my-3*rd/4);
+draw.c:    si=sn[360-(int) p->rot];
+draw.c:    co=cs[360-(int) p->rot];
+draw.c:	    t=dx*co-si*dy;
+draw.c:			XDrawRectangle(d,w,red,mx+dx-25,my+dy-25,50,50);
+draw.c:    if ((p->ptarg)&&(!p->ptarg->away)&&(!(p->ptarg->flags&FLG_CLOAKING))&&
+draw.c:	((p->lvl+p->radlvl)==p->ptarg->lvl)) {
+draw.c:	dx=(p->ptarg->x-p->x);
+draw.c:	dy=(p->ptarg->y-p->y);
+draw.c:	t=100*p->maxrng;
+draw.c:	if ((p->lvl==p->ptarg->lvl)||((dx<t)&&(dx>-t)&&(dy<t)&&(dy>-t))) {
+draw.c:	    t=dx*co-si*dy;
+draw.c:	sprintf(txt,"X:%d",(int) p->x/128);
+draw.c:	XDrawString(d,w,red,mx-100,my-102-p->d.fh,txt,strlen(txt));
+draw.c:	sprintf(txt,"Y:%d",(int) p->y/128);
+draw.c:	XDrawString(d,w,red,mx-20,my-102-p->d.fh,txt,strlen(txt));
+draw.c:	sprintf(txt,"L:%d",p->lvl);
+draw.c:	XDrawString(d,w,red,mx+80,my-102-p->d.fh,txt,strlen(txt));
+draw.c:	sprintf(txt,"Radar x%d",p->range);
+draw.c:	XDrawString(d,w,red,mx-100,my+100+p->d.fh,txt,strlen(txt));
+draw.c:	XDrawString(d,w,red,mx-100,my-104,weap_name[p->weap],
+draw.c:		    strlen(weap_name[p->weap]));
+draw.c:	    sprintf(txt,"%d",p->ammo[p->weap]);
+draw.c:	    XDrawString(d,w,red,mx-96,my-100+p->d.fh,txt,strlen(txt));
+draw.c:	switch (p->radlvl) {
+draw.c:	XDrawString(d,w,red,mx-10,my+100+p->d.fh,txt,strlen(txt));
+draw.c:	sprintf(txt,"Score:%d",(int) p->score);
+draw.c:	XDrawString(d,w,red,mx-100,my-102-p->d.fh*2,txt,strlen(txt));
+draw.c:	sprintf(txt,"Cash:%d",(int) p->cash);
+draw.c:	XDrawString(d,w,red,mx-100,my-102-p->d.fh*3,txt,strlen(txt));
+draw.c:	sprintf(txt,"Rating:%d",(int) p->rating);
+draw.c:	XDrawString(d,w,red,mx+25,my-102-p->d.fh*3,txt,strlen(txt));
+draw.c:	    if ((p->ptarg->away)||(p->ptarg->flags&FLG_CLOAKING)) {
+draw.c:		if (p->lvl==p->ptarg->lvl) {
+draw.c:		    sprintf(txt,"Target: At %d,%d -> %s",(int) p->ptarg->x/128,
+draw.c:			    (int) p->ptarg->y/128,
+draw.c:			    (p->ptarg->flags&FLG_IDENT)?p->ptarg->name:
+draw.c:		    if ((p->lvl+p->radlvl)==p->ptarg->lvl) {
+draw.c:			sprintf(txt,"Target: Located %s -> %s",
+draw.c:				(p->ptarg->flags&FLG_IDENT)?p->ptarg->name:
+draw.c:			sprintf(txt,"Target: Scanning -> %s",
+draw.c:				(p->ptarg->flags&FLG_IDENT)?p->ptarg->name:
+draw.c:	    XDrawString(d,w,red,mx-100,my+100+p->d.fh*2,txt,strlen(txt));
+draw.c:	ontop=rd2(p->lvl,(int)p->x/128,(int)p->y/128);
+draw.c:	    XDrawString(d,w,red,32,p->d.fh*n++,"Identifier",10);
+draw.c:	    XDrawString(d,w,red,32,p->d.fh*n++,"No Messages",11);
+draw.c:	    XDrawString(d,w,red,32,p->d.fh*n++,"No Slotlist",11);
+draw.c:	    XDrawString(d,w,red,32,p->d.fh*n++,"Cloaking",8);
+draw.c:	    XDrawString(d,w,red,32,p->d.fh*n++,"Invisible",9);
+draw.c:	    XDrawString(d,w,red,32,p->d.fh*n++,"Mine Sweeping",13);
+draw.c:	    XDrawString(d,w,red,32,p->d.fh*n++,"Tracking",8);
+draw.c:	    if (l=find_lift((int) p->x/128,(int) p->y/128)) {
+draw.c:		sprintf(txt,"Lift #%d L:%d",l->id,l->l);
+draw.c:		XDrawString(d,w,red,32,p->d.fh*n++,txt,strlen(txt));
+draw.c:	XDrawString(d,w,red,50,p->d.fh,"Fuel",4);
+draw.c:	XDrawString(d,w,red,50,p->d.fh*2,"Thrust",6);
+draw.c:	XDrawString(d,w,red,50,p->d.fh*3,"Spin",4);
+draw.c:	XDrawString(d,w,red,50,p->d.fh*5,"Shield",6);
+draw.c:	DrawMeter(p,50+p->d.fw*7,p->d.fh,WINWID/2,4,p->maxfuel/200,
+draw.c:	DrawMeter(p,50+p->d.fw*7,p->d.fh*2,WINWID/2,4,100,p->thrust);
+draw.c:	DrawMeter(p,50+p->d.fw*7,p->d.fh*3,WINWID/2,4,100,p->spin);
+draw.c:	DrawMeter(p,50+p->d.fw*7,p->d.fh*5,WINWID/2,4,p->maxshield/10,
+draw.c:	    XDrawString(d,w,blue,16,WINHGT-p->d.fh*(i+1),p->msg[i],
+draw.c:			strlen(p->msg[i]));
+draw.c:	    XDrawString(d,w,dgrey,mx+110,p->d.fh*(10),"#",1);
+draw.c:	    XDrawString(d,w,dgrey,mx+140,p->d.fh*(10),"Contains",8);
+draw.c:		    sl=(p->slot==(i+1))?p->d.gc_fred:dgrey;
+draw.c:		    XDrawString(d,w,sl,mx+110,p->d.fh*(i+12),txt,1);
+draw.c:			XDrawString(d,w,sl,mx+123,p->d.fh*(i+12),
+draw.c:				    (p->slotobj[i]->flags&OBJ_F_ARM)?"A":"D",
+draw.c:		    switch(p->slots[i]) {
+draw.c:		    XDrawString(d,w,sl,mx+140,p->d.fh*(i+12),txt,strlen(txt));
+draw.c:	if ((p->slot)&&(p->slots[p->slot-1]!=OBJ_EMPTY)) {
+draw.c:	    switch(p->slots[p->slot-1]) {
+draw.c:	    switch(p->size[p->slot-1]) {
+draw.c:	    if (p->slotobj[p->slot-1]) {
+draw.c:		if (p->slotobj[p->slot-1]->flags&OBJ_F_ARM) {
+draw.c:		    if (p->slotobj[p->slot-1]->flags&OBJ_F_ARMING) {
+draw.c:		XDrawString(d,w,red,mx-100,my+100+p->d.fh*3,txt,strlen(txt));
+draw.c:		if (p->mode[p->slot-1]) 
+draw.c:		    DrawMeter(p,mx-100,my+100+p->d.fh*4,200,4,100,
+draw.c:			      (p->mode[p->slot-1]==-1)?0:p->mode[p->slot-1]);
+draw.c:		XDrawString(d,w,dgrey,mx-100,my+100+p->d.fh*3,txt,strlen(txt));
+draw.c:	XDrawArc(d,w,blue,0,0,51,51,(int) ((p->rot+180)*64)%(360*64),
+draw.c:    white=p->d.gc_white;
+draw.c:    XDrawLine(d,w,white,x+l/4,y+h/2,x+l/4,y-h/2);
+draw.c:    XDrawLine(d,w,white,x+l/2,y+h,x+l/2,y-h);
+draw.c:    XDrawLine(d,w,white,x+3*l/4,y+h/2,x+3*l/4,y-h/2);
+draw.c:    XDrawLine(d,w,white,x,y+h,x,y-h);
+draw.c:    XDrawLine(d,w,white,x+l,y+h,x+l,y-h);
+draw.c:    white=p->d.gc_white;
+draw.c:    ms=-sn[(int) p->rot];
+draw.c:    mc=cs[(int) p->rot];
+draw.c:		dr=(int) (o->rot-p->rot+720)%360;
+draw.c:		XDrawArc(d,w,white,cx-rd,cy-rd,rd*2,rd*2,0,360*64);
+draw.c:		XDrawArc(d,w,white,cx-rd/4,cy-rd/4,rd/2,rd/2,0,360*64);
+draw.c:		    l=strlen(o->name);
+draw.c:		    XDrawString(d,w,white,cx-p->d.tfont->max_bounds.width*l/2,
+draw.c:				cy+rd+8+p->d.tfont->max_bounds.ascent,
+draw.c:		sprintf(txt,"%d",o->rating);
+draw.c:		if (p->rating<=(o->rating*2)) {
+draw.c:		    XDrawString(d,w,white,cx-p->d.tfont->max_bounds.width*l/2,
+draw.c:				cy-rd-8-p->d.tfont->max_bounds.descent,
+draw.c:		    XDrawString(d,w,p->d.gc_fred,
+draw.c:				cx-p->d.tfont->max_bounds.width*l/2,
+draw.c:				cy-rd-8-p->d.tfont->max_bounds.descent,
+draw.c:    white=p->d.gc_white;
+draw.c:    XFillRectangle(d,w,p->d.gc_black,0,0,WINWID,WINHGT);
+draw.c:    XDrawRectangle(d,w,p->d.gc_blue,mx-100,my-100,200,200);
+draw.c:    XDrawArc(d,w,white,mx-rd/8,my-rd/8,rd/4,rd/4,0,360*64);
+draw.c:    XDrawArc(d,w,white,mx-rd/2,my-rd/2,rd,rd,0,360*64);
+draw.c:    XDrawLine(d,w,white,mx,my-rd/16,mx,my-3*rd/8);
+draw.c:	    XDrawString(d,w,p->d.gc_blue,16,WINHGT-p->d.fh*(i+1),p->msg[i],
+draw.c:			strlen(p->msg[i]));
+draw.c:	    XDrawString(p->d.disp,p->d.backing,p->d.gc_blue,16,
+draw.c:			WINHGT-p->d.fh*(i+1),p->msg[i],strlen(p->msg[i]));
+draw.h:** some acknowledgement of the source (ie me!) 8-)
+events.c:** some acknowledgement of the source (ie me!) 8-)
+events.c:	XAutoRepeatOff(p->d.disp);
+events.c:	XNextEvent(p->d.disp,&xev);
+events.c:	    XAutoRepeatOn(p->d.disp);
+events.c:	    XAutoRepeatOff(p->d.disp);
+events.c:	    switch (c=rd2(p->lvl,(int) p->x/128,(int) p->y/128)) {
+events.c:	    if (rd2(p->lvl,(int) p->x/128,(int) p->y/128)=='l') {
+events.c:		switch (summon_lift(p->lvl,(int)p->x/128,(int)p->y/128)) {
+events.c:	    if (rd2(p->lvl,(int) p->x/128,(int) p->y/128)=='L') {
+events.c:		x=(int) p->x;y=(int) p->y;
+events.c:		    l=find_lift((int) p->x/128,(int) p->y/128);
+events.c:		    if (l->t==l->l) {
+events.c:			    l->t--;
+events.c:	    if (rd2(p->lvl,(int) p->x/128,(int) p->y/128)=='L') {
+events.c:		x=(int) p->x;y=(int) p->y;
+events.c:		    l=find_lift((int) p->x/128,(int) p->y/128);
+events.c:		    if (l->t==l->l) {
+events.c:	    p->thrust-=p->step;
+events.c:	    if (p->thrust<0) p->thrust=0;
+events.c:	    p->thrust+=p->step;
+events.c:	    if (p->thrust>100) p->thrust=100;
+events.c:	    if ((p->slot)&&(p->mode[p->slot-1])) {
+events.c:		p->mode[p->slot-1]-=p->step;
+events.c:		if (p->mode[p->slot-1]<=0) p->mode[p->slot-1]=0;
+events.c:		if (p->mode[p->slot-1]==0) p->mode[p->slot-1]=-1;
+events.c:	    if ((p->slot)&&(p->mode[p->slot-1])) {
+events.c:		if (p->mode[p->slot-1]==-1) p->mode[p->slot-1]=0;
+events.c:		p->mode[p->slot-1]+=p->step;
+events.c:		if (p->mode[p->slot-1]>100) p->mode[p->slot-1]=100;
+events.c:	    t=p->spin;p->spin=p->espin;p->espin=t;
+events.c:	    t=p->thrust;p->thrust=p->ethrust;p->ethrust=t;
+events.h:** some acknowledgement of the source (ie me!) 8-)
+fix.h:** some acknowledgement of the source (ie me!) 8-)
+home.c:** some acknowledgement of the source (ie me!) 8-)
+home.c:    white=p->d.gc_white;
+home.c:    XFillRectangle(p->d.disp,p->d.backing,p->d.gc_black,0,0,WINWID,WINHGT);
+home.c:    XDrawString(d,w,red,50,p->d.fh,"Fuel",4);
+home.c:    XDrawString(d,w,dgrey,50,p->d.fh*2,"Base",4);
+home.c:    DrawMeter(p,50+p->d.fw*7,p->d.fh,WINWID/2,4,p->maxfuel/200,
+home.c:    DrawMeter(p,50+p->d.fw*7,p->d.fh*2,WINWID/2,4,p->maxfuel/50,
+home.c:    XDrawString(d,w,red,10,p->d.fh*4,"#",1);
+home.c:    XDrawString(d,w,red,40,p->d.fh*4,"Contains",8);
+home.c:	    XDrawString(d,w,dgrey,10,p->d.fh*(i+5),txt,1);
+home.c:		XDrawString(d,w,dgrey,23,p->d.fh*(i+5),
+home.c:			    (p->slotobj[i]->flags&OBJ_F_ARM)?"A":"D",
+home.c:	    switch(p->slots[i]) {
+home.c:	    switch(p->size[i]) {
+home.c:	    XDrawString(d,w,dgrey,40,p->d.fh*(i+5),txt,strlen(txt));
+home.c:    XDrawString(d,w,red,WINWID/2+10,p->d.fh*4,"#",1);
+home.c:    XDrawString(d,w,red,WINWID/2+40,p->d.fh*4,"Stored",8);
+home.c:	    XDrawString(d,w,dgrey,WINWID/2+10,p->d.fh*(i+5),txt,1);
+home.c:	    switch(p->homeslots[i]) {
+home.c:	    switch(p->homesize[i]) {
+home.c:	    XDrawString(d,w,dgrey,WINWID/2+40,p->d.fh*(i+5),txt,strlen(txt));
+home.c:	if (p->slotobj[s]||(p->slots[s]==OBJ_EMPTY)) return;
+home.c:		p->homeslots[i]=p->slots[s];
+home.c:		p->slots[i]=p->homeslots[s];
+home.c:    for (i=0;i<map.depth;i++) p->mapmem[i]=0;
+home.c:    XAutoRepeatOn(p->d.disp);
+home.c:    sprintf(txt,"%s has just quitted",p->name);
+home.c:	x=(int) p->x;
+home.c:	y=(int) p->y;
+home.c:    for (h=firsthome;h;h=h->next)
+home.c:    for (h=firsthome;h;h=h->next)
+home.h:** some acknowledgement of the source (ie me!) 8-)
+init.c:** some acknowledgement of the source (ie me!) 8-)
+init.c:	sintable[180-i]=sintable[i];
+init.c:	sintable[i+180]=-sintable[i];
+init.h:** some acknowledgement of the source (ie me!) 8-)
+lift.c:** some acknowledgement of the source (ie me!) 8-)
+lift.c:	generate_pass(l->pass,6);
+lift.c:	l->x=x;l->y=y;l->t=d;l->l=d;
+lift.c:    for (e=firstlift;e;e=e->next)
+lift.c:    for (e=firstlift;e;e=e->next)
+lift.c:    if (e->t!=e->l) {
+lift.c:    for (l=firstlift;l;l=l->next)
+lift.c:	    if (l->t!=l->l) {
+lift.c:		if (l->t<l->l) {
+lift.c:		    if (l->t>l->l) l->t=l->l;
+lift.c:		    if (l->t<l->l) l->t=l->l;
+lift.c:	l->t=l->l;
+lift.c:	l->t=l->l;
+lift.c:    if (l->l==(map.depth-1)) {
+lift.c:	l->t=l->l;
+lift.c:    for (d=(l->l+1);(d<map.depth)&&(!(rd(d,l->x,l->y)&MAP_SOLID));d++);
+lift.c:	l->t=l->l;
+lift.c:	l->t=l->l;
+lift.c:    for (o=obj_first;o;o=o->next) {
+lift.c:    if (l->l==(map.depth-1)) {
+lift.c:    for (d=(l->l+1);(d<map.depth)&&(!(rd(d,l->x,l->y)&MAP_SOLID));d++);
+lift.h:** some acknowledgement of the source (ie me!) 8-)
+main.c:** some acknowledgement of the source (ie me!) 8-)
+main.c:		    XAutoRepeatOn(p->d.disp);
+map.c:** some acknowledgement of the source (ie me!) 8-)
+map.c:	for (y=1;y<(map.hgt-1);y++) {
+map.c:		switch (buf[x-1]) {
+map.c:		    map.data2[l][x+map.wid*y]=buf[x-1];
+map.c:    /* Now build up the 'first-order' wall data from the solid/non solid info*/
+map.c:	for (y=1;y<(map.hgt-1);y++)
+map.c:    /* Then do the 'second-order' scan for walls observed from above */
+map.c:    for (l=0;l<map.depth-1;l++) 
+map.c:	for (y=1;y<(map.hgt-1);y++)
+map.c:    /* THEN do the 'third-order' scan for walls observed from above */
+map.c:    for (l=0;l<map.depth-2;l++) 
+map.c:	for (y=1;y<(map.hgt-1);y++)
+map.c:	    for (x=1;x<(map.hgt-1);x++)
+map.c:    if (l=strlen(b)) b[l-1]=0;
+map.c:    return (l-1);
+map.c:    if (l>=map.depth) return -1;
+map.c:    if (!(rd(l,xx,yy)&MAP_SOLID)) return -1;
+map.c:    if (c=='l') return -1;
+map.h:** some acknowledgement of the source (ie me!) 8-)
+message.c:** some acknowledgement of the source (ie me!) 8-)
+message.c:	strcpy(p->msg[3],p->msg[2]);
+message.c:	strcpy(p->msg[2],p->msg[1]);
+message.c:	strcpy(p->msg[1],p->msg[0]);
+message.c:	strncpy(p->msg[0],s,59);
+message.c:    strcpy(p->msg[3],p->msg[2]);
+message.c:    strcpy(p->msg[2],p->msg[1]);
+message.c:    strcpy(p->msg[1],p->msg[0]);
+message.c:    strncpy(p->msg[0],s,59);
+message.h:** some acknowledgement of the source (ie me!) 8-)
+mines.c:** some acknowledgement of the source (ie me!) 8-)
+mines.c:    if ((!p->slot)||(p->slots[p->slot-1]==OBJ_EMPTY)) return;
+mines.c:    if (p->slotobj[p->slot-1]) return;
+mines.c:    switch (p->slots[p->slot-1]) {
+mines.c:	o=(p->slotobj[p->slot-1]=alloc_object());
+mines.c:	o->xv+=2*sn[(int) p->rot];
+mines.c:	o->yv-=2*cs[(int) p->rot];
+mines.c:	o->type=p->slots[p->slot-1];
+mines.c:	o->mode=p->mode[p->slot-1];
+mines.c:	if (p->mode[p->slot-1]==-1) o->mode=0;
+mines.c:	if (o->type==OBJ_MINE_TIME) o->mode=o->mode*10+1;
+mines.c:	o->slot=p->slot;
+mines.c:	o->charge=5*p->size[p->slot-1];
+mines.c:    if ((!p->slot)||(p->slots[p->slot-1]==OBJ_EMPTY)) return;
+mines.c:    o=p->slotobj[p->slot-1];
+mines.c:    switch (p->slots[p->slot-1]) {
+mines.c:    if ((!p->slot)||(p->slots[p->slot-1]==OBJ_EMPTY)) return;
+mines.c:    o=p->slotobj[p->slot-1];
+mines.c:    switch (p->slots[p->slot-1]) {
+mines.c:    if ((!p->slot)||(p->slots[p->slot-1]==OBJ_EMPTY)) return;
+mines.c:    o=p->slotobj[p->slot-1];
+mines.c:    switch (p->slots[p->slot-1]) {
+mines.c:	    p->slotobj[p->slot-1]=0;
+mines.c:	    p->slots[p->slot-1]=OBJ_EMPTY;
+mines.c:	    p->size[p->slot-1]=0;
+mines.c:	    p->mode[p->slot-1]=0;
+mines.c:	obj_first=o->next;
+mines.c:	for (n=obj_first;(n)&&(n->next!=o);n=n->next);
+mines.c:	    n->next=o->next;
+mines.c:    explode(o->l,(int) o->x,(int) o->y,5+o->charge,400*o->charge,
+mines.h:** some acknowledgement of the source (ie me!) 8-)
+mymath.c:** some acknowledgement of the source (ie me!) 8-)
+mymath.h:** some acknowledgement of the source (ie me!) 8-)
+object.c:** some acknowledgement of the source (ie me!) 8-)
+object.c:    for (o=obj_first,n=o->next;o;o=n,o?n=o->next:0) {
+object.c:	    switch (o->type) {
+object.c:		det=o->mode*2;
+object.c:		det2=det-100;
+object.c:	    friction=1-(FRICTION/1000);
+object.c:	    if (!(rd(o->l,(int) (o->x/128),(int) (o->y/128))&MAP_FRICT)) {
+object.c:			o->has.owner->slots[o->slot-1]=OBJ_EMPTY;
+object.c:			o->has.owner->size[o->slot-1]=0;
+object.c:			o->has.owner->mode[o->slot-1]=0;
+object.c:			o->has.owner->slotobj[o->slot-1]=0;
+object.c:	for (o=obj_first;o;o?o=o->next:0) 
+object.h:** some acknowledgement of the source (ie me!) 8-)
+particle.c:** some acknowledgement of the source (ie me!) 8-)
+particle.c:	part_free=p->next;
+particle.c:    part_count--;
+particle.c:	if (parts[l]) for (p=0,t=parts[l],n=t->next;t;p=t,t=n,t?n=t->next:0) {
+particle.c:	    if ((--t->life)>0) {
+particle.c:		t->x+=t->vely*sn[t->rot];
+particle.c:		t->y-=t->vely*cs[t->rot];
+particle.c:		switch (rd2(l,(int) t->x/128,(int) t->y/128)) {
+particle.c:		    if (!((tu=find_turret(l,(int) t->x/128,(int) t->y/128))
+particle.c:			dx=(int) (t->x);dx&=127;dx-=64;
+particle.c:			dy=(int) (t->y);dy&=127;dy-=64;
+particle.c:			    t->life=-1;
+particle.c:			    damage_turret(tu,t->dam,t->owner);
+particle.c:	    for (p=parts[pl->lvl];p;p=p->next) {
+particle.c:		dx=(int) (x-p->x);
+particle.c:		dy=(int) (y-p->y);
+particle.c:	for (o=obj_first,o?n=o->next:0;o;o=n,n?n=n->next:0)
+particle.c:				o->has.owner->slots[o->slot-1]=0;
+particle.c:				o->has.owner->slotobj[o->slot-1]=0;
+particle.c:	for (e=bang_first,n=e->next;e;l=e,e=n,e?n=e->next:0) {
+particle.c:		    l->next=e->next;
+particle.c:		    bang_first=e->next;
+particle.h:** some acknowledgement of the source (ie me!) 8-)
+player.c:** some acknowledgement of the source (ie me!) 8-)
+player.c:#define inthang(f,o) if (strcmp(chop[0],"f")==0) p->owned|=o
+player.c:	strncpy(p->user,nm,15);
+player.c:	strncpy(p->name,nm,31);
+player.c:    p->connected=-1;
+player.c:	sprintf(txt,"%s has rejoined us.",p->name);
+player.c:	return -1;
+player.c:    Setup_string(p,"name",p->name,31);
+player.c:		if (strcmp(op->name,p->name)==0) strcpy(p->name,p->user);
+player.c:		if (strcmp(op->user,p->name)==0) strcpy(p->name,p->user);
+player.c:    p->rot=0;p->rv=0;p->rt=0;
+player.c:    for (i=0;i<map.depth;i++) p->mapmem[i]=0;
+player.c:    p->fuelmin=200*Setup_value(p,"fuel",30,0,p->maxfuel/200);
+player.c:    sprintf(txt,"%s has just joined us.",p->name);
+player.c:    return -1;
+player.c:    if ((p->flags&FLG_FUELLING)&&(rd2(p->lvl,(int) p->x/128,
+player.c:				     (int) p->y/128)=='F')) {
+player.c:	x=(int) p->x;y=(int) p->y;
+player.c:	t=4000*p->thrust/100;
+player.c:	p->xf+=t*sn[(int) p->rot];
+player.c:	p->yf-=t*cs[(int) p->rot];
+player.c:    xc=((int)p->x)/128;
+player.c:    yc=((int)p->y)/128;
+player.c:	switch(rd2(p->lvl,xc,yc)) {
+player.c:	    if ((((int)p->x)&127)<50) p->xf-=PUSH_FORCES;
+player.c:	    if ((((int)p->x)&127)>78) p->xf+=PUSH_FORCES;
+player.c:	    if ((((int)p->y)&127)<50) p->yf-=PUSH_FORCES;
+player.c:	    if ((((int)p->y)&127)>78) p->yf+=PUSH_FORCES;
+player.c:	    if ((((int)p->x)&127)>78) p->xf-=PUSH_FORCES;
+player.c:	    if ((((int)p->x)&127)<50) p->xf+=PUSH_FORCES;
+player.c:	    if ((((int)p->y)&127)>78) p->yf-=PUSH_FORCES;
+player.c:	    if ((((int)p->y)&127)<50) p->yf+=PUSH_FORCES;
+player.c:    xc=((int)p->x)/128;
+player.c:    yc=((int)p->y)/128;
+player.c:		(rd2(p->lvl,(int)p->x/128,(int)p->y/128)!='l')) {
+player.c:		if (vel<100) {p->fallen=2;p->height--;};
+player.c:		    sprintf(tx,"%s just fell off",p->name);
+player.c:		sprintf(tx,"%s just fell off",p->name);
+player.c:	    p->height--;
+player.c:	inertia=1-(INERTIA/((double) p->mass));
+player.c:	if ((p->height==0)&&(rd(p->lvl,xc,yc)&MAP_SOLID)) {
+player.c:	    friction=1-(FRICTION/((double) p->mass));
+player.c:	t=SPINSPEED*p->spin/100;
+player.c:	switch (p->flags&(FLG_ROTCLOCK|FLG_ROTACLOCK)) {
+player.c:	    p->rv+=(t/((double)p->mass));
+player.c:	    p->rv-=(t/((double)p->mass));
+player.c:	p->rot+=p->rv;
+player.c:	if (p->rot<0) p->rot+=360;
+player.c:	if (p->rot>=360) p->rot-=360;
+player.c:	    switch(p->weap) {
+player.c:		fire_particle(p,p->lvl,p->x+v*sn[(int) p->rot],
+player.c:			      p->y-v*cs[(int) p->rot],(int) p->rot,30.0,10,15,
+player.c:		fire_particle(p,p->lvl,p->x+v*sn[(int) p->rot],
+player.c:			      p->y-v*cs[(int) p->rot],(int) p->rot,30.0,10,18,
+player.c:		fire_particle(p,p->lvl,p->x+v*sn[(int) p->rot],
+player.c:			      p->y-v*cs[(int) p->rot],(int) p->rot,28.0,20,25,
+player.c:		fire_particle(p,p->lvl,p->x+v*sn[(int) p->rot],
+player.c:			      p->y-v*cs[(int) p->rot],(int) p->rot,10.0,100,
+player.c:		    fire_particle(p,p->lvl,p->x+v*sn[(int) p->rot],
+player.c:				  p->y-v*cs[(int) p->rot],
+player.c:				  (int) p->rot-9+random()%19
+player.c:    if (p->y>=(map.hgt*128-20)) p->y=map.hgt*128-21;
+player.c:	    for (o=p->next;o;o=o->next) 
+player.c:	    switch(rd2(p->lvl,cx/128,cy/128)) {
+player.c:		tur=find_turret(p->lvl,cx/128,cy/128);
+player.c:		if (tur->flags&TFLG_DESTROYED) break;
+player.c:	p->ptarg=p->ptarg->next;
+player.c:	p->ptarg=p->next;
+player.c:    if (p->ptarg==0) p->ptarg=playone;
+player.c:    if (p->ptarg==p) p->ptarg=0;
+player.c:    if (p->ptarg&&p->ptarg->away) next_target(p);
+player.c:    if (p->ptarg&&p->ptarg->flags&FLG_CLOAKING) next_target(p);
+player.c:	    if (who->rating<=p->rating) {
+player.c:	    if (2*who->rating<=p->rating) {
+player.c:	    if (who->rating/2<=p->rating) {
+player.c:		sprintf(txt,"%s was killed by %s.",p->name,who->name);
+player.c:		rat=(2*p->rating-who->rating);
+player.c:		if (rat<0) rat-=9;
+player.c:		if (rat>who->rating) rat=who->rating;
+player.c:		if (rat>0) p->rating-=rat;
+player.c:		sprintf(txt,"%s was killed due to %s.",p->name,who->name);
+player.c:		sprintf(txt,"%s has died due to falling.",p->name);break;
+player.c:		sprintf(txt,"%s has died due to a collision.",p->name);break;
+player.c:		sprintf(txt,"%s has died due to an explosion.",p->name);break;
+player.c:		sprintf(txt,"%s has died due to a BOGUS.",p->name);break;
+player.c:		sprintf(txt,"%s has just exploded.",p->name);break;
+player.c:    for (i=0;i<map.depth;i++) p->mapmem[i]=0;
+player.c:    for (i=0;i<9;i++) if (p->slots[i]&&(!p->slotobj[i])) {
+player.c:	for (i=0;i<map.depth;i++) p->mapmem[i]=0;
+player.c:	    p->rv=0;p->rt=0;p->rot=0;p->cash=p->cash*9/10;p->fuel=p->fuel*9/10;
+player.c:    XAutoRepeatOn(p->d.disp);
+player.c:    sprintf(txt,"%s has just disconnected",p->name);
+player.c:	if (strcmp(p->user,n)==0) return p;
+player.c:    fprintf(pd,"shield/max/fuel/max/radar-range/homefuel\n");
+player.c:	fprintf(pd,"%s/%s/%d/%d/%d\n",p->user,p->name,p->score,p->cash,
+player.c:	fprintf(pd,"%d/%d/%d\n",p->kills,p->tkills,p->deaths);
+player.c:	fprintf(pd,"%d/%d/%d/%d/%d/%d\n",p->shield,p->maxshield,p->fuel,
+player.c:	fprintf(pd,"%d/%d/%d/%d/%d/%s/%d\n",p->thrust,p->spin,p->ethrust,
+player.c:		p->espin,p->step,ft,p->weap);
+player.c:		fprintf(pd,"W%d/%d\n",f,p->ammo[f]);
+player.c:	    if (p->slots[f]&&!p->slotobj[f])
+player.c:		fprintf(pd,"M%d/%d/%d\n",p->slots[f],p->size[f],p->mode[f]);
+player.c:		fprintf(pd,"S%d/%d/%d\n",p->homeslots[f],p->homesize[f],
+player.c:		fprintf(pd,"O%d/%d/%d\n",f,p->own[f],p->dam[f]);
+player.c:	strncpy(p->user,chop[0],16);
+player.c:	strncpy(p->name,chop[1],31);
+player.h:** some acknowledgement of the source (ie me!) 8-)
+shop.c:** some acknowledgement of the source (ie me!) 8-)
+shop.c:    next_bit();strncpy(m->name,str,63);
+shop.c:	next_bit();strncpy(m->item[n]->name,str,63);
+shop.c:	    m->item[n]->type=ITEM_NEXT;
+shop.c:	    m->item[n]->sel.next=(struct menu *) calloc(1,sizeof(struct menu));
+shop.c:	    m->item[n]->sel.next->prev=m;
+shop.c:	    read_menu(m->item[n]->sel.next);
+shop.c:	    case 'M':stock_mine(m->item[n]);break;
+shop.c:	    case 'A':stock_ammo(m->item[n]);break;
+shop.c:	    case 'W':stock_weap(m->item[n]);break;
+shop.c:	    case 'O':stock_othr(m->item[n]);break;
+shop.c:	    case 'R':stock_repr(m->item[n]);break;
+shop.c:	    next_bit();m->item[n]->sel.price=atoi(str);
+shop.c:    next_bit();i->obj.mine.type=atoi(str);
+shop.c:    next_bit();i->obj.mine.charge=atoi(str);
+shop.c:    next_bit();i->obj.ammo.type=atoi(str);
+shop.c:    next_bit();i->obj.ammo.qty=atoi(str);
+shop.c:    next_bit();i->obj.weap.type=atoi(str);
+shop.c:    next_bit();i->obj.weap.ammo=atoi(str);
+shop.c:    next_bit();i->obj.othr.type=atoi(str);
+shop.c:    next_bit();i->obj.othr.level=atoi(str);
+shop.c:    next_bit();i->obj.repr.type=atoi(str);
+shop.c:    white=p->d.gc_white;
+shop.c:    XFillRectangle(p->d.disp,p->d.backing,p->d.gc_black,0,0,WINWID,WINHGT);
+shop.c:	i=strlen(p->shopmenu->name);
+shop.c:	XDrawString(p->d.disp,p->d.backing,p->d.gc_yellow,WINWID/2-p->d.bw*i/2,
+shop.c:	XDrawString(p->d.disp,p->d.backing,p->d.gc_yellow,WINWID/2-p->d.bw*2,
+shop.c:    sprintf(prc,"Cash: %d",p->cash);
+shop.c:    XDrawString(d,w,yellow,40,p->d.bo*2+p->d.bh/2,prc,strlen(prc));
+shop.c:    for (i=1;(i<10)&&(p->shopmenu->item[i-1]);i++) {
+shop.c:	XDrawString(d,w,red,20,100+p->d.fh*i,&c,1);
+shop.c:	XDrawString(d,w,red,20+p->d.fw*3,100+p->d.fh*i,
+shop.c:		    p->shopmenu->item[i-1]->name,
+shop.c:		    strlen(p->shopmenu->item[i-1]->name));
+shop.c:	if (p->shopmenu->item[i-1]->type!=ITEM_NEXT) {
+shop.c:	    sprintf(prc,"$%d",p->shopmenu->item[i-1]->sel.price);
+shop.c:	    XDrawString(d,w,red,WINWID*3/4,100+p->d.fh*i,prc,strlen(prc));
+shop.c:	    XDrawString(d,w,red,WINWID*3/4,100+p->d.fh*i,"<More>",6);
+shop.c:    XDrawString(d,w,red,20,100+p->d.fh*i,"Esc",3);
+shop.c:	XDrawString(d,w,red,20+p->d.fw*3,100+p->d.fh*i,"Previous menu",13);
+shop.c:	XDrawString(d,w,red,20+p->d.fw*3,100+p->d.fh*i,"Exit the shop.",14);
+shop.c:    switch (p->shopmenu->show) {
+shop.c:	XDrawString(d,w,red,20,100+p->d.fh*n++,"Drop-Slots Filled:",18);
+shop.c:		switch(p->slots[i]) {
+shop.c:		switch(p->size[i]) {
+shop.c:		XDrawString(d,w,dgrey,40,100+p->d.fh*n++,prc,strlen(prc));
+shop.c:		XDrawString(d,w,dgrey,40,100+p->d.fh*n++,prc,14);
+shop.c:	XDrawString(d,w,red,20,100+p->d.fh*n++,"Weapon Systems Fitted:",22);
+shop.c:		XDrawString(d,w,dgrey,40,100+p->d.fh*n,weap_name[i],
+shop.c:		    sprintf(prc,"%d Ammo",p->ammo[i]);
+shop.c:		    XDrawString(d,w,dgrey,WINWID/2+90,100+p->d.fh*n++,prc,
+shop.c:	XDrawString(d,w,red,20,100+p->d.fh*n++,"Other Systems Installed:",24);
+shop.c:		sprintf(prc,"   %s Mk.%d <%d/%d>",own_name[i],p->own[i],
+shop.c:		XDrawString(d,w,dgrey,20,100+p->d.fh*n++,prc,strlen(prc));
+shop.c:    if (p->shopmenu->item[n]->type==ITEM_NEXT) {
+shop.c:	p->shopmenu=p->shopmenu->item[n]->sel.next;
+shop.c:	it=p->shopmenu->item[n];
+shop.c:	if (it->sel.price==0) return;
+shop.c:	if (it->sel.price>p->cash) return;
+shop.c:	switch (it->type) {
+shop.c:	    p->cash-=it->sel.price;
+shop.c:	    p->slots[s]=it->obj.mine.type;
+shop.c:	    p->size[s]=it->obj.mine.charge;
+shop.c:	    switch(it->obj.mine.type) {
+shop.c:	    case OBJ_MINE_PROX:p->mode[s]=20+5*it->obj.mine.charge;break;
+shop.c:    p->cash-=it->sel.price;
+shop.c:    p->ammo[it->obj.ammo.type]+=it->obj.ammo.qty;
+shop.c:    if (p->weap_mask&(1<<it->obj.weap.type)) return;
+shop.c:    p->cash-=it->sel.price;
+shop.c:    p->weap_mask|=(1<<it->obj.weap.type);
+shop.c:    p->ammo[it->obj.weap.type]=it->obj.weap.ammo;
+shop.c:    j=it->obj.othr.type;
+shop.c:    l=it->obj.othr.level;
+shop.c:    p->cash-=it->sel.price;
+shop.c:    i=it->obj.repr.type;
+shop.c:    if (l*it->sel.price>p->cash) return;
+shop.c:        p->cash-=it->sel.price*l;
+shop.c:	x=(int) p->x;
+shop.c:	y=(int) p->y;
+shop.h:** some acknowledgement of the source (ie me!) 8-)
+telnet.c:** some acknowledgement of the source (ie me!) 8-)
+telnet.c:    if ((mysocket=socket(AF_INET,SOCK_STREAM,0))==-1) {
+telnet.c:	    sizeof(struct sockaddr_in))==-1) {
+telnet.c:    if(listen(mysocket,10)==-1) {
+telnet.c:    there=-1;
+telnet.c:	    r=read(path,&st[n],256-n);
+telnet.h:** some acknowledgement of the source (ie me!) 8-)
+terminal.c:** some acknowledgement of the source (ie me!) 8-)
+terminal.c:#define POP t->num[--t->nsp]
+terminal.c:#define PUSH t->num[t->nsp++]
+terminal.c:	p->term->p=p;
+terminal.c:	t=p->term;
+terminal.c:	t->psp=0;
+terminal.c:	t->nsp=0;
+terminal.c:	t->pc[0]=startpc;
+terminal.c:	t->state=0;
+terminal.c:	t->status=0;
+terminal.c:    XFillRectangle(p->d.disp,p->d.backing,p->d.gc_black,0,0,WINWID,WINHGT);
+terminal.c:    p->term->x=0;
+terminal.c:    strcpy(l->name,str);
+terminal.c:    if (strcmp(l->name,"start")==0) startpc=pc;
+terminal.c:    while (isdigit(d=getc(td))) n=n*10+d-'0';
+terminal.c:    for(l=firstlabel;l;l=l->next)
+terminal.c:	if (strcmp(l->name,s)==0) return l->adr;
+terminal.c:    t=p->term;
+terminal.c:	switch(t->state) {
+terminal.c:	    switch(rom[(t->pc[t->psp]++)-ROMBASE]) {
+terminal.c:		s=(char *)&t->num[t->nsp++];
+terminal.c:		s[0]=rom[(t->pc[t->psp]++)-ROMBASE];
+terminal.c:		s[1]=rom[(t->pc[t->psp]++)-ROMBASE];
+terminal.c:		s[2]=rom[(t->pc[t->psp]++)-ROMBASE];
+terminal.c:		s[3]=rom[(t->pc[t->psp]++)-ROMBASE];
+terminal.c:		if (!t->nsp) {
+terminal.c:		    t->state=-1;
+terminal.c:		n=(int)t->num[--t->nsp];
+terminal.c:		s=(n>=ROMBASE)?s=&rom[n-ROMBASE]:&t->ram[n];
+terminal.c:		if (t->status&PFLG_HI) {
+terminal.c:		if (!t->nsp) {
+terminal.c:		    t->state=-1;
+terminal.c:		n=(int)t->num[--t->nsp];
+terminal.c:		if (t->status&PFLG_HI) {
+terminal.c:	    case OP_INN:t->state=PSTAT_INN;return;
+terminal.c:		t->tmp=POP;
+terminal.c:		t->tmpb=POP;
+terminal.c:		t->state=PSTAT_INS;return;
+terminal.c:	    case OP_KEY:t->state=PSTAT_KEY;return;
+terminal.c:		if (t->psp) {
+terminal.c:		    t->psp--;
+terminal.c:		    t->p=0;
+terminal.c:		s=(n>=ROMBASE)?s=&rom[n-ROMBASE]:&t->ram[n];
+terminal.c:		ss=(char *)&t->a;
+terminal.c:		s=(n>=ROMBASE)?s=&rom[n-ROMBASE]:&t->ram[n];
+terminal.c:		ss=(char *)&t->b;
+terminal.c:		n=(int)t->num[t->nsp-1];
+terminal.c:		s=(n>=ROMBASE)?s=&rom[n-ROMBASE]:&t->ram[n];
+terminal.c:		ss=(char *)&t->num[t->nsp-1];
+terminal.c:		s=(n>=ROMBASE)?s=&rom[n-ROMBASE]:&t->ram[n];
+terminal.c:		s=(n>=ROMBASE)?s=&rom[n-ROMBASE]:&t->ram[n];
+terminal.c:		ss=(char *)&t->a;
+terminal.c:		s=(n>=ROMBASE)?s=&rom[n-ROMBASE]:&t->ram[n];
+terminal.c:		ss=(char *)&t->b;
+terminal.c:	    case OP_THI:t->status|=PFLG_HI;break;
+terminal.c:	    case OP_TLO:t->status&=~PFLG_HI;break;
+terminal.c:	    case OP_TAB:n=POP;if (t->x<n) t->x=n;break;
+terminal.c:	    case OP_BAT:t->x=POP;break;
+terminal.c:	    case OP_POS:PUSH=t->x;break;
+terminal.c:		n=(int)t->num[--t->nsp];
+terminal.c:		t->pc[++t->psp]=n;
+terminal.c:		n=(int)t->num[--t->nsp];
+terminal.c:		t->pc[t->psp]=n;
+terminal.c:	    case OP_INCA:t->a++;break;
+terminal.c:	    case OP_INCB:t->b++;break;
+terminal.c:	    case OP_DECA:t->a--;break;
+terminal.c:	    case OP_DECB:t->b--;break;
+terminal.c:		n=(int)t->num[--t->nsp];
+terminal.c:		if (n==t->a) {
+terminal.c:		    t->status|=PFLG_EQ;
+terminal.c:		    t->status&=~PFLG_EQ;
+terminal.c:		if (n<t->a) {
+terminal.c:		    t->status|=PFLG_MI;
+terminal.c:		    t->status&=~PFLG_MI;
+terminal.c:		n=(int)t->num[--t->nsp];
+terminal.c:		if (n==t->b) {
+terminal.c:		    t->status|=PFLG_EQ;
+terminal.c:		    t->status&=~PFLG_EQ;
+terminal.c:		if (n<t->a) {
+terminal.c:		    t->status|=PFLG_MI;
+terminal.c:		    t->status&=~PFLG_MI;
+terminal.c:		n=(int)t->num[--t->nsp];
+terminal.c:		m=(int)t->num[t->nsp-1];
+terminal.c:		    t->status|=PFLG_EQ;
+terminal.c:		    t->status&=~PFLG_EQ;
+terminal.c:		    t->status|=PFLG_MI;
+terminal.c:		    t->status&=~PFLG_MI;
+terminal.c:		n=(int)t->num[--t->nsp];
+terminal.c:		if (t->status&PFLG_EQ) t->pc[t->psp]=n;
+terminal.c:		n=(int)t->num[--t->nsp];
+terminal.c:		if (!(t->status&PFLG_EQ)) t->pc[t->psp]=n;
+terminal.c:		n=(int)t->num[--t->nsp];
+terminal.c:		if (t->status&PFLG_MI) t->pc[t->psp]=n;
+terminal.c:		n=(int)t->num[--t->nsp];
+terminal.c:		if (!(t->status&PFLG_MI)) t->pc[t->psp]=n;
+terminal.c:		n=(int)t->num[--t->nsp];
+terminal.c:		    PUSH=(int) find_player(&t->ram[aa]);break;
+terminal.c:		    s=(aa>=ROMBASE)?&rom[aa-ROMBASE]:&t->ram[aa];
+terminal.c:		    ss=(bb>=ROMBASE)?&rom[bb-ROMBASE]:&t->ram[bb];
+terminal.c:		    s=(aa>=ROMBASE)?&rom[aa-ROMBASE]:&t->ram[aa];
+terminal.c:		    ss=(bb>=ROMBASE)?&rom[bb-ROMBASE]:&t->ram[bb];
+terminal.c:		    s=(aa>=ROMBASE)?&rom[aa-ROMBASE]:&t->ram[aa];
+terminal.c:		    s=(aa>=ROMBASE)?&rom[aa-ROMBASE]:&t->ram[aa];
+terminal.c:		    ss=(bb>=ROMBASE)?&rom[bb-ROMBASE]:&t->ram[bb];
+terminal.c:		    ss=(bb>=ROMBASE)?&rom[bb-ROMBASE]:&t->ram[bb];
+terminal.c:		    s=(aa>=ROMBASE)?&rom[aa-ROMBASE]:&t->ram[aa];
+terminal.c:		    s=(aa>=ROMBASE)?&rom[aa-ROMBASE]:&t->ram[aa];
+terminal.c:		if (t->a&(1<<aa)) {
+terminal.c:		    t->status&=~PFLG_EQ;
+terminal.c:		    t->status|=PFLG_EQ;
+terminal.c:		if (t->b&(1<<aa)) {
+terminal.c:		    t->status&=~PFLG_EQ;
+terminal.c:		    t->status|=PFLG_EQ;
+terminal.c:		    t->status&=~PFLG_EQ;
+terminal.c:		    t->status|=PFLG_EQ;
+terminal.c:	    case OP_POPA:t->a=POP;break;
+terminal.c:	    case OP_POPB:t->b=POP;break;
+terminal.c:	    case OP_PSHA:PUSH=t->a;break;
+terminal.c:	    case OP_PSHB:PUSH=t->b;break;
+terminal.c:			rom[t->pc[t->psp]-ROMBASE-1]);
+terminal.c:		t->state=-1; /* Error */
+terminal.c:    hgt=WINHGT/p->d.th-2;
+terminal.c:    p->term->x=0;
+terminal.c:    wid=WINWID/p->d.tw-2;
+terminal.c:    hgt=WINHGT/p->d.th-2;
+terminal.c:    XDrawString(p->d.disp,p->d.backing,p->d.gc_termhi,10+p->d.tw*p->term->x,
+terminal.c:    p->term->x+=l;
+terminal.c:    if (p->term->x>=wid) term_newline(p);
+terminal.c:    wid=WINWID/p->d.tw-2;
+terminal.c:    hgt=WINHGT/p->d.th-2;
+terminal.c:    XDrawString(p->d.disp,p->d.backing,p->d.gc_termlo,10+p->d.tw*p->term->x,
+terminal.c:    p->term->x+=l;
+terminal.c:    if (p->term->x>=wid) term_newline(p);
+terminal.c:    if (p->term->state==PSTAT_INN) {
+terminal.c:	    p->term->state=0;
+terminal.c:	    p->term->num[p->term->nsp++]=-1;
+terminal.c:	p->term->state=0;
+terminal.c:	p->term->num[p->term->nsp++]=n-'0';
+terminal.c:    if (p->term->state==PSTAT_KEY) {
+terminal.c:	p->term->state=0;
+terminal.c:	p->term->num[p->term->nsp++]=n-'0';
+terminal.c:    if (p->term->state==PSTAT_INS) {
+terminal.c:	    p->term->ram[p->term->tmpb]=0;
+terminal.c:	    p->term->state=0;
+terminal.c:		if (p->term->tmp) {
+terminal.c:		    p->term->ram[p->term->tmpb++]=n;
+terminal.c:		    if (p->term->status&PFLG_HI) {
+terminal.c:		    p->term->tmp--;
+terminal.c:    rc=&t->ram[a];
+terminal.c:    strcpy(&rc[0],p->user);
+terminal.c:    strcpy(&rc[16],p->name);
+terminal.c:    if (p) return (int) p->next;
+terminal.c:	t->status&=~PFLG_EQ;
+terminal.c:    t->status|=PFLG_EQ;
+terminal.c:    strcpy(&rc[20],l->pass);
+terminal.h:** some acknowledgement of the source (ie me!) 8-)
+turret.c:** some acknowledgement of the source (ie me!) 8-)
+turret.c:    t->next=firstturret;
+turret.c:    t->x=x;t->y=y;t->d=d;
+turret.c:    t->shield=TURRET_SHIELD;
+turret.c:    t->frame=0;
+turret.c:    t->count=1+random()%TURRET_DELAY;
+turret.c:    t->rot=random()%360;
+turret.c:    t->targ=random()%360;
+turret.c:    t->flags=0;
+turret.c:    generate_pass(t->pass,6);
+turret.c:    t->shield-=d;
+turret.c:    if (t->shield<0) {
+turret.c:	t->shield=0;
+turret.c:	t->flags|=TFLG_DESTROYED;
+turret.c:	explode(t->d,t->x*128+64,t->y*128+64,20,8000,150,0);
+turret.c:	t->frame=-TURRET_DIE_COUNT;
+turret.c:	    sprintf(txt,"%s has just destroyed a turret",who->name);
+turret.c:	    if (who->rating<10) who->rating++;
+turret.c:    for (t=firstturret;t;t=t->next) {
+turret.c:	if (t->frame<0) {
+turret.c:	    if (!(++t->frame)) {
+turret.c:		t->flags&=~TFLG_DESTROYED;
+turret.c:		t->shield=TURRET_SHIELD;
+turret.c:		t->count=TURRET_DELAY;
+turret.c:	    rd=(t->targ-t->rot+360)%360;
+turret.c:		    t->rot+=356;
+turret.c:		    t->rot=t->rot%360;
+turret.c:		    t->rot=t->targ;
+turret.c:		    t->rot+=4;
+turret.c:		    t->rot=t->rot%360;
+turret.c:		    t->rot=t->targ;
+turret.c:	    if (t->frame>0) {
+turret.c:		t->frame++;
+turret.c:		if (t->frame==3) {
+turret.c:		    t->frame=0;
+turret.c:		    t->count=TURRET_DELAY;
+turret.c:		if (t->count>0) t->count--;
+turret.c:		if ((t->count==0)&&(t->flags&TFLG_ACTIVE)) {
+turret.c:		    xo=(int) 25.0*sn[t->rot];
+turret.c:		    yo=(int) 25.0*cs[t->rot];
+turret.c:		    fire_particle(0,t->d,t->x*128+64+xo,t->y*128+64-yo,
+turret.c:				  t->rot,28.0,35,25,750);
+turret.c:		    t->frame=1;
+turret.c:	t=tup->next;
+turret.c:		if (t->frame>=0) {
+turret.c:		    t=t->next;
+turret.c:	if (t->frame<0) return; /* All turrets destroyed */
+turret.c:	    if ((p->playing)&&(!p->away)&&(p->lvl==t->d)) {
+turret.c:		t->flags&=~TFLG_ACTIVE;
+turret.c:		dx=(int) p->x-t->x*128-64;
+turret.c:		dy=(int) p->y-t->y*128-64;
+turret.c:			an=atan2((double)dx,(double)-dy);
+turret.c:			t->targ=(int) an;
+turret.c:			t->targ+=360;
+turret.c:			t->targ=t->targ%360;
+turret.c:			t->flags|=TFLG_ACTIVE;
+turret.c:    for (t=firstturret;t;t=t->next)
+turret.c:	if ((t->x==x)&&(t->y==y)&&(t->d==l)) return t;
+turret.h:** some acknowledgement of the source (ie me!) 8-)
+xbits.h:** some acknowledgement of the source (ie me!) 8-)
+xbits.h:#define GAMEFONT "-*-helvetica-bold-r-*-*-14-100-100-100-*-82-*-*"
+xbits.h:#define HUGEFONT "-*-lucidatypewriter-medium-r-*-*-34-240-*-*-m-*-*-*"
+xbits.h:#define TERMFONT "-*-lucidatypewriter-bold-r-*-*-17-*-*-*-m-*-*-*"
+xsetup.c:** some acknowledgement of the source (ie me!) 8-)
+xsetup.c:    XAutoRepeatOn(p->d.disp);
+xsetup.c:	    p->term->p=0;
+xsetup.c:    sprintf(txt,"%s has just disconnected nastily",p->name);
+xsetup.c:    case 1:return -1;
+xsetup.c:    p->d.screen=DefaultScreen(p->d.disp);
+xsetup.c:    p->d.gc=DefaultGC(p->d.disp,p->d.screen);
+xsetup.c:    strncpy(p->d.name,d,19);
+xsetup.c:    p->d.gamewin=XCreateSimpleWindow(p->d.disp,
+xsetup.c:				     RootWindow(p->d.disp,p->d.screen),0,0,
+xsetup.c:				     WhitePixel(p->d.disp,p->d.screen),
+xsetup.c:    p->d.tfont=XLoadQueryFont(p->d.disp,TINYFONT);
+xsetup.c:    p->d.bfont=XLoadQueryFont(p->d.disp,HUGEFONT);
+xsetup.c:    p->d.font=XLoadQueryFont(p->d.disp,GAMEFONT);
+xsetup.c:    p->d.lfont=XLoadQueryFont(p->d.disp,TERMFONT);
+xsetup.c:    p->d.fw=p->d.font->max_bounds.width;
+xsetup.c:    p->d.fo=p->d.font->max_bounds.ascent;
+xsetup.c:    p->d.fh=p->d.fo+p->d.font->max_bounds.descent;
+xsetup.c:    p->d.bw=p->d.bfont->max_bounds.width;
+xsetup.c:    p->d.bo=p->d.bfont->max_bounds.ascent;
+xsetup.c:    p->d.bh=p->d.bfont->max_bounds.descent+p->d.bo/2;
+xsetup.c:    p->d.tw=p->d.lfont->max_bounds.width;
+xsetup.c:    p->d.to=p->d.lfont->max_bounds.ascent;
+xsetup.c:    p->d.th=p->d.to+p->d.lfont->max_bounds.descent;
+xsetup.c:    XSetFont(p->d.disp,p->d.gc,p->d.font->fid);
+xsetup.c:    p->d.gc_black=XCreateGC(p->d.disp,p->d.gamewin,0,0);
+xsetup.c:    p->d.gc_white=XCreateGC(p->d.disp,p->d.gamewin,0,0);
+xsetup.c:    p->d.gc_ice=XCreateGC(p->d.disp,p->d.gamewin,0,0);
+xsetup.c:    p->d.gc_red=XCreateGC(p->d.disp,p->d.gamewin,0,0);
+xsetup.c:    p->d.gc_grey=XCreateGC(p->d.disp,p->d.gamewin,0,0);
+xsetup.c:    p->d.gc_blue=XCreateGC(p->d.disp,p->d.gamewin,0,0);
+xsetup.c:    p->d.gc_dgrey=XCreateGC(p->d.disp,p->d.gamewin,0,0);
+xsetup.c:    p->d.gc_fred=XCreateGC(p->d.disp,p->d.gamewin,0,0);
+xsetup.c:    p->d.gc_fblue=XCreateGC(p->d.disp,p->d.gamewin,0,0);
+xsetup.c:    p->d.gc_fdgrey=XCreateGC(p->d.disp,p->d.gamewin,0,0);
+xsetup.c:    p->d.gc_yellow=XCreateGC(p->d.disp,p->d.gamewin,0,0);
+xsetup.c:    p->d.gc_termhi=XCreateGC(p->d.disp,p->d.gamewin,0,0);
+xsetup.c:    p->d.gc_termlo=XCreateGC(p->d.disp,p->d.gamewin,0,0);
+xsetup.c:    XSetForeground(p->d.disp,p->d.gc_white,xc.pixel);
+xsetup.c:    XSetForeground(p->d.disp,p->d.gc_ice,xc.pixel);
+xsetup.c:    XSetForeground(p->d.disp,p->d.gc_black,xc.pixel);
+xsetup.c:    XSetForeground(p->d.disp,p->d.gc,xc.pixel);
+xsetup.c:    XSetForeground(p->d.disp,p->d.gc_red,xc.pixel);
+xsetup.c:    XSetForeground(p->d.disp,p->d.gc_grey,xc.pixel);
+xsetup.c:    XSetForeground(p->d.disp,p->d.gc_blue,xc.pixel);
+xsetup.c:    XSetForeground(p->d.disp,p->d.gc_dgrey,xc.pixel);
+xsetup.c:    XSetForeground(p->d.disp,p->d.gc_yellow,xc.pixel);
+xsetup.c:    XSetForeground(p->d.disp,p->d.gc_termhi,xc.pixel);
+xsetup.c:    XSetForeground(p->d.disp,p->d.gc_termlo,xc.pixel);
+xsetup.c:    XSetFont(p->d.disp,p->d.gc_white,p->d.tfont->fid);
+xsetup.c:    XSetFont(p->d.disp,p->d.gc_yellow,p->d.bfont->fid);
+xsetup.c:    XSetFont(p->d.disp,p->d.gc_black,p->d.bfont->fid);
+xsetup.c:    XSetFont(p->d.disp,p->d.gc_termlo,p->d.lfont->fid);
+xsetup.c:    XSetFont(p->d.disp,p->d.gc_termhi,p->d.lfont->fid);
+xsetup.c:    XStoreName(p->d.disp,p->d.gamewin,"X-ellent 8-)");
+xsetup.c:    if (DefaultDepth(p->d.disp,p->d.screen)==1) {
+xsetup.c:	greytile=XCreatePixmap(p->d.disp,p->d.gamewin,2,2,1);
+xsetup.c:	bluetile=XCreatePixmap(p->d.disp,p->d.gamewin,2,2,1);
+xsetup.c:	greentile=XCreatePixmap(p->d.disp,p->d.gamewin,2,2,1);
+xsetup.c:	XDrawPoint(p->d.disp,greytile,p->d.gc_white,0,0);
+xsetup.c:	XDrawPoint(p->d.disp,greytile,p->d.gc_black,0,1);
+xsetup.c:	XDrawPoint(p->d.disp,greytile,p->d.gc_white,1,1);
+xsetup.c:	XDrawPoint(p->d.disp,greytile,p->d.gc_black,1,0);
+xsetup.c:	XDrawPoint(p->d.disp,bluetile,p->d.gc_black,1,1);
+xsetup.c:	XDrawPoint(p->d.disp,bluetile,p->d.gc_white,0,1);
+xsetup.c:	XDrawPoint(p->d.disp,bluetile,p->d.gc_white,1,0);
+xsetup.c:	XDrawPoint(p->d.disp,bluetile,p->d.gc_white,0,0);
+xsetup.c:	XDrawPoint(p->d.disp,greentile,p->d.gc_white,1,1);
+xsetup.c:	XDrawPoint(p->d.disp,greentile,p->d.gc_black,0,1);
+xsetup.c:	XDrawPoint(p->d.disp,greentile,p->d.gc_black,1,0);
+xsetup.c:	XDrawPoint(p->d.disp,greentile,p->d.gc_black,0,0);
+xsetup.c:	XSetLineAttributes(p->d.disp,p->d.gc_red,1,LineOnOffDash,0,0);
+xsetup.c:	XSetLineAttributes(p->d.disp,p->d.gc_blue,1,LineOnOffDash,0,0);
+xsetup.c:	XSetLineAttributes(p->d.disp,p->d.gc_grey,1,LineOnOffDash,0,0);
+xsetup.c:	XSetDashes(p->d.disp,p->d.gc_red,0,"\002\004",2);
+xsetup.c:	XSetDashes(p->d.disp,p->d.gc_blue,0,"\007\002",2);
+xsetup.c:	XSetDashes(p->d.disp,p->d.gc_grey,0,"\005\001",2);
+xsetup.c:	XSetFillStyle(p->d.disp,p->d.gc_fred,FillStippled);
+xsetup.c:	XSetFillStyle(p->d.disp,p->d.gc_fblue,FillStippled);
+xsetup.c:	XSetFillStyle(p->d.disp,p->d.gc_fdgrey,FillStippled);
+xsetup.c:	XSetStipple(p->d.disp,p->d.gc_fred,greytile);
+xsetup.c:	XSetStipple(p->d.disp,p->d.gc_fblue,bluetile);
+xsetup.c:	XSetStipple(p->d.disp,p->d.gc_fdgrey,greentile);
+xsetup.c:    p->d.backing=XCreatePixmap(p->d.disp,p->d.gamewin,WINWID,WINHGT,
+xsetup.c:			       DefaultDepth(p->d.disp,p->d.screen));
+xsetup.c:    XSelectInput(p->d.disp,p->d.gamewin,KeyPressMask|KeyReleaseMask|
+xsetup.c:    XDestroyWindow(p->d.disp,p->d.gamewin);
+xsetup.c:	if (XAllocNamedColor(p->d.disp,DefaultColormap(p->d.disp,p->d.screen),
+xsetup.c:    XAllocNamedColor(p->d.disp,DefaultColormap(p->d.disp,p->d.screen),dcol,
+xsetup.h:** some acknowledgement of the source (ie me!) 8-)
