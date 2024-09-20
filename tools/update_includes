@@ -1,0 +1,109 @@
+#!/bin/env python3
+
+import os
+import re
+import tempfile
+import shutil
+import sys
+
+makefile = "Makefile"
+
+def debug_print(message):
+    print(f"DEBUG: {message}", file=sys.stderr)
+
+def add_include_before_ifndef(cfile, include_statement):
+    debug_print(f"Attempting to add '{include_statement.strip()}' BEFORE #ifndef in {cfile}")
+    with open(cfile, 'r', newline='') as file:
+        content = file.read()
+    
+    if include_statement not in content:
+        if "#ifndef __CYGWIN__" in content:
+            new_content = re.sub(r'(#ifndef __CYGWIN__)',
+                                 f'{include_statement}\\1', content)
+            debug_print(f"Added '{include_statement.strip()}' before existing #ifndef")
+        else:
+            new_content = include_statement + content
+            debug_print(f"Added '{include_statement.strip()}' at the top of the file")
+        
+        with open(cfile, 'w', newline='') as cfile_out:
+            cfile_out.write(new_content)
+    else:
+        debug_print(f"'{include_statement.strip()}' already exists in the file")
+
+def add_include_inside_ifndef(cfile, include_statement):
+    debug_print(f"Attempting to add '{include_statement.strip()}' INSIDE #ifndef in {cfile}")
+    with open(cfile, 'r', newline='') as file:
+        content = file.read()
+    
+    if include_statement not in content:
+        if "#ifndef __CYGWIN__" in content:
+            new_content = re.sub(r'(#ifndef __CYGWIN__\n)(.*?)(#else|#endif)',
+                                 rf'\1{include_statement}\2\3', content, flags=re.DOTALL)
+            debug_print(f"Added '{include_statement.strip()}' inside existing #ifndef")
+        else:
+            new_content = content + f'\n#ifndef __CYGWIN__\n{include_statement}#endif\n'
+            debug_print(f"Created new #ifndef and added '{include_statement.strip()}' inside")
+        
+        with open(cfile, 'w', newline='') as cfile_out:
+            cfile_out.write(new_content)
+    else:
+        debug_print(f"'{include_statement.strip()}' already exists in the file")
+
+def process_include(cfile, include_path, is_local):
+    debug_print(f"Processing include: {include_path} (is_local: {is_local})")
+    header_file = os.path.basename(include_path)
+    subdir = os.path.dirname(include_path.replace("/usr/include/", ""))
+    
+    if is_local:
+        include_statement = f'#include "{header_file}"\n'
+        debug_print(f"Local include: {include_statement.strip()}")
+        add_include_before_ifndef(cfile, include_statement)
+    else:
+        include_statement = f'#include <{subdir}/{header_file}>\n' if subdir else f'#include <{header_file}>\n'
+        file_exists = os.path.exists(include_path)
+        debug_print(f"Non-local include: {include_statement.strip()} (exists: {file_exists})")
+        if file_exists:
+            add_include_before_ifndef(cfile, include_statement)
+        else:
+            add_include_inside_ifndef(cfile, include_statement)
+
+def process_makefile(makefile):
+    debug_print(f"Processing Makefile: {makefile}")
+    temp_makefile_path = makefile + ".temp"
+    
+    try:
+        with open(makefile, 'r', newline='') as infile, open(temp_makefile_path, 'w', newline='') as temp_makefile:
+            for line in infile:
+                if ".o:" in line and not line.startswith("%.o:"):
+                    object_file, headers = line.split(':', 1)
+                    cfile = f"{os.path.splitext(object_file.strip())[0]}.c"
+                    headers = headers.strip().split()
+                    debug_print(f"Processing object file: {object_file}")
+                    debug_print(f"Associated C file: {cfile}")
+                    debug_print(f"Headers: {headers}")
+
+                    for header in headers:
+                        process_include(cfile, header, is_local=not header.startswith("/"))
+
+                    # Write the object file line without any headers
+                    temp_makefile.write(f"{object_file}:\n")
+                    debug_print(f"Wrote '{object_file}:' to temporary Makefile")
+                else:
+                    temp_makefile.write(line)
+                    debug_print(f"Copied line to temporary Makefile: {line.strip()}")
+
+        debug_print(f"Temporary Makefile created: {temp_makefile_path}")
+        
+        # Replace the original Makefile with the temporary one
+        os.replace(temp_makefile_path, makefile)
+        debug_print(f"Replaced original Makefile with temporary file")
+        
+    except IOError as e:
+        debug_print(f"Error processing Makefile: {e}")
+    except Exception as e:
+        debug_print(f"Unexpected error: {e}")
+
+    debug_print("Makefile processing complete")
+
+# Execute the function
+process_makefile(makefile)
