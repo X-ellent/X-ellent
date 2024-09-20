@@ -25,6 +25,7 @@
 #include "player.h"
 #include "turret.h"
 
+struct body *firstbody;
 extern void add_body(struct body *b) {
     if (b->on) return;
     b->next=firstbody;

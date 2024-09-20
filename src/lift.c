@@ -21,6 +21,7 @@
 #include "turret.h"
 #include "terminal.h"
 
+struct lift *firstlift;
 static int lid=0;
 
 extern void add_lift(int d,int x,int y) {

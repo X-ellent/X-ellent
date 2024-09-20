@@ -18,6 +18,8 @@
 #include "message.h"
 #include "addon.h"
 
+struct addtype *firstaddtype;
+struct addon *freeaddon;
 static void addme(int n,char *s,char *ss,int u,int d,int rc,int ca,int cb,
 		  int cc);
 

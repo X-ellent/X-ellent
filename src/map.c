@@ -27,6 +27,11 @@
 #include "starburst.h"
 #include "message.h"
 
+int cpcount;
+struct teleport *firsttel;
+int tpcount;
+struct checkpoint *firstcheck;
+struct map map;
 static FILE *mdata;
 static char buf[1024];
 

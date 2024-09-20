@@ -23,6 +23,9 @@
 #include "fix.h"
 #include "turret.h"
 
+struct beam *freebeam;
+struct beam *firstbeam;
+
 extern struct beam *alloc_beam() {
     struct beam *b;
     if (freebeam) {

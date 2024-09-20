@@ -24,7 +24,8 @@
 #include "message.h"
 
 static XColor xc,ex;
-
+jmp_buf jmpenv;
+int jumpable;
 char why[2048];
 
 static int my_error_handler(Display *d) {
