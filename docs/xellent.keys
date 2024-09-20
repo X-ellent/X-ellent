@@ -1,29 +1,31 @@
 				     KEYS
+
 X/Z		Rotate
 Shift		Thrust
 Space		Brake
 Return		Fire
 Esc		Choose alternate thrust/spin settings
 
-Keypad 8/9	Change thrust power
-Keypad 5/6	Change spin speed
+[ / ]		Change thrust power (also Keypad 8/9)
+; / '		Change spin speed (also Keypad 5/6)
 
 T		Change target
-+/-		Change radar range
-Keypad 7	Scan level above with radar
-Keypad 4	Scan currentlevel with radar
-Keypad 1	Scan level below with radar
+= / -		Change radar range
+R		Scan level above with radar (also Keypad 7)
+G		Scan currentlevel with radar (also Keypad 4)
+V		Scan level below with radar (also Keypad 4)
 C		Change Weapon
 
 E		Enter shop/terminal
 F		Buy fuel
+B		Bind to object (take hold of "thingy")
 
 1-9		Select Mine Slot
 Tab		Drop Mine
 A		Arm mine
 U		Disarm mine
 D		Detach mine (activate fuse)
-Keypad 2/3	Change proximity/sensitivity/time for mines
+. / /		Change proximity/sensitivity/time for mines (also Keypad 2/3)
 
 S		Toggle status display
 W		Toggle weapon slot display
@@ -31,21 +33,19 @@ M		Toggle message display
 Del		Toggle head-up display
 N		Toggle IFF Identification
 
+I		Toggle Invisibility Mode
+O		Toggle Cloaking Device
+Y		Toggle Anti-Cloak Device
+P		Toggle Mine Sweeper
+
 H		Leave game for now (On own home base only)
-Keypad 7,9,2	(Simultaneously) Disconnect (anywhere)
-		****************************************************
-		** WARNING: You will STILL be on the map and can  **
-		** be destroyed if you disconnect as opposed to   **
-		** quitting (You will leave once dead so can only **
-		** be killed once 				  **
-		****************************************************
 
 L		Summon Lift
 Up/Down		Operate lift if on platform.
 
-I		Toggle Invisibility Mode
-O		Toggle Cloaking Device
-P		Toggle Mine Sweeper
+F1 - F12	Trigger frontend functions (if attached)
+KP_F1 - KP_F4	Additional frontend function triggers
+
 
 				 MAP SYMBOLS
 
