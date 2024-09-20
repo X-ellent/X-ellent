@@ -163,7 +163,8 @@ extern int main(int argc,char *argv[])
 		    XAutoRepeatOn(p->d.disp);
 		    shutdown_display(p);
 		}
-	    exit(0);
+                fprintf(stderr, "saveall==-1\n");
+	        exit(0);
 	}
 	do_login();
     }

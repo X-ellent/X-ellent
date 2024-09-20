@@ -140,7 +140,10 @@ extern void init_all_term() {
 	fclose(td);
     }
     
-    if (comperr) exit(1);
+    if (comperr) {
+        fprintf(stderr, "DEBUG: comperr\n");
+        exit(1);
+    }
 }
 
 static void get_label(FILE *td,int pc) {

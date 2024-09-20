@@ -62,13 +62,16 @@ static int open_socket(int port) {
     }
     if (setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,(char *)&tmp,
 		   sizeof(tmp))<0) {
+        fprintf(stderr, "DEBUG: setsockopt()\n");
         exit(1);
     }
     if(bind(sock,(struct sockaddr*)&myaddr,
 	    sizeof(struct sockaddr_in))==-1) {
+        fprintf(stderr, "Unable to bind to port. Is the server already running?\n");
 	exit(1);
     }
     if(listen(sock,10)==-1) {
+        fprintf(stderr, "DEBUG: listen()\n");
         exit(1);
     }
     (void) ioctl(sock,FIONBIO,&tmp);
@@ -82,6 +85,7 @@ extern void do_login() {
     tv.tv_usec=10;
     for(j=0;j<8;j++) rdfiled[j]=fdm[j];
     if ((j=select(256,(fd_set*)rdfiled,(fd_set*)0,(fd_set*)0,&tv))<0) {
+        fprintf(stderr, "do_login exit\n");
 	exit(1);
     }
     if (j>0)
