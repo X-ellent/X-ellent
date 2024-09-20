@@ -31,9 +31,12 @@
 #include "xsetup.h"
 #include "beam.h"
 #include "addon.h"
+#include "ip_user.h"
 
 #define inthang(f,o) if (strcmp(chop[0],"f")==0) p->owned|=o
 
+extern struct ip_user ip_users[]; // TODO - extern?
+extern int num_ip_users;
 struct player *freeplay;
 int frame;
 struct player *playone;
@@ -67,27 +70,59 @@ static struct player *alloc_player()
     return p;
 }
 
-extern int setup_player() 
+extern int setup_player(char *calling_ip)
 {
-    int i;
-    char *nm;
+    char *calling_user = NULL;
+    for (int i = 0; i < num_ip_users; i++) {
+        if (strncmp(ip_users[i].ip, calling_ip, INET_ADDRSTRLEN) == 0) {
+            calling_user = ip_users[i].username;
+            break;
+        }
+    }
+
+    if (calling_user == NULL) {
+        fprintf(stderr, "Unauthorized connection attempt from %s\n", calling_ip);
+        return;
+    }
+
     struct player *p;
     char txt[1024];
-    nm=(char *) tread();
+    char *nm = tread();
     if (strcmp(nm,"painintheass")) {
-	ctwrite("You must use the new game client");
-	return 0;
-    };
-    nm=(char *) tread();
-    if (p=find_player(nm)) {
+        ctwrite("You must use the new game client");
+        return 0;
+    }
+    nm = tread(); // Read requested user
+    char requested_user[32];
+    strncpy(requested_user, nm, sizeof(requested_user));
+
+    nm = tread(); // Read requested DISPLAY
+
+    printf("Connect from %s %s (client: user=%s display=%s)\n",
+        calling_user, calling_ip, requested_user, nm);
+
+    char display[30];
+    char *username;
+    if (strcmp(calling_user, "rebroad") == 0) {
+        username = requested_user;
+        snprintf(display, sizeof(display), "%s", nm);
+    } else {
+        username = calling_user;
+        char *display_number = strchr(nm, ':');
+        if (display_number == NULL)
+            display_number = ":0";  // Default to :0 if no colon found
+        snprintf(display, sizeof(display), "%s%s", calling_ip, display_number);
+    }
+
+    if (p = find_player(username)) {
 	if (p->connected) {
 	    ctwrite("You are ALREADY connected...");
 	    return 0;
 	}
     } else {
 	p=alloc_player();
-	strncpy(p->user,nm,15);
-	strncpy(p->name,nm,31);
+	strncpy(p->user, username, 15);
+	strncpy(p->name, username, 31);
 
 	/* Setup brand new player */
 	
@@ -120,7 +155,8 @@ extern int setup_player()
 	    }
 	}
     }
-    if (!init_player_display(p,tread())) {
+
+    if (!init_player_display(p, display)) {
 	return 0;
     }
 
@@ -171,7 +207,7 @@ extern int setup_player()
     p->msg[1][0]=0;
     p->msg[2][0]=0;
     p->msg[3][0]=0;
-    for (i=0;i<map.depth;i++) p->mapmem[i]=0;
+    for (int i=0; i < map.depth; i++) p->mapmem[i]=0;
     players++;
 
     /* Set configurable things */

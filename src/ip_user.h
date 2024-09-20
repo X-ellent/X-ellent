@@ -2,11 +2,12 @@
 #ifndef IP_USER_H
 #define IP_USER_H
 
+#include <arpa/inet.h>
+
 #define MAX_USERS 100
-#define MAX_DISPLAY_LENGTH 256
 
 struct ip_user {
-    char ip[16];
+    char ip[INET_ADDRSTRLEN];
     char username[32];
 };
 

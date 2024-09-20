@@ -10,18 +10,17 @@
 ** some acknowledgement of the source (ie me!) 8-)
 */
 
-#include  <sys/types.h>
-#include  <sys/time.h>
-#include  <sys/socket.h>
-#include  <netinet/in.h>
-/* #include  <sys/filio.h> */
-#include  <sys/ioctl.h>
-#include  <string.h>
-#include  <errno.h>
-#include  <stdio.h>
-#include  <stdlib.h>
-#include  <ctype.h>
-#include  <unistd.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <sys/ioctl.h>
+#include <string.h>
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <unistd.h>
 
 #include "constants.h"
 #include "player.h"
@@ -108,7 +107,9 @@ static void do_connect() {
         return;
     }
     there=-1;
-    setup_player();
+    char client_ip[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &(connectaddress.sin_addr), client_ip, INET_ADDRSTRLEN);
+    setup_player(client_ip);
     close(path);
 }
 

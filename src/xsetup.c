@@ -87,9 +87,9 @@ extern int init_player_display(struct player *p,char *d)
     if ((p->d.disp=XOpenDisplay(d))==0) {
 	ctwrite("Could not open display, sorry");
 	ctwrite(d);
+	fprintf(stderr,"Could not open display for %s (%s)\n",d,p->user);
 	return 0;
     }
-    fprintf(stderr,"Display name is %s (%s)\n",d,p->user);
     switch (setjmp(jmpenv)) {
     case 0:break;
     case 1:return -1;
