@@ -115,7 +115,7 @@ extern int main(int argc,char *argv[])
     lastsave=0;
     sleepsave=0;
     setup_error_handler();
-    while (1) {
+    while (1) {  // Main game loop
 	for (p=playone;p;p=p->next) 
 	    if (p->connected) draw_all(p);
 	free_beams();
@@ -167,7 +167,8 @@ extern int main(int argc,char *argv[])
 	        exit(0);
 	}
 	do_login();
-    }
+        usleep(20000 / (players + 1)); // TODO - quick guess for now
+    } // Main game loop
     sleep(5);
     DL("Exiting");
     return 0;
