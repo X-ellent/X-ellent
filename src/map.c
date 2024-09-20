@@ -48,6 +48,7 @@ extern void create_map()
     if (!(c=(char *)getenv("MAPTHANG"))) c="testmap";
     if (!(mdata=fopen(c,"rb"))) {
 	perror("Cannot open mapfile");
+        fprintf(stderr, "Cannot open mapfile\n");
 	exit(1);
     }
     cpcount=0;

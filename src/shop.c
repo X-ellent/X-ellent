@@ -38,9 +38,9 @@ static void buy_othr(struct player *p,struct item *it);
 static void buy_repr(struct player *p,struct item *it);
 
 extern void init_all_shop() {
-
     if (!(pdata=fopen("price.data","rb"))) {
 	perror("Cannot open price file");
+        fprintf(stderr, "Cannot open price file\n");
 	exit(1);
     }
 
