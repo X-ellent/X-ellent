@@ -42,17 +42,17 @@ struct trolley {
     struct checkpoint *cp;
 };
 
-struct trolley *firsttrol;
-struct trolley thetrol;
-struct trolley thetrolb;
-struct trolley thetrolc;
-struct trolley thetrold;
+extern struct trolley *firsttrol;
+extern struct trolley thetrol;
+extern struct trolley thetrolb;
+extern struct trolley thetrolc;
+extern struct trolley thetrold;
 
-struct object *obj_first;
-struct object *obj_freepool;
+extern struct object *obj_first;
+extern struct object *obj_freepool;
 
-int obj_used;
-int obj_free;
+extern int obj_used;
+extern int obj_free;
 
 #define OBJ_EMPTY           0
 #define OBJ_MINE_TRIG       1

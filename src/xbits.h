@@ -50,7 +50,7 @@ struct player_display {
 };
 
 #define PCACHE 8000
-XPoint pc[PCACHE];
+extern XPoint pc[PCACHE];
 
 #define WINWID 512
 #define WINHGT 512

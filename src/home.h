@@ -30,6 +30,6 @@ struct home {
     struct home *next;
 };
 
-struct home* firsthome;
+extern struct home* firsthome;
 
 #endif

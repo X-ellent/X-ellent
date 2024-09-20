@@ -17,9 +17,9 @@
 
 #define PI M_PI
 
-double sintable[720];
-double *sn;
-double *cs;
+extern double sintable[720];
+extern double *sn;
+extern double *cs;
 
 #define ABS(x) (((x)>=0)?(x):-(x))
 

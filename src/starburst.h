@@ -27,8 +27,8 @@ struct starburst {
     struct starburst *next;
 };
 
-struct starburst *firststar;
-int sbcount;
+extern struct starburst *firststar;
+extern int sbcount;
 
 #define STAR_SCANNING 0
 #define STAR_LOCKING  1

@@ -41,11 +41,11 @@ struct teleport {
     char pass[5];
 };
 
-struct map map;
-struct checkpoint *firstcheck;
-struct teleport *firsttel;
-int cpcount;
-int tpcount;
+extern struct map map;
+extern struct checkpoint *firstcheck;
+extern struct teleport *firsttel;
+extern int cpcount;
+extern int tpcount;
 
 #define MAP_SOLID     (1<<0)
 #define MAP_TWALL0    (1<<1)
