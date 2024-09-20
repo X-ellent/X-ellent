@@ -1,0 +1,285 @@
+#!/bin/env python3
+
+"""
+Latest Changes (Version 2.9):
+1. Fixed AttributeError in get_full_definition function
+2. Updated find_definitions to pass content as a list of lines
+3. Improved handling of file content to be consistent across functions
+"""
+
+import re
+import os
+import subprocess
+import shutil
+
+def parse_makefile():
+    c_files = set()
+    if os.path.exists('Makefile'):
+        with open('Makefile', 'r') as file:
+            content = file.read()
+            # Look for .c files in the Makefile
+            matches = re.findall(r'\b(\w+\.c)\b', content)
+            c_files.update(matches)
+    return list(c_files)
+
+def place_definition(definition, c_file):
+    # Version 2.8: Improved to correctly place definition after comments and includes
+    with open(c_file, 'r') as file:
+        lines = file.readlines()
+
+    # Find the position to insert the new definition
+    insert_position = 0
+    in_multiline_comment = False
+    for i, line in enumerate(lines):
+        stripped_line = line.strip()
+
+        # Handle multi-line comments
+        if '/*' in stripped_line:
+            in_multiline_comment = True
+        if '*/' in stripped_line:
+            in_multiline_comment = False # TODO - not safe to assume as there could be a /* after this!
+            continue
+
+        # Skip if we're in a multi-line comment
+        if in_multiline_comment:
+            continue
+
+        # Skip preprocessor directives, empty lines, and single-line comments
+        if stripped_line.startswith('#') or not stripped_line or stripped_line.startswith('//'):
+            continue
+
+        # We've found the first line that's not a comment, preprocessor directive, or empty
+        insert_position = i
+        break
+
+    # Ensure the definition ends with a semicolon if it doesn't already
+    if not definition.strip().endswith(';'):
+        definition += ';'
+
+    print(f"Inserting definition at line {insert_position + 1} in {c_file}")
+    lines.insert(insert_position, definition + '\n')
+
+    with open(c_file, 'w') as file:
+        file.writelines(lines)
+
+# Version 2.9: Updated to handle content as a list of lines
+def get_full_definition(content, start_index):
+    brace_count = 0
+    definition = ""
+    for line in content[start_index:]:
+        definition += line
+        brace_count += line.count('{') - line.count('}')
+        if brace_count == 0 and (line.strip().endswith(';') or line.strip().endswith('}')):
+            break
+    return definition.strip()
+
+# Version 2.9: Updated to pass content as a list of lines to get_full_definition
+def find_definitions(variable):
+    definitions = []
+    for file in [f for f in os.listdir('.') if f.endswith(('.c', '.h'))]:
+        with open(file, 'r') as f:
+            content = f.readlines()
+
+        brace_count = 0
+        in_multiline_comment = False
+        for line_number, line in enumerate(content, 1):
+            stripped_line = line.strip()
+
+            # Handle multi-line comments
+            if '/*' in stripped_line:
+                in_multiline_comment = True
+            if '*/' in stripped_line:
+                in_multiline_comment = False
+                continue
+            if in_multiline_comment:
+                continue
+
+            # Update brace count
+            brace_count += stripped_line.count('{') - stripped_line.count('}')
+
+            # Ignore contents within braces (functions, structs, etc.)
+            if brace_count > 0:
+                continue
+
+            # Look for definitions
+            match = re.match(r'\s*((?:int|float|double|char|struct|union|enum|void)\s+\b' + variable + r'\b[^;{]*)', line)
+            if match:
+                full_def = get_full_definition(content, line_number - 1)
+                definitions.append((file, full_def, line_number))
+                print(f"Debug: Found potential definition for '{variable}' in {file} at line {line_number}:")
+                print(full_def)
+
+    return definitions
+
+def find_declarations(variable):
+    # Version 2.8: Improved to capture full declaration including array brackets
+    declarations = []
+    for header_file in [f for f in os.listdir('.') if f.endswith('.h')]:
+        with open(header_file, 'r') as f:
+            content = f.read()
+            # Updated regex to include everything up to the semicolon
+            decl_matches = re.finditer(r'\bextern\s+.*\b' + variable + r'\b[^;]*;', content)
+            for match in decl_matches:
+                declarations.append((header_file, match.group(0)))
+    return declarations
+
+def run_make():
+    # Version 2.0: Function to run make command
+    subprocess.run("make 2> make.out", shell=True)
+
+def make_output_stabilized(previous_output):
+    # Version 2.2: Check if make output has stabilized without using make.out.last
+    with open('make.out', 'r') as f:
+        current_output = f.read()
+    return current_output == previous_output
+
+def create_definition_from_declaration(declaration):
+    # Version 2.4: Create a definition from a declaration without initialization
+    return declaration.replace('extern ', '').strip()
+
+# Version 2.6: Added function to check for corresponding .c file
+def find_corresponding_c_file(h_file):
+    c_file = h_file.replace('.h', '.c')
+    if os.path.exists(c_file):
+        return c_file
+    return None
+
+def parse_make_output(make_out_file):
+    current_binary = None
+    relevant_files = set()
+    with open(make_out_file, 'r') as f:
+        for line in f:
+            # Look for lines indicating which binary is being compiled
+            binary_match = re.search(r'gcc.*\s-o\s(\w+)', line)
+            if binary_match:
+                current_binary = binary_match.group(1)
+
+            # Look for .o files being used in compilation
+            object_files = re.findall(r'\b(\w+)\.o\b', line)
+            relevant_files.update(f"{obj}.c" for obj in object_files)
+
+    return current_binary, relevant_files
+
+def is_file_relevant(file, relevant_files):
+    return file in relevant_files
+
+def find_undefined_reference(make_out_file):
+    with open(make_out_file, 'r') as f:
+        for line in f:
+            if "undefined reference to" in line:
+                variable_match = re.search(r"undefined reference to `(\w+)'", line)
+                file_match = re.search(r'(\w+\.c)', line)
+                if variable_match and file_match:
+                    return variable_match.group(1), file_match.group(1)
+    return None, None
+
+def comment_out_definition(file, line_number, moved_to_file):
+    with open(file, 'r') as f:
+        content = f.readlines()
+    content[line_number-1] = f"// Definition moved to {moved_to_file}\n"
+    with open(file, 'w') as f:
+        f.writelines(content)
+
+def main():
+    # Version 2.5: Updated main function to use new debugging information from find_definitions
+    previous_make_output = ""
+    make_out_file = 'make.out'
+    while True:
+        # Run make and wait for output to stabilize
+        while True:
+            run_make()
+            with open(make_out_file, 'r') as f:
+                current_make_output = f.read()
+
+            if make_output_stabilized(previous_make_output):
+                break
+            previous_make_output = current_make_output
+
+        # At this point, make output has stabilized
+        shutil.copy(make_out_file, 'make.out.last')
+
+        current_binary, relevant_files = parse_make_output(make_out_file)
+        print(f"Compiling binary: {current_binary}")
+        print(f"Relevant files: {relevant_files}")
+
+        variable, problematic_file = find_undefined_reference(make_out_file)
+        if not variable:
+            print("No undefined references found. Exiting.")
+            return
+
+        print(f"Attempting to fix undefined reference to '{variable}' in {problematic_file}")
+        
+        declarations = find_declarations(variable)
+        print(f"DEBUG: declarations[1] = '{declarations[0][1]}'");
+        if len(declarations) > 1:
+            print(f"Warning: Variable '{variable}' is declared as extern in multiple header files: {declarations}")
+            print("Exiting the program.")
+            break
+        elif declarations:
+            h_file = declarations[0][0]
+            corresponding_c_file = find_corresponding_c_file(h_file)
+            if corresponding_c_file:
+                print(f"Debugging: Found declaration in {h_file}, corresponding C file is {corresponding_c_file}")
+            else:
+                print(f"Warning: Declaration found in {h_file}, but no corresponding .c file exists.")
+                corresponding_c_file = problematic_file
+                print(f"Using fallback C file from make.out: {corresponding_c_file}")
+        else:
+            corresponding_c_file = problematic_file
+            print(f"No declaration found. Using fallback C file from make.out: {corresponding_c_file}")
+
+        print(f"Note: Variable '{variable}' will be defined in {corresponding_c_file}")
+
+        definitions = find_definitions(variable)
+        relevant_definitions = [(file, def_, line) for file, def_, line in definitions if is_file_relevant(file, relevant_files)]
+
+        if not relevant_definitions:
+            if declarations:
+                # Create a definition from the declaration
+                new_definition = create_definition_from_declaration(declarations[0][1])
+                place_definition(new_definition, corresponding_c_file)
+                print(f"Created definition for '{variable}' in {corresponding_c_file} based on declaration.")
+            else:
+                print(f"No definition or extern declaration found for '{variable}'. Manual intervention required.")
+                break
+        elif len(relevant_definitions) == 1:
+            file, definition, line_number = relevant_definitions[0]
+            print(f"Debug: Found single definition in {file} at line {line_number}")
+            if file.endswith('.c') and file == corresponding_c_file:
+                print(f"Definition for '{variable}' is already in the correct C file. No action needed.")
+            else:
+                place_definition(definition, corresponding_c_file)
+                print(f"Moved definition of '{variable}' to {corresponding_c_file}")
+                comment_out_definition(file, line_number, corresponding_c_file)
+        else:
+            handle_multiple_definitions(relevant_definitions, variable, corresponding_c_file)
+
+        # Reset previous_make_output to force a new stabilization check
+        previous_make_output = ""
+
+def handle_multiple_definitions(definitions, variable, target_file):
+    # Check if all definitions are the same
+    unique_definitions = set(definition for _, definition, _ in definitions)
+    if len(unique_definitions) == 1:
+        # All definitions are the same
+        place_definition(definitions[0][1], target_file)
+        print(f"Placed the common definition of '{variable}' in {target_file}")
+        # Remove definitions from other files
+        for file, _, line_number in definitions:
+            if file != target_file:
+                comment_out_definition(file, line_number, target_file)
+    else:
+        print(f"Multiple different definitions found for '{variable}':")
+        for i, (file, definition, line_number) in enumerate(definitions, 1):
+            print(f"{i}. In {file} at line {line_number}:\n{definition}\n")
+        choice = int(input("Choose the correct definition (1-{}): ".format(len(definitions)))) - 1
+        chosen_file, chosen_definition, _ = definitions[choice]
+        place_definition(chosen_definition, target_file)
+        print(f"Placed the chosen definition of '{variable}' in {target_file}")
+        # Remove definitions from other files
+        for file, _, line_number in definitions:
+            if file != target_file:
+                comment_out_definition(file, line_number, target_file)
+
+if __name__ == "__main__":
+    main()

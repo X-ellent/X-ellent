@@ -1,6 +1,6 @@
 #!/bin/sh
-MYHOME=/dcs/90/cheesey/
-SCORE=$MYHOME/etc/src/X11/eliteism/player.data.file
+MYHOME=.
+SCORE=$MYHOME/player.data.file
 HISCORE=$MYHOME/xellent.hiscore
 XPROC=`ps -x | egrep runme.bak | egrep -v egrep | cut '-d ' -f1`
 kill -USR1 $XPROC
