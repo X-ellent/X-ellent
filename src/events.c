@@ -230,6 +230,7 @@ static void key_press(struct player *p,int k)
 	case XK_KP_Subtract:
 	case XK_KP_Divide:
 	case XK_KP_Multiply:
+    case XK_r:
 	    p->immune=0;
 	    p->qflags|=4;
 	    if (!(ad=find_addon(p->firstadd,ADD_RADAR))) break;
@@ -238,12 +239,14 @@ static void key_press(struct player *p,int k)
 	case XK_KP_4:
 	case XK_KP_Add:
 	case XK_KP_Separator:
+    case XK_g:
 	    p->immune=0;
 	    if (!(ad=find_addon(p->firstadd,ADD_RADAR))) break;
 	    if (ad->level>1) ad->info[1]=0;
 	    break;
 	case XK_KP_1:
 	case XK_KP_Enter:
+    case XK_v:
 	    p->immune=0;
 	    if (!(ad=find_addon(p->firstadd,ADD_RADAR))) break;
 	    if (ad->level>1) ad->info[1]=1;
