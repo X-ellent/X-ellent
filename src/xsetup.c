@@ -243,9 +243,7 @@ extern int init_player_display(struct player *p,char *d)
 }
 
 extern void shutdown_display(struct player *p) {
-    int y;
-    DL("Shutting down display");
-    y=jumpable;
+    int y=jumpable;
     if (!y) {
 	jumpable=-1;
 	switch (setjmp(jmpenv)) {
@@ -269,12 +267,14 @@ extern void shutdown_display(struct player *p) {
     XFreeGC(p->d.disp,p->d.gc_termhi);
     XFreeGC(p->d.disp,p->d.gc_termlo);
     XCloseDisplay(p->d.disp);
-    XFlush(p->d.disp);
+    //XFlush(p->d.disp);
+    p->d.disp = NULL;
     p->connected=0;
     if (!y) {
 	jumpable=0;
 	longjmp(jmpenv,1);
     }
+    fprintf(stderr, "Display shutdown completed for player %s\n", p->user);
     return;
 }
 
