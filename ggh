@@ -1,8 +1,0 @@
-extern struct teleport *locate_teleport(int l,int x,int y);
-extern void activate_teleport(struct teleport *t);
-extern void process_guess(char *s);
-extern void read_lift(char *s);
-extern void special_command(char *s);
-extern void summon_lift(int n,int lev);
-extern void update_map(int n);
-    
