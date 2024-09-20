@@ -1,0 +1,36 @@
+= Query X server for auto repeat to check cheating
+= Can we toggle the FPS output from runme using the keyboard?
+= Font for the shop is too small - find out which font this should be. Is it possible to do a xlsfonts to pick a good choice?
+= Time between fires and if they are too regular - it's auto-repeat!
+= Keep an eye on the economy - i.e. keep an eye on the total market cap. Ask ChatGPT how best to do this.
+= auto-repeat rifle shoots money for autorepeats - particle is yellow - when it expires a coin is dropped somewhere randomly
+= the server needs to save mines left around - also save money left around so it loads on next load
+= Keeps stats (of CPU time) per user - to work out the impact of latency, window size, etc.
+= Ask AI if saving users to disk as a file per user would be better to reduce time spent saving the player data. Also, stagger the saves so that it saves 1 user at a time. When the server quits obviously save all users then.
+= Get AI to look at the code and write a user manual of the game dynamics - e.g. how scoring works, how cash works, how ratings work. What those numbers above other users mean, etc.
+= Let player file be edited outside of the game and the game can check if it's been modified and read it in.
+
+
+Urgent:
+= Viewing player list within the game crashes the server
+= Find out why runme dies (without error) when the frontend connects
+= Sort_player tools needs to also sort entries within users
+= Main loop doesn't need to update so much when there are no players in the game
+= If space and enter is held down, Z and X don't work - why?
+
+Do soon:
+= Delete/backspace doesn't work in terminal (for crediting whose/who's account)
+= Find out why update_players() takes so much time
+= Keys held down before respawning are ignored. Fix this!
+= Red-broken circles in game (what are these?!) should not rotate with the player!
+= Check if the server can read the client's X resources. If so, no need to tranfer config from the client at all - advantage in using X resources is that it can be updated mid-game.
+= If username doesn't exist create a new player, and link to the VLAN IP
+= Debug Display the client config after loading it in
+
+Novelty ideas:
+= Give money to the user you're trying to impersonate if client send user
+
+Long-term future plans:
+= Accounting per user to determine how much CPU time they use (probably influenced by whether they are thin or fat client)
+= Use Zerotier for users to join a VLAN to receive X11 - eventually move to WebSockets.
+Could auth a user via Facebook or Google.
