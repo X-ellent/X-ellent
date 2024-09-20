@@ -20,6 +20,11 @@
 #include "player.h"
 #include "debug.h"
 
+struct particle *part_free;
+int part_count;
+struct explosion *bang_free;
+struct explosion *bang_first;
+struct particle *parts[MAXDEPTH];
 extern struct particle *alloc_particle()
 {
     struct particle *p;

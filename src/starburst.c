@@ -17,6 +17,9 @@
 #define STAR_SLEEP_TIME    3000
 #define STAR_RECHARGE_TIME 50
 
+struct starburst *firststar;
+int sbcount;
+
 extern void fire_starbursts() {
     double x,y;
     int tx,ty;

@@ -25,6 +25,7 @@
 #include "xsetup.h"
 #include "message.h"
 
+struct home* firsthome;
 static void show_home(struct player *p);
 
 extern void add_home(int l,int x,int y) {

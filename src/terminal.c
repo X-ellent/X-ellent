@@ -31,6 +31,11 @@
 #include "message.h"
 #include "terminal.h"
 
+struct label *firstlabel;
+int startpc;
+char rom[TERM_ROMSIZE];
+struct login tty[TERM_NUMBER];
+
 static void cts(struct player *p);
 static void term_newline(struct player *p);
 static int term_hprint(struct player *p,char *c,int l);

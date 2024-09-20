@@ -24,6 +24,7 @@
 #include "message.h"
 #include "particle.h"
 
+struct turret *firstturret;
 static struct turret *tup;
 
 static void do_active_turret();

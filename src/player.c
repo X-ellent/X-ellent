@@ -34,6 +34,12 @@
 
 #define inthang(f,o) if (strcmp(chop[0],"f")==0) p->owned|=o
 
+struct player *freeplay;
+int frame;
+struct player *playone;
+int players;
+char *weap_name[MAX_WEAPS];
+
 static char inbuf[1024];
 static char txt[256];
 static char *chop[16];

@@ -22,6 +22,7 @@
 #include "addon.h"
 #include "constants.h"
 
+struct menu m_root;
 static FILE *pdata;
 static char buf[2048];
 static int pos;

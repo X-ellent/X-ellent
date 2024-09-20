@@ -28,6 +28,7 @@
 #include "beam.h"
 #include "addon.h"
 
+XPoint pc[PCACHE];
 static void draw_map(struct player *p,int l,int x,int y);
 static void draw_me(struct player *p);
 static void draw_others(struct player *p,struct player *me);
