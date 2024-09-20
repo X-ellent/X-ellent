@@ -24,7 +24,7 @@ extern void Setup_color(struct player *p,char *dname,char *dcol);
 extern void Setup_string(struct player *p,char *dname,char *s,int l);
 extern int Setup_flag(struct player *p,char *dname,int on,int off,int def);
 
-jmp_buf jmpenv;
-int jumpable;
+extern jmp_buf jmpenv;
+extern int jumpable;
 
 #endif

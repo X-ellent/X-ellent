@@ -54,11 +54,11 @@ struct label {
 };
 
 
-struct label *firstlabel;
-int startpc;
+extern struct label *firstlabel;
+extern int startpc;
 
-struct login tty[TERM_NUMBER];
-char rom[TERM_ROMSIZE];
+extern struct login tty[TERM_NUMBER];
+extern char rom[TERM_ROMSIZE];
 
 #define OP_RTS 1
 #define OP_JMP 2

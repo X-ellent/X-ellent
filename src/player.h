@@ -87,16 +87,16 @@ struct player {
     int recharge;                 /* Time until can fire again */
 };
 
-struct player *playone;
-struct player *freeplay;
+extern struct player *playone;
+extern struct player *freeplay;
 
-char *weap_name[MAX_WEAPS];
-char *own_name[MAX_OTHERS];
-char own_dam[MAX_OTHERS];
+extern char *weap_name[MAX_WEAPS];
+extern char *own_name[MAX_OTHERS];
+extern char own_dam[MAX_OTHERS];
 
-int frame;
+extern int frame;
 
-int players;
+extern int players;
 
 #define FLG_THRUST          (1<<0)
 #define FLG_BRAKING         (1<<1)

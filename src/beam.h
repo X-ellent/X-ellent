@@ -25,8 +25,8 @@ struct beam {
 #define BEAM_BLUE 0
 #define BEAM_RED  1
 
-struct beam *firstbeam;
-struct beam *freebeam;
+extern struct beam *firstbeam;
+extern struct beam *freebeam;
 
 extern struct beam *alloc_beam();
 extern void free_beams();

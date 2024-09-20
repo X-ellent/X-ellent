@@ -27,7 +27,7 @@ struct addtype {
     int repcost;              /* What is the repair cost */
 };
 
-struct addtype *firstaddtype;
+extern struct addtype *firstaddtype;
 
 struct addon {
     struct addon *next;      /* Pointer to next one */
@@ -37,7 +37,7 @@ struct addon {
     int info[MAX_INFO];      /* What info does it have about it eg. coords*/
 };
 
-struct addon *freeaddon;
+extern struct addon *freeaddon;
 
 #define ADD_COMPASS         1
 #define ADD_CLOAKING        2

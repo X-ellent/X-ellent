@@ -31,7 +31,7 @@ struct body {
     } is;
 };
 
-struct body *firstbody;
+extern struct body *firstbody;
 
 #define BODY_PLAYER   1
 #define BODY_TROLLEY  2

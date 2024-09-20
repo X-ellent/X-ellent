@@ -28,7 +28,7 @@ struct turret {
     char pass[6];
 };
 
-struct turret *firstturret;
+extern struct turret *firstturret;
 
 extern struct turret *add_turret(int d,int x,int y);
 extern void generate_pass(char *p,int n);
