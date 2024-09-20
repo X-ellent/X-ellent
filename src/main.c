@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "ip_user.h"
 #include "fix.h"
 #include "message.h"
 #include "debug.h"
@@ -34,11 +35,39 @@
 #include "lift.h"
 #include "addon.h"
 
+#define MAX_USERS 100
+
+struct ip_user ip_users[MAX_USERS];
+int num_ip_users = 0;
+
 static int lastsave;
 static int sleepsave;
 static int saveall;
 
 extern int main();
+
+void load_ip_users() {
+    FILE *fp = fopen("ip_users.txt", "r");
+    if (fp == NULL) {
+        fprintf(stderr, "Error: Cannot open ip_users.txt\n");
+        exit(1);
+    }
+
+    char line[256];
+    while (fgets(line, sizeof(line), fp)) {
+        char ip[16], username[32];
+        if (sscanf(line, "%15s %31s", ip, username) == 2) {
+            strcpy(ip_users[num_ip_users].ip, ip);
+            strcpy(ip_users[num_ip_users].username, username);
+            num_ip_users++;
+            if (num_ip_users >= MAX_USERS) {
+                break;
+            }
+        }
+    }
+
+    fclose(fp);
+}
 
 static void setsave(int sig) {
     saveall=-2;
@@ -80,6 +109,7 @@ extern int main(int argc,char *argv[])
     init_all_term();
     init_all_trolleys();
     load_players();
+    load_ip_users();
     load_mines();
     players=0;
     lastsave=0;
