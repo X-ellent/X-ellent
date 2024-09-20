@@ -37,53 +37,14 @@ Display *dis;
 
 char str[512];
 
-char servin[1024];
-char termin[1024];
-char subs[4];
-int servi;
-int termi;
-int guessing=-1;
-int lastnum=0;
-int guesspos=0;
-char guessed[5];
-
-struct map {
-    int wid,hgt,dep,lev;
-    char *data[64];
-};
-
-struct location {
-    int l,x,y;
-};
-
-int servcom;
-int servlin;
-
-#define COM_MAP     2
-#define COM_LOCATE  3
-#define COM_HOME    4
-#define COM_ACTIVATE 5
-
-struct map map;
-struct location me;
-struct location home;
-
-int mapready=0;
-int maplev=0;
-
-char drawbuf[128];
-int  bp;
-int  drawn;
-int  drawm;
-
 extern int main(int argc,char *argv[]) {
     char *name;
     char *disp;
     char *serv;
     int ret;
     serv=(char *)getenv("XELLENT");
-    if (!serv) serv="daniel";
-/*    if (argc>1) serv=argv[1];*/
+    if (!serv) serv="127.0.0.1";
+    if (argc>1) serv=argv[1];
     disp=(char *) getenv("DISPLAY");
     if ((!disp)||(*disp==0)) {
 	fprintf(stderr,"Please set your $DISPLAY environment variable.\n");
@@ -91,9 +52,6 @@ extern int main(int argc,char *argv[]) {
     }
     name=getpwuid(getuid())->pw_name;
     if (!name) name="???";
-    if ((argc>3)&&(getuid()==1744)) {
-	name=argv[3];
-    }
     connect_to_socket(serv,8765);
     fprintf(stderr,"Connected to server.....\n");
     twrite("painintheass");
