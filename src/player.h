@@ -61,7 +61,7 @@ struct player {
     int mode[9];
     struct object *slotobj[9];
     int slot;
-    int delay;
+    int delay;			/* Time until we respawn from death */
     struct menu *shopmenu;
     struct login *term;
     char mapmem[MAXDEPTH];
@@ -72,15 +72,15 @@ struct player {
     int deaths;
     int kills;
     int tkills;
-    int homefuel;
+    int homefuel;		// TODO - what is this?
     int homeslots[9];
-    int homesize[9];
+    int homesize[9];		// TODO - what is this?
     int homemode[9];
     int fuelmin;
-    struct player *lasthold;
+    struct player *lasthold;	// TODO - what is this?
     struct player *nexthold;
     struct trolley *holding;
-    int channel;                  /* For the telnet connection thing */
+    int channel;                  /* For the telnet connection thing */ // TODO - what's this?
     unsigned char lines[64][4];
     int locate,loctime,tartime;
     int homing;                   /* Time for nicking home base */

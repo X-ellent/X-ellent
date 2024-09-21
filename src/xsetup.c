@@ -90,11 +90,11 @@ extern int init_player_display(struct player *p,char *d)
 	fprintf(stderr,"Could not open display for %s (%s)\n",d,p->user);
 	return 0;
     }
-    switch (setjmp(jmpenv)) {
+    switch (setjmp(jmpenv)) {  // TODO - what is this?
     case 0:break;
     case 1:return -1;
     case 2:
-	bloody_errors(p);
+	bloody_errors(p);  // TODO - what is this?
     case 3:return 0;
     }
     p->d.screen=DefaultScreen(p->d.disp);
