@@ -151,7 +151,7 @@ extern void new_addon_level(struct player *p,struct addon *ad) {
     switch (ad->is->type) {
     case ADD_RADAR:
 	if (ad->level==1) ad->info[1]=0;
-	ad->info[2]=1+ad->level;
+	ad->info[2]=1+ad->level; // REB - Max radar range related to ad->level
 	ad->info[0]=ad->info[2];
 	return;
     case ADD_TARGET:
