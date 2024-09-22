@@ -15,7 +15,7 @@ SHELL=		/bin/sh
 LIBDIR=         \"../data\" # TODO
 
 INCLUDE=	
-LIBS=		-L/usr/X11R6/lib -lX11 -lm -lc
+LIBS=		-L/usr/X11R6/lib -lX11 -lm -lc -lpthread
 DEFINES=	-DLIB=$(LIBDIR) -DEBUG
 CFLAGS=		-ggdb -Wall -O0 -fno-omit-frame-pointer -fstack-protector-all -Wno-incompatible-pointer-types
 

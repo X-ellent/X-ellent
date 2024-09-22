@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <pthread.h>
 
 #include "ip_user.h"
 #include "fix.h"
@@ -79,6 +80,16 @@ static void setquit(int sig) {
     return;
 }
 
+pthread_t login_thread;
+pthread_mutex_t player_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+void *login_thread_function(void *arg) {
+    while (1) {
+        do_login();
+        sleep(1);
+    }
+}
+
 extern int main(int argc,char *argv[])
 {
     int ti;
@@ -120,14 +131,15 @@ extern int main(int argc,char *argv[])
     lastsave=0;
     sleepsave=0;
     setup_error_handler();
+    pthread_create(&login_thread, NULL, login_thread_function, NULL);
 
-    #define NUM_SECTIONS 16  // Number of sections to be timed
+    #define NUM_SECTIONS 15  // Number of sections to be timed
 
     // Section labels
     const char* section_names[NUM_SECTIONS] = {
         "draw_all", "free_beams", "fire_starbursts", "update_players", "update_turrets", "update_bonus",
         "update_teleports", "move_particles", "move_explosions", "move_objects", "update_trolleys",
-        "do_collisions", "move_lifts", "save_players", "do_login", "timings" };
+        "do_collisions", "move_lifts", "save_players", "timings" };
 
     double cumulative_section_times[NUM_SECTIONS] = {0};
     int fps = 0;
@@ -234,8 +246,6 @@ extern int main(int argc,char *argv[])
 	        exit(0);
 	}
         start_timing(14);
-	do_login();
-        start_timing(15); // "now" is used for this section
 
         work_time_ms = (now.tv_sec - loop_start_time.tv_sec) * 1000.0 +
                        (now.tv_nsec - loop_start_time.tv_nsec) / 1e6 - sleep_time_ms;
