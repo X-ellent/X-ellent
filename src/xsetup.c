@@ -51,7 +51,7 @@ static int my_other_error_handler(Display *d,XErrorEvent *e) {
 
 extern void bloody_errors(struct player *p) {
     char txt[1024];
-    DL("Emergency code called to chuck off offending player");
+    fprintf(stderr, "Emergency code called to chuck off offending player: %s\n", p->user);
     XAutoRepeatOn(p->d.disp);
     p->qflags=0;
     p->connected=0;
