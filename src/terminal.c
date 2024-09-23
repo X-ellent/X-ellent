@@ -713,6 +713,7 @@ extern int terminal_input(int n,int state,char *in) {
 	terminal_disconnect(n);
 	return 0;
     case 1: /* New user, just logging in */
+        fprintf(stderr, "DEBUG: User %s connecting via terminal.\n", p->user);
 	tuser[n]=find_player(in);
 	if (!tuser[n]) {
 	    tsend(n,"!No such user.\n");
@@ -726,6 +727,7 @@ extern int terminal_input(int n,int state,char *in) {
 	tuser[n]->channel=n;
 	return 2;
     case 2: /* Asking for authorisation */
+        fprintf(stderr, "DEBUG: User %s requesting terminal auth.\n", p->user);
 	if (!(*p->pass)) {
 	    tsend(n,"!No Password Set!\n");
 	    terminal_disconnect(n);
@@ -802,7 +804,7 @@ extern int terminal_command(struct player *p,char *sys,char *com) {
 }
 
 extern int system_command(struct player *p,char *com) {
-/*    fprintf(stderr,"System command : %s %s\n",p->user,com);*/
+    fprintf(stderr,"DEBUG: System command : %s %s\n",p->user,com);
     if (strcmp(com,"HELP")==0) {            /* Lists accepted commands */
 	psend(p,"=SYS HELP\n");
 	psend(p,"=HELP\n");
