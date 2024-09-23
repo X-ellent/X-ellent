@@ -227,9 +227,9 @@ extern int main(int argc,char *argv[]) {
 	change=-1;
     }
     connect_to_socket(serv,8766);
-    tsend((sprintf(str,"%s\n",name),str));
+    tsend((snprintf(str, sizeof(str), "%s\n",name),str));
     if (argc>2) {
-	tsend((sprintf(str,"%s\n",argv[2]),str));
+	tsend((snprintf(str, sizeof(str), "%s\n",argv[2]),str));
     } else {
 	fprintf(stderr,"I require a password\n");
 	exit(1);
@@ -299,7 +299,7 @@ static void do_cool_thing() {
 
 static void do_terminal_input() {
     char c;
-    if (read(0,&c,1)) {
+    if (read(0,&c,1)) { // TODO: validate input
 	if (c=='\n') {
 	    termin[termi++]=0;
 	    process_input();
@@ -314,7 +314,7 @@ static void do_terminal_input() {
 
 static void do_server_input() {
     char c;
-    if (read(fd,&c,1)) {
+    if (read(fd,&c,1)) { // TODO - validate input
 	if (c=='\n') {
 	    servin[servi++]=0;
 	    process_server_input();
@@ -364,24 +364,24 @@ static void draw_line(int x1,int y1,int x2,int y2) {
 static void process_input() {
     switch(termin[0]) {
     case 'n':
-	strcpy(myname,&termin[1]);
-	strcpy(newname,&termin[1]);
+	strncpy(myname, &termin[1], sizeof(myname));
+	strncpy(newname, &termin[1], sizeof(newname));
 	break;
     case 'N':
-	strcpy(newname,&termin[1]);
+	strncpy(newname, &termin[1], sizeof(newname));
 	break;
     case '?':
 	special_command(&termin[1]);
 	break;
     default:
-	tsend((sprintf(str,"%s\n",termin),str));
+	tsend((snprintf(str, sizeof(str), "%s\n",termin),str));
     }
 }
 
 static void process_server_input() {
     switch(servin[0]) {
     case '!':
-	sprintf(otxt,"  %s",servin);print_text(otxt);
+	snprintf(otxt, sizeof(otxt), "  %s",servin);print_text(otxt);
 	break;
     case '.':
 	commandline=-1;
@@ -397,7 +397,7 @@ static void process_server_input() {
 	break;
     case '=':
 	if (commandline==-1) {
-	    strcpy(currentcommand,&servin[1]);
+	    strncpy(currentcommand, &servin[1], sizeof(currentcommand));
 	} else {
 	    if (strcmp(currentcommand,"TER TELEPORTS")==0) {
 		read_teleport(&servin[1]);break;}
@@ -409,7 +409,7 @@ static void process_server_input() {
 		get_location(&home,&servin[1]);break;}
 	    if (strcmp(currentcommand,guesscom)==0) {
 		process_guess(&servin[1]);break;}
-	    sprintf(otxt,"%s %3d %s",currentcommand,commandline,servin);
+	    snprintf(otxt, sizeof(otxt), "%s %3d %s",currentcommand,commandline,servin);
 	    print_text(otxt);
 	}
 	commandline++;
@@ -429,7 +429,7 @@ static void process_server_input() {
 		tsend("*SYSSPIN100\n");
 		break;
 	    }
-	    tsend((sprintf(str,"*WEPSELECT%d\n",atoi(&servin[2])-1),str));
+	    tsend((snprintf(str, sizeof(str), "*WEPSELECT%d\n",atoi(&servin[2])-1),str));
 	    break;
 	}
 	if ((servin[1]=='P')&&(servin[2]=='F')) {
@@ -443,24 +443,24 @@ static void process_server_input() {
 		break;
 	    case '3':
 		for(t=firsttel;t;t=t->next) 
-		    tsend((sprintf(str,"*TELACTIVATE%d %s\n",t->num,t->pass),str));
+		    tsend((snprintf(str, sizeof(str), "*TELACTIVATE%d %s\n",t->num,t->pass),str));
 		break;
 	    case '4':
 		scribble_map(displev,&back);
 		change=-1;
 		break;
 	    default:
-		sprintf(otxt,"Keypress %s",&servin[1]);
+		snprintf(otxt, sizeof(otxt), "Keypress %s",&servin[1]);
 		print_text(otxt);
 		break;
 	    }
 	    break;
 	}
-	sprintf(otxt,"Keypress %s",&servin[1]);
+	snprintf(otxt, sizeof(otxt), "Keypress %s",&servin[1]);
 	print_text(otxt);
 	break;
     default:
-	sprintf(otxt,"Unknown prefix %s",servin);
+	snprintf(otxt, sizeof(otxt), "Unknown prefix %s",servin);
 	print_text(otxt);
 	break;
     }
@@ -492,25 +492,25 @@ extern void data_input(char *s) {
 	if ((lm=strlen(myname))!=(ln=strlen(newname))) {
 	    if (lm>ln) {
 		n=random()%lm;
-		strcpy(tempname,myname);
-		strcpy(&myname[n],&tempname[n+1]);
+		strncpy(tempname, myname, sizeof(tempname));
+		strncpy(&myname[n], &tempname[n+1], sizeof(&myname[n]));
 	    } else {
 		if (lm) {
 		    n=random()%lm;
-		    strcpy(tempname,myname);
-		    strcpy(&myname[n+1],&tempname[n]);
+		    strncpy(tempname, myname, sizeof(tempname));
+		    strncpy(&myname[n+1], &tempname[n], sizeof(&myname[n+1]));
 		    myname[n]=newname[n];
 		} else {
 		    myname[1]=0;
 		    myname[0]=newname[random()%ln];
 		}
 	    }
-	    tsend((sprintf(str,"*SYSNAME%s\n",myname),str));
+	    tsend((snprintf(str, sizeof(str), "*SYSNAME%s\n",myname),str));
 	} else {
 	    if (strcmp(myname,newname)) {
 		for (n=random()&31;myname[n]==newname[n];n=random()&31);
 		myname[n]=newname[n];
-		tsend((sprintf(str,"*SYSNAME%s\n",myname),str));
+		tsend((snprintf(str, sizeof(str), "*SYSNAME%s\n",myname),str));
 	    }
 	}
 	return;
@@ -536,7 +536,7 @@ extern void data_input(char *s) {
 	    if (rd(me.l,(int)x/128,(int)y/128)=='O') return;
 	tsend("*WEPSELECT8\n");
 	tsend("*SYSNAMEA Damn Good Shot\n");
-	strcpy(myname,newname);
+	strncpy(myname, newname, sizeof(myname));
 	return;
     }
     if (strcmp(s,"TERM ENTER")==0) {
@@ -550,7 +550,7 @@ extern void data_input(char *s) {
 	interminal=0;
 	return;
     }
-    sprintf(otxt,"  Exception -> %s",s);print_text(otxt);
+    snprintf(otxt, sizeof(otxt), "  Exception -> %s",s);print_text(otxt);
 }
 
 extern void get_location(struct location *l,char *s) {
@@ -613,7 +613,7 @@ extern void read_teleport(char *s) {
 	firsttel=t;
 	strcpy(t->pass,"----");
 	get_location(&t->loc,loc);
-	sprintf(otxt,"Initialising storage for teleport %d",num);
+	snprintf(otxt, sizeof(otxt), "Initialising storage for teleport %d",num);
 	print_text(otxt);
     }
     t->dest=atoi(ds);
@@ -637,7 +637,7 @@ extern void read_lift(char *s) {
 	firstlift=l;
 	strcpy(l->pass,"------");
 	get_location(&l->loc,loc);
-	sprintf(otxt,"Initialising storage for lift %d",num);
+	snprintf(otxt, sizeof(otxt), "Initialising storage for lift %d",num);
 	print_text(otxt);
     }
     l->targ=atoi(tl);
@@ -659,7 +659,7 @@ extern void read_map(char *s,int l) {
 	sy=MAPWID/map.wid;
 	map.sqr=(sx<sy)?sx:sy;
 	if (!map.data[map.lev]) {
-	    sprintf(otxt,"Initialising storage space for level %d",map.lev);
+	    snprintf(otxt, sizeof(otxt), "Initialising storage space for level %d",map.lev);
 	    print_text(otxt);
 	    map.data[map.lev]=calloc(map.hgt,map.wid);
 	}
@@ -810,7 +810,7 @@ extern void draw_map(int n) {
 	XCopyArea(disp,back.pix,win,gc,spotx-20,spoty-20,40,40,
 		  spotx-20,spoty-20);
     }
-    sprintf(str,"%d:%d,%d          ",me.l,me.x/128,me.y/128);
+    snprintf(str, sizeof(str), "%d:%d,%d          ",me.l,me.x/128,me.y/128);
     XDrawImageString(disp,win,red,4,fh,str,strlen(str));
     if (change) {
 	XCopyArea(disp,map.tinymap[levs[0]]->pix,win,gc,0,0,
@@ -823,11 +823,11 @@ extern void draw_map(int n) {
 		  map.tinymap[levs[2]]->wid,
 		  map.tinymap[levs[2]]->hgt,300,MAPHGT);
     }
-    sprintf(str,"%d",levs[0]);
+    snprintf(str, sizeof(str), "%d",levs[0]);
     XDrawImageString(disp,win,red,75,MAPHGT,str,strlen(str));
-    sprintf(str,"%d",levs[1]);
+    snprintf(str, sizeof(str), "%d",levs[1]);
     XDrawImageString(disp,win,red,225,MAPHGT,str,strlen(str));
-    sprintf(str,"%d",levs[2]);
+    snprintf(str, sizeof(str), "%d",levs[2]);
     XDrawImageString(disp,win,red,375,MAPHGT,str,strlen(str));
     if (home.l==me.l) {
 	XDrawRectangle(disp,win,black,home.x*w/128-7+xo,home.y*w/128-7+yo,
@@ -903,7 +903,7 @@ extern void draw_map(int n) {
 	    switch(k) {
 	    case XK_t:
 		for(t=firsttel;t;t=t->next) 
-		    tsend((sprintf(str,"*TELACTIVATE%d %s\n",t->num,t->pass),
+		    tsend((snprintf(str, sizeof(str), "*TELACTIVATE%d %s\n",t->num,t->pass),
 			   str));
 		break;
 	    case XK_r:
@@ -926,7 +926,7 @@ extern void draw_map(int n) {
 		xx=(x-xo)*128/w;
 		yy=(y-yo)*128/w;
 		if (xev.xbutton.state&ControlMask) {
-		    tsend((sprintf(str,"*VISPOS%d,%d\n",xx,yy),str));
+		    tsend((snprintf(str, sizeof(str), "*VISPOS%d,%d\n",xx,yy),str));
 		    spot.x=xx;
 		    spot.y=yy;
 		}
@@ -1032,11 +1032,13 @@ extern void load_map() {
 	fprintf(stderr,"Cannot open .xellent.map\n");
 	return;
     }
-    *inp=0;fgets(inp,1023,mf);cc=inp;
+    *inp=0;// TODO: Validate input
+fgets(inp,1023,mf);cc=inp;
     oc=cc;cc=strchr(cc,' ');*cc++=0;map.wid=atoi(oc);
     oc=cc;cc=strchr(cc,' ');*cc++=0;map.hgt=atoi(oc);
     oc=cc;cc=strchr(cc,' ');*cc++=0;map.dep=atoi(oc);
-    while(*inp=0,fgets(inp,1023,mf),cc=inp,(*inp)&&(strcmp(inp,"END\n"))) {
+    while(*inp=0,// TODO: Validate input
+fgets(inp,1023,mf),cc=inp,(*inp)&&(strcmp(inp,"END\n"))) {
 	n=atoi(inp);
 	sx=MAPWID/map.wid;
 	sy=MAPWID/map.wid;
@@ -1044,7 +1046,8 @@ extern void load_map() {
 	if (!map.data[n])
 	    map.data[n]=calloc(map.hgt,map.wid);
 	for (y=0;y<map.hgt;y++) {
-	    *inp=0;fgets(inp,1023,mf);cc=inp;
+	    *inp=0;// TODO: Validate input
+fgets(inp,1023,mf);cc=inp;
 	    for (x=0;x<map.wid;x++)
 		rd(n,x,y)=inp[x];
 	}
@@ -1286,14 +1289,14 @@ extern void special_command(char *s) {
 	    return;
 	}
 	strcpy(guesscom,"TEL SET");
-	sprintf(preguess,"*TELSET%d ",n);
-	sprintf(postguess," %d",d);
+	snprintf(preguess, sizeof(preguess), "*TELSET%d ",n);
+	snprintf(postguess, sizeof(postguess), " %d",d);
 	guesslen=4;
 	for(n=0;n<guesslen;n++) guessed[n]='-';
 	guessing[guesslen]=0;
 	guessed[guesslen]=0;
 	if (*t->pass) {
-	    strcpy(guessing,t->pass);
+	    strncpy(guessing, t->pass, sizeof(guessing));
 	    guessnum=-1;
 	    guesspos=guesslen-1;
 	} else {
@@ -1305,7 +1308,7 @@ extern void special_command(char *s) {
 	guesstyp=GUESS_TELDEST;
 	guessvalb=d;
 	guesspass=t->pass;
-	tsend((sprintf(str,"%s%s%s\n",preguess,guessing,postguess),str));
+	tsend((snprintf(str, sizeof(str), "%s%s%s\n",preguess,guessing,postguess),str));
 	return;
     }
     if (strncmp(s,"LGET",4)==0) {
@@ -1335,14 +1338,14 @@ extern void process_guess(char *s) {
 	    guesspos=0;
 	    for(n=1;n<guesslen;n++) guessing[n]='-';
 	    guessing[guesspos]='0'+guessnum;
-	    tsend((sprintf(str,"%s%s%s\n",preguess,guessing,postguess),str));
+	    tsend((snprintf(str, sizeof(str), "%s%s%s\n",preguess,guessing,postguess),str));
 	    return;
 	} else {
 	    guessed[guesspos]='0'+guessnum;
 	    if ((++guesscount)==guesslen) {
 		guessnum=-1;
-		strcpy(guessing,guessed);
-		tsend((sprintf(str,"%s%s%s\n",preguess,guessed,postguess),str));
+		strncpy(guessing, guessed, sizeof(guessing));
+		tsend((snprintf(str, sizeof(str), "%s%s%s\n",preguess,guessed,postguess),str));
 		return;
 	    }
 	    guesspos++;
@@ -1351,16 +1354,16 @@ extern void process_guess(char *s) {
 		guessnum++;
 		if (guessnum==10) {
 		    guessnum=-1;
-		    strcpy(guessing,guessed);
+		    strncpy(guessing, guessed, sizeof(guessing));
 		    return;
 		}
 		for(n=0;n<guesslen;n++) guessing[n]='0'+guessnum;
-		tsend((sprintf(str,"%s%s%s\n",preguess,guessing,postguess),str));
+		tsend((snprintf(str, sizeof(str), "%s%s%s\n",preguess,guessing,postguess),str));
 		return;
 	    } else {
 		for(n=0;n<guesslen;n++) guessing[n]='-';
 		guessing[guesspos]='0'+guessnum;
-		tsend((sprintf(str,"%s%s%s\n",preguess,guessing,postguess),str));
+		tsend((snprintf(str, sizeof(str), "%s%s%s\n",preguess,guessing,postguess),str));
 		return;
 	    }
 	}
@@ -1374,24 +1377,24 @@ extern void process_guess(char *s) {
 	    } else {
 		for(n=0;n<guesslen;n++) guessing[n]='-';
 		guessing[guesspos]='0'+guessnum;
-		tsend((sprintf(str,"%s%s%s\n",preguess,guessing,postguess),str));
+		tsend((snprintf(str, sizeof(str), "%s%s%s\n",preguess,guessing,postguess),str));
 		return;
 	    }
 	}
 	guessnum++;
 	if (guessnum==10) {
 	    guessnum=-1;
-	    strcpy(guessing,guessed);
-	    tsend((sprintf(str,"%s%s%s\n",preguess,guessed,postguess),str));
+	    strncpy(guessing, guessed, sizeof(guessing));
+	    tsend((snprintf(str, sizeof(str), "%s%s%s\n",preguess,guessed,postguess),str));
 	    return;
 	}
 	for(n=0;n<guesslen;n++) guessing[n]='0'+guessnum;
-	tsend((sprintf(str,"%s%s%s\n",preguess,guessing,postguess),str));
+	tsend((snprintf(str, sizeof(str), "%s%s%s\n",preguess,guessing,postguess),str));
 	return;
     }
     fprintf(stderr,"%s <%s> %s\n",guesscom,guessing,s);
     if (guesspass)
-	strcpy(guesspass,guessing);
+	strncpy(guesspass, guessing, sizeof(guesspass));
     switch(guesstyp) {
     case GUESS_TELDEST:
 	t=find_teleport(guessval);
@@ -1425,14 +1428,14 @@ extern void summon_lift(int n,int lev) {
     }
     guessval=n;
     strcpy(guesscom,"LIF MOVE");
-    sprintf(preguess,"*LIFMOVE%d ",n);
-    sprintf(postguess," %d",lev);
+    snprintf(preguess, sizeof(preguess), "*LIFMOVE%d ",n);
+    snprintf(postguess, sizeof(postguess), " %d",lev);
     guesslen=6;
     for(n=0;n<guesslen;n++) guessed[n]='-';
     guessing[guesslen]=0;
     guessed[guesslen]=0;
     if (*l->pass) {
-	strcpy(guessing,l->pass);
+	strncpy(guessing, l->pass, sizeof(guessing));
 	guessnum=-1;
 	guesspos=guesslen-1;
     } else {
@@ -1444,7 +1447,7 @@ extern void summon_lift(int n,int lev) {
     guesstyp=GUESS_LIFMOVE;
     guessvalb=me.l;
     guesspass=l->pass;
-    tsend((sprintf(str,"%s%s%s\n",preguess,guessing,postguess),str));
+    tsend((snprintf(str, sizeof(str), "%s%s%s\n",preguess,guessing,postguess),str));
 }
 
 extern void activate_teleport(struct teleport *t) {
@@ -1458,14 +1461,14 @@ extern void activate_teleport(struct teleport *t) {
 	return;
     }
     strcpy(guesscom,"TEL ACTIVATE");
-    sprintf(preguess,"*TELACTIVATE%d ",t->num);
-    sprintf(postguess," ");
+    snprintf(preguess, sizeof(preguess), "*TELACTIVATE%d ",t->num);
+    snprintf(postguess, sizeof(postguess), " ");
     guesslen=4;
     for(n=0;n<guesslen;n++) guessed[n]='-';
     guessing[guesslen]=0;
     guessed[guesslen]=0;
     if (*t->pass) {
-	strcpy(guessing,t->pass);
+	strncpy(guessing, t->pass, sizeof(guessing));
 	guessnum=-1;
 	guesspos=guesslen-1;
     } else {
@@ -1476,7 +1479,7 @@ extern void activate_teleport(struct teleport *t) {
     guesscount=0;
     guesstyp=GUESS_TELACTI;
     guesspass=t->pass;
-    tsend((sprintf(str,"%s%s%s\n",preguess,guessing,postguess),str));
+    tsend((snprintf(str, sizeof(str), "%s%s%s\n",preguess,guessing,postguess),str));
     return;
 }
 

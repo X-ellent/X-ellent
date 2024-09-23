@@ -150,7 +150,7 @@ static void twrite(char *s) {
     char buf[256];
     int n,r;
     n=0;
-    strcpy(buf,s);
+    strncpy(buf, s, sizeof(buf));
     while (n<256) {
 	r=write(fd,&buf[n],256-n);
 	if (r<0) {

@@ -45,7 +45,7 @@ extern void targetter_command(struct player *p,struct addon *a,char *s) {
 	psend(p,"=TAR NEXT\n");
 	next_target(p);
 	if (p->ptarg) {
-	    psend(p,(sprintf(txt,"=T1P%s\n",p->ptarg->user),txt));
+	    psend(p,(snprintf(txt, sizeof(txt), "=T1P%s\n",p->ptarg->user),txt));
 	} else {
 	    psend(p,"=T1-\n");
 	}
@@ -59,7 +59,7 @@ extern void targetter_command(struct player *p,struct addon *a,char *s) {
 	    return;
 	}
 	p->ptarg=pl;
-	psend(p,(sprintf(txt,"=T1P%s\n",p->ptarg->user),txt));
+	psend(p,(snprintf(txt, sizeof(txt), "=T1P%s\n",p->ptarg->user),txt));
 	return;
     }
     if (strcmp(s,"1DATA")==0) {
@@ -71,7 +71,7 @@ extern void targetter_command(struct player *p,struct addon *a,char *s) {
 	}
 	return;
     }
-    psend(p,(sprintf(txt,"!Unknown command to targetter\n"),txt));
+    psend(p,(snprintf(txt, sizeof(txt), "!Unknown command to targetter\n"),txt));
     return;
 }
 

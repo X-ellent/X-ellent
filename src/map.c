@@ -223,7 +223,7 @@ static int readin(char *b)
 {
     int l;
     *b=0;
-    fgets(b,1024,mdata);
+    fgets(b,1024,mdata); // TODO - validate input
     if (l=strlen(b)) b[l-1]=0;
     return (l-1);
 }

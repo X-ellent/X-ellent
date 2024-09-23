@@ -44,8 +44,8 @@ static void addme(int n,char *s,char *ss,int u,int d,int rc,int ca,int cb,
 		  int cc) {
     struct addtype *at;
     at=(struct addtype *) calloc(1,sizeof(struct addtype));
-    strcpy(at->name,s);
-    strcpy(at->subs,ss);
+    strncpy(at->name, s, sizeof(at->name));
+    strncpy(at->subs, ss, sizeof(at->subs));
     at->type=n;
     at->upgrades=u;
     at->damage=d;
@@ -147,7 +147,7 @@ extern struct addon*  strip_addons(struct player *p,struct addon *a) {
 
 extern void new_addon_level(struct player *p,struct addon *ad) {
     char txt[256];
-    psend(p,(sprintf(txt,"#SUBSYSTEM %s %d\n",ad->is->subs,ad->level),txt));
+    psend(p,(snprintf(txt, sizeof(txt), "#SUBSYSTEM %s %d\n",ad->is->subs,ad->level),txt));
     switch (ad->is->type) {
     case ADD_RADAR:
 	if (ad->level==1) ad->info[1]=0;
@@ -289,7 +289,7 @@ extern int addon_command(struct player *p,struct addon *a,unsigned char *s) {
 	psend(p,"!Invalid command to visual display unit\n");
 	return 3;
     }
-    psend(p,(sprintf(txt,"!Unknown command to subsystem %s\n",a->is->subs),txt));
+    psend(p,(snprintf(txt, sizeof(txt), "!Unknown command to subsystem %s\n",a->is->subs),txt));
     return 3;
 }
 

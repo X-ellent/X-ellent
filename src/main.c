@@ -58,8 +58,8 @@ void load_ip_users() {
     while (fgets(line, sizeof(line), fp)) {
         char ip[16], username[32];
         if (sscanf(line, "%15s %31s", ip, username) == 2) {
-            strcpy(ip_users[num_ip_users].ip, ip);
-            strcpy(ip_users[num_ip_users].username, username);
+            strncpy(ip_users[num_ip_users].ip, ip, sizeof(ip_users[num_ip_users].ip));
+            strncpy(ip_users[num_ip_users].username, username, sizeof(ip_users[num_ip_users].username));
             num_ip_users++;
             if (num_ip_users >= MAX_USERS) {
                 break;

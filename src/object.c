@@ -436,7 +436,7 @@ extern void load_mines() {
 static int mygets(FILE *pd) {
     int l;
     *inbuf=0;
-    fgets(inbuf,2048,pd);
+    fgets(inbuf,2048,pd); // TODO - validate input
     if (l=strlen(inbuf))
 	if (inbuf[l-1]=='\n') inbuf[--l]=0;
     return l;
