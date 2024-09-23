@@ -17,6 +17,7 @@
 
 #include "message.h"
 #include "addon.h"
+#include "targetter.h"
 
 struct addtype *firstaddtype;
 struct addon *freeaddon;
@@ -83,7 +84,7 @@ extern struct addon *add_addon(int typ) {
     struct addtype *at;
     int i;
     if (!(at=find_addtyp(typ))) return 0;
-    if (a=freeaddon) {
+    if ((a=freeaddon)) {
 	freeaddon=a->next;
     } else {
 	a=(struct addon *) calloc(1,sizeof(struct addon));
@@ -172,7 +173,7 @@ extern void new_addon_level(struct player *p,struct addon *ad) {
     }
 }
 
-extern int addon_command(struct player *p,struct addon *a,unsigned char *s) {
+extern int addon_command(struct player *p,struct addon *a,char *s) {
     char txt[256];
     if (strcmp(s,"INFO")==0) {
 	psend(p,(sprintf(txt,"=%s INFO\n=%s\n=%d %d/%d\n",a->is->subs,
@@ -241,15 +242,15 @@ extern int addon_command(struct player *p,struct addon *a,unsigned char *s) {
 			     a->info[3],a->info[1]),txt));
 	    return 3;
 	}
-	if (strncmp(s,"MODE",4)==0) {
+	if (strcmp(s,"MODE")==0) {
 	    a->info[0]=atoi(&s[4]);
 	    return 3;
 	}
-	if (strncmp(s,"SCALE",5)==0) {
+	if (strcmp(s,"SCALE")==0) {
 	    a->info[1]=atoi(&s[5]);
 	    return 3;
 	}
-	if (strncmp(s,"POS",3)==0) {
+	if (strcmp(s,"POS")==0) {
 	    char *comma;
 	    if (!(comma=strchr(s,','))) {
 		psend(p,"!Bad command\n");
@@ -266,7 +267,7 @@ extern int addon_command(struct player *p,struct addon *a,unsigned char *s) {
 	    for(i=0;i<64;i++) p->lines[i][0]=0;
 	    return 3;
 	}
-	if (strncmp(s,"DRAW",4)==0) {
+	if (strcmp(s,"DRAW")==0) {
 	    int i;
 	    int l,n;
 	    l=strlen(s);

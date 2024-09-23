@@ -59,7 +59,6 @@ extern struct addon*  add_addon(int typ);
 extern void           free_addon(struct addon *a);
 extern struct addon*  strip_addons(struct player *p,struct addon *a);
 extern void           new_addon_level(struct player *p,struct addon *a);
-extern int            addon_command(struct player *p,struct addon *a,
-				    unsigned char *s);
+extern int            addon_command(struct player *p,struct addon *a, char *s);
 
 #endif
