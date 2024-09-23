@@ -157,16 +157,17 @@ extern int main(int argc,char *argv[]) {
 }
 
 static int getmore() {
-    int o;
+    fd_set readfds;
     while (1) {
-	o=1<<fd;
-	select(32,&o,0,0,0);
-	if (o&(1<<fd)) {
-	    if (!(n=read(fd,c,1024))) {
+        FD_ZERO(&readfds);
+        FD_SET(fd, &readfds);
+	select(fd + 1, &readfds, NULL, NULL, NULL);
+	if (FD_ISSET(fd, &readfds)) {
+	    if (!(n = read(fd,c,1024))) { // TODO: Validate input
 		return 1;
 		exit(0);
 	    } else {
-		if (n<0) exit(1);
+		if (n < 0) exit(1);
 		pt=0;
 		return 0;
 	    }
@@ -187,16 +188,12 @@ static void connect_to_socket(char*serv,int p)
     bzero((char *) &name, sizeof(struct sockaddr_in));
     name.sin_family=AF_INET;
     name.sin_port=p;
-    c=&name.sin_addr;
-    c[0]=h->h_addr_list[0][0];
-    c[1]=h->h_addr_list[0][1];
-    c[2]=h->h_addr_list[0][2];
-    c[3]=h->h_addr_list[0][3];
+    memcpy(&name.sin_addr.s_addr, h->h_addr_list[0], h->h_length);
     if ((fd=socket(AF_INET,SOCK_STREAM,0))==-1) {
 	fprintf(stderr,"Could not create a socket!\n");
         exit(1);
     }
-    if (connect(fd,&name,sizeof(struct sockaddr_in))) {
+    if (connect(fd, (struct sockaddr*)&name, sizeof(struct sockaddr_in))) {
 	fprintf(stderr,"Could not connect to server on '%s'\n",serv);
         exit(1);
     }
