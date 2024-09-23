@@ -130,11 +130,10 @@ static void term_connect() {
 }
 
 extern char *tread() {
-    int n,r;
-    int e;
+    int r;
     int o[8];
     char *cp;
-    n=0;e=0;
+    int n=0;
     if (!there) {
 	st[0]=0;
 	return st;
@@ -145,7 +144,7 @@ extern char *tread() {
 	o[path/32]=(1<<(path&31));
 	select(256,o,0,0,0);
 	if (o[path/32]&(1<<(path&31))) {
-	    r=read(path,&st[n],256-n);
+	    r=read(path,&st[n],256-n);  // TODO - validate input
 	    if (r==0) {
 		st[n]=0;
 		n=256;
@@ -161,7 +160,7 @@ extern char *tread() {
     return st;
 }
 
-extern void ctwrite(char *s) {
+void ctwrite(char *s) {
     write(path,">",1);
     write(path,s,strlen(s));
     write(path,"\n",1);
@@ -189,7 +188,7 @@ static void term_input(int j) {
     int ol,r,i;
     char *nl;
     ol=strlen(terminput[j]);
-    r=read(j,&terminput[j][ol],128-ol);
+    r=read(j,&terminput[j][ol],128-ol); // TODO - validate input
     if (r) {
 	while(1) {
 	    if (!(nl=strchr(terminput[j],'\n'))) return;

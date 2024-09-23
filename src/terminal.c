@@ -165,7 +165,7 @@ static void get_label(FILE *td,int pc) {
     l->next=firstlabel;
     firstlabel=l;
     l->adr=pc;
-    strcpy(l->name,str);
+    strncpy(l->name, str, sizeof(l->name));
     if (n==15) while(!isspace(getc(td)));
     if (strcmp(l->name,"start")==0) startpc=pc;
 }
@@ -330,7 +330,7 @@ extern void run_program(struct player *p) {
 		    break;
 		}
 		n=(int)t->num[--t->nsp];
-		sprintf(txt,"%d",n);
+		snprintf(txt, sizeof(txt), "%d",n);
 		if (t->status&PFLG_HI) {
 		    term_hprint(p,txt,strlen(txt));
 		} else {
@@ -497,7 +497,7 @@ extern void run_program(struct player *p) {
 		case 7:aa=POP;bb=POP;
 		    s=(aa>=ROMBASE)?&rom[aa-ROMBASE]:&t->ram[aa];
 		    ss=(bb>=ROMBASE)?&rom[bb-ROMBASE]:&t->ram[bb];
-		    strcpy(s,ss);break;
+		    strncpy(s, ss, sizeof(s));break;
 		case 8:aa=POP;
 		    s=(aa>=ROMBASE)?&rom[aa-ROMBASE]:&t->ram[aa];
 		    PUSH=atoi(s);break;
@@ -657,8 +657,8 @@ static void get_playerinfo(struct login *t,struct player *p,int a) {
     if (!p) return;
     rc=&t->ram[a];
     ri=(int *) rc;
-    strcpy(&rc[0],p->user);
-    strcpy(&rc[16],p->name);
+    strncpy(&rc[0], p->user, sizeof(&rc[0]));
+    strncpy(&rc[16], p->name, sizeof(&rc[16]));
     ri[12]=p->rating;
     ri[13]=p->score;
     ri[14]=p->cash;
@@ -700,7 +700,7 @@ static void get_lift_info(struct login *t,int lift,char *rc) {
     ri[2]=l->x;
     ri[3]=l->y;
     ri[4]=l->t;
-    strcpy(&rc[20],l->pass);
+    strncpy(&rc[20], l->pass, sizeof(&rc[20]));
     ri[7]=0;
     return;
 }
@@ -771,7 +771,7 @@ extern int terminal_operand(struct player *p,char *s) {
     sys[3]=0;
     switch(s[0]) {
     case '>':
-	sprintf(txt,"%s - %s",p->user,&s[1]);
+	snprintf(txt, sizeof(txt), "%s - %s",p->user,&s[1]);
 	player_message(p,txt);
 	break;
     case 'X':
@@ -796,7 +796,7 @@ extern int terminal_command(struct player *p,char *sys,char *com) {
     for (ad=p->firstadd;ad;ad=ad->next)
 	if (strcmp(ad->is->subs,sys)==0) return
 	    addon_command(p,ad,(unsigned char *)com);
-    sprintf(txt,"!Unknown subsystem %s\n",sys);
+    snprintf(txt, sizeof(txt), "!Unknown subsystem %s\n",sys);
     psend(p,txt);
     return 3;
 }
@@ -820,7 +820,7 @@ extern int system_command(struct player *p,char *com) {
 	struct addon *ad;
 	psend(p,"=SYS SUBSYSTEMS\n");
 	for (ad=p->firstadd;ad;ad=ad->next) {
-	    sprintf(txt,"=%s %s\n",ad->is->subs,ad->is->name);
+	    snprintf(txt, sizeof(txt), "=%s %s\n",ad->is->subs,ad->is->name);
 	    psend(p,txt);
 	}
 	return 3;
@@ -1095,7 +1095,7 @@ extern int weapons_command(struct player *p,char *com) {
 		    psend(p,(sprintf(txt,"=%d %d %s\n",i,p->ammo[i],
 				     weap_name[i]),txt));
 		} else {
-		    psend(p,(sprintf(txt,"=%d Inf %s\n",i,weap_name[i]),txt));
+		    psend(p,(snprintf(txt, sizeof(txt), "=%d Inf %s\n",i,weap_name[i]),txt));
 		}
 	return 3;
     }

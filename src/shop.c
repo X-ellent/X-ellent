@@ -52,7 +52,7 @@ extern void init_all_shop() {
 static int readin() {
     int l;
     *buf=0;
-    fgets(buf,2048,pdata);
+    fgets(buf,2048,pdata);  // TODO - validate input
     if (!*buf) return 0;
     l=strlen(buf);
     if (buf[l-1]=='\n') buf[l-1]=0;
