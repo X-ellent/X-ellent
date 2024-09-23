@@ -113,7 +113,10 @@ static void do_connect() {
     there=-1;
     char client_ip[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(connectaddress.sin_addr), client_ip, INET_ADDRSTRLEN);
-    setup_player(client_ip);
+    if (!setup_player(client_ip)) {
+        ctwrite("setup_player() failed");
+        sleep(1);
+    }
     close(path);
 }
 
