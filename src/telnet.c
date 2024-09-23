@@ -175,6 +175,7 @@ extern char* ctquery(char *s) {
     write(path,s,strlen(s));
     write(path,"\n",1);
     r=tread();
+    fprintf(stderr, "Server query=%s received=%s\n", s, r);
     if (!*r) return 0;
     return r;
 }
@@ -183,6 +184,7 @@ extern char* ctpass() {
     char *r;
     write(path,"P\n",2);
     r=tread();
+    fprintf(stderr, "Server reqpass received=%s\n", r);
     if (!*r) return 0;
     return r;
 }
