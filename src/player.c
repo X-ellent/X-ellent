@@ -39,7 +39,6 @@
 extern struct ip_user ip_users[]; // TODO - extern?
 extern int num_ip_users;
 struct player *freeplay;
-int frame;
 struct player *playone;
 int players;
 char *weap_name[MAX_WEAPS];
@@ -191,6 +190,7 @@ extern int setup_player(char *calling_ip)
     unlink(temp_xauth_file); // No longer needed now that connection established
 
     p->connected=-1;
+    p->draw_interval=1;  // TODO - work out latency first
     
     if (p->playing) {
 	sprintf(txt,"%s has rejoined us.",p->name);
@@ -231,7 +231,6 @@ extern int setup_player(char *calling_ip)
     p->immune=DEATH_IMMUNE;
     p->ptarg=0;
     p->scount=0;
-    p->delay=0;
     p->onground=0;
     p->msg[0][0]=0;
     p->msg[1][0]=0;

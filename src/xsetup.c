@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <setjmp.h>
+#include <X11/Xatom.h>
 
 #include "fix.h"
 #include "xbits.h"
@@ -28,6 +29,35 @@ jmp_buf jmpenv;
 int jumpable;
 char why[2048];
 
+int measure_x11_latency(struct player *p) {
+    struct timeval start, end;
+    long long start_ms, end_ms;
+    unsigned char *prop_return;
+    unsigned long nitems, bytes_after;
+    int actual_format;
+    Atom actual_type;
+
+    gettimeofday(&start, NULL);
+
+    // Set the property
+    long data = start.tv_sec * 1000000 + start.tv_usec;
+    XChangeProperty(p->d.disp, p->d.gamewin, p->latency_atom, XA_INTEGER, 32,
+                    PropModeReplace, (unsigned char*)&data, 1);
+
+    // Immediately read it back
+    XGetWindowProperty(p->d.disp, p->d.gamewin, p->latency_atom, 0, 1, False, XA_INTEGER,
+                       &actual_type, &actual_format, &nitems, &bytes_after, &prop_return);
+
+    gettimeofday(&end, NULL);
+
+    if (prop_return) XFree(prop_return);
+
+    start_ms = (long long)start.tv_sec * 1000 + start.tv_usec / 1000;
+    end_ms = (long long)end.tv_sec * 1000 + end.tv_usec / 1000;
+
+    return (int)(end_ms - start_ms);
+}
+
 static int my_error_handler(Display *d) {
     DL("XIOErrorHandler called!!!! Someone just did something nasty");
     if (jumpable) longjmp(jmpenv,2);
@@ -36,7 +66,6 @@ static int my_error_handler(Display *d) {
     DL("PANIC!!! Saved players and exiting....");
     return 0;
 }
-
 
 static int my_other_error_handler(Display *d,XErrorEvent *e) {
     DL("XErrorHandler called!!!! Something very nasty happened");
@@ -232,6 +261,7 @@ extern int init_player_display(struct player *p,char *d)
     XSelectInput(p->d.disp,p->d.gamewin,KeyPressMask|KeyReleaseMask|
 		 EnterWindowMask|LeaveWindowMask|PropertyChangeMask);
     XMapRaised(p->d.disp,p->d.gamewin);
+    p->latency_atom = XInternAtom(p->d.disp, "GAME_LATENCY_CHECK", False);
     XFlush(p->d.disp);
     jumpable=0;longjmp(jmpenv,1);
 

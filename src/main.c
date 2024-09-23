@@ -170,6 +170,7 @@ extern int main(int argc,char *argv[])
     double cumulative_work_time = 0.0, cumulative_sleep_time = 0.0;
 
     clock_gettime(CLOCK_MONOTONIC, &loop_start_time);
+    struct timespec last_latency; last_latency.tv_sec = 0;
     second_timer_start = loop_start_time;
 
     FILE *csv_file;
@@ -183,8 +184,16 @@ extern int main(int argc,char *argv[])
         fps++;
 
         start_timing(0);
-	for (p=playone;p;p=p->next) 
-	    if (p->connected) draw_all(p);
+	if (players) for (p=playone;p;p=p->next)
+	    if (p->connected) {
+                if (now.tv_sec - last_latency.tv_sec >= 6) {
+                    p->latency = measure_x11_latency(p);
+                    p->draw_interval = p->latency / 40 + 1;
+                    printf("Player %s: Latency = %.2f, Draw_interval = %f\n", p->user, p->latency, p->draw_interval);
+                    last_latency = now;
+                }
+                draw_all(p);
+            }
         start_timing(1);
 	free_beams();
         start_timing(2);
@@ -210,7 +219,6 @@ extern int main(int argc,char *argv[])
 	if (players) do_collisions();
         start_timing(12);
 	move_lifts();
-	frame++;
 	lastsave++;
         start_timing(13);
 	if (!players) {

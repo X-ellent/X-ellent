@@ -405,7 +405,10 @@ static void draw_map(struct player *p,int l,int x,int y)
 
 extern void draw_all(struct player *p)
 {
-    jumpable=-1;
+    static int frame_counter = 0;
+    frame_counter++;
+    if (frame_counter % p->draw_interval != 0) return;
+    jumpable=-1; // TODO - What is this?
     switch (setjmp(jmpenv)) {
     case 0:break;
     case 1:return;

@@ -85,6 +85,9 @@ struct player {
     int locate,loctime,tartime;
     int homing;                   /* Time for nicking home base */
     int recharge;                 /* Time until can fire again */
+    Atom latency_atom;  // Try to measure latency using X11
+    int latency;  // in milliseconds
+    int draw_interval;  // in frames - TODO do we need this and the above?
 };
 
 extern struct player *playone;
