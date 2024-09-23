@@ -18,6 +18,7 @@
 #include <pwd.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/Xauth.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
@@ -37,6 +38,54 @@ Display *dis;
 
 char str[512];
 
+void generate_random_cookie(char *cookie, int length) {
+    const char charset[] = "0123456789ABCDEF";
+    for (int i = 0; i < length; i++) {
+        cookie[i] = charset[rand() % (sizeof(charset) - 1)];
+    }
+    cookie[length] = '\0';
+}
+
+char* setup_xauthority(const char *display) {
+    char *xauth_file = getenv("XAUTHORITY");
+    if (!xauth_file) {
+        xauth_file = malloc(strlen(getenv("HOME")) + 14);
+        sprintf(xauth_file, "%s/.Xauthority", getenv("HOME"));
+        setenv("XAUTHORITY", xauth_file, 1);
+    }
+
+    FILE *fp = fopen(xauth_file, "r+");
+    if (!fp) {
+        fp = fopen(xauth_file, "w+");
+    }
+    if (!fp) {
+        fprintf(stderr, "Failed to open Xauthority file\n");
+        return NULL;
+    }
+
+    Xauth auth_entry;
+    auth_entry.family = FamilyLocal;
+    auth_entry.address = (char*)display;
+    auth_entry.address_length = strlen(display);
+    auth_entry.number = "0";
+    auth_entry.name = "MIT-MAGIC-COOKIE-1";
+    auth_entry.name_length = strlen(auth_entry.name);
+
+    char cookie[33];
+    generate_random_cookie(cookie, 32);
+    auth_entry.data = cookie;
+    auth_entry.data_length = 32;
+
+    if (XauWriteAuth(fp, &auth_entry) == 0) {
+        fprintf(stderr, "Failed to write Xauthority entry\n");
+        fclose(fp);
+        return NULL;
+    }
+
+    fclose(fp);
+    return strdup(cookie);
+}
+
 extern int main(int argc,char *argv[]) {
     char *name;
     char *disp;
@@ -45,10 +94,16 @@ extern int main(int argc,char *argv[]) {
     serv=(char *)getenv("XELLENT");
     if (!serv) serv="127.0.0.1";
     if (argc>1) serv=argv[1];
-    disp=(char *) getenv("DISPLAY");
-    if ((!disp)||(*disp==0)) {
-	fprintf(stderr,"Please set your $DISPLAY environment variable.\n");
-	return 1;
+    disp = getenv("DISPLAY");
+    if (!disp || *disp == '\0') {
+        disp = "localhost:0";
+	fprintf(stderr, "DISPLAY was not set. Defaulting to %s\n", disp);
+        setenv("DISPLAY", disp, 1);
+    }
+    char *xauth_cookie = setup_xauthority(disp);
+    if (!xauth_cookie) {
+        fprintf(stderr, "Failed to set up Xauthority\n");
+        return 1;
     }
     name=getpwuid(getuid())->pw_name;
     if (!name) name="???";
@@ -57,6 +112,7 @@ extern int main(int argc,char *argv[]) {
     twrite("painintheass");
     twrite(name);
     twrite(disp);
+    twrite(xauth_cookie); // TODO - losing backwards compatibility?
     if (!(dis=XOpenDisplay(disp))) {
 	exit(1);
     }
