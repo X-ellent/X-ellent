@@ -15,6 +15,7 @@
 #include <malloc.h>
 #include <string.h>
 #include <setjmp.h>
+#include <X11/Xauth.h>
 
 #include "fix.h"
 #include "constants.h"
@@ -87,7 +88,7 @@ extern int setup_player(char *calling_ip)
 
     struct player *p;
     char txt[1024];
-    char *nm = tread();
+    char *nm = tread(); // Read painintheass
     if (strcmp(nm,"painintheass")) {
         ctwrite("You must use the new game client");
         return 0;
@@ -112,6 +113,33 @@ extern int setup_player(char *calling_ip)
         if (display_number == NULL)
             display_number = ":0";  // Default to :0 if no colon found
         snprintf(display, sizeof(display), "%s%s", calling_ip, display_number);
+    }
+
+    nm = tread(); // Read Xauth cookie
+    char xauth_cookie[33];
+    strncpy(xauth_cookie, nm, sizeof(xauth_cookie));
+
+    // Create a temporary Xauthority file for this connection
+    char temp_xauth_file[] = "/tmp/xauth_XXXXXX";
+    int fd = mkstemp(temp_xauth_file);
+    if (fd != -1) {
+        FILE *fp = fdopen(fd, "w");
+        if (fp) {
+            Xauth auth_entry;
+            auth_entry.family = FamilyLocal;
+            auth_entry.address = display;
+            auth_entry.address_length = strlen(display);
+            auth_entry.number = "0";
+            auth_entry.name = "MIT-MAGIC-COOKIE-1";
+            auth_entry.name_length = strlen(auth_entry.name);
+            auth_entry.data = xauth_cookie;
+            auth_entry.data_length = 32;
+
+            XauWriteAuth(fp, &auth_entry);
+            fclose(fp);
+
+            setenv("XAUTHORITY", temp_xauth_file, 1);
+        }
     }
 
     if (p = find_player(username)) {
@@ -157,8 +185,10 @@ extern int setup_player(char *calling_ip)
     }
 
     if (!init_player_display(p, display)) {
+        ctwrite("init_player_display() failed");
 	return 0;
     }
+    unlink(temp_xauth_file); // No longer needed now that connection established
 
     p->connected=-1;
     
