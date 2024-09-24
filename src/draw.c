@@ -462,7 +462,7 @@ extern void draw_all(struct player *p)
     }
     XCopyArea(p->d.disp,p->d.backing,p->d.gamewin,p->d.gc,
 	      0,0,WINWID,WINHGT,0,0);
-    if (frame>=16) XFlush(p->d.disp);
+    if (frame_counter>=16) XFlush(p->d.disp);
     jumpable=0;
     longjmp(jmpenv,1);
 }
