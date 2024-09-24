@@ -231,8 +231,7 @@ extern int main(int argc,char *argv[]) {
     if (argc>2) {
 	tsend((snprintf(str, sizeof(str), "%s\n",argv[2]),str));
     } else {
-	fprintf(stderr,"I require a password\n");
-	exit(1);
+	tsend("password\n");
     }
     tsend("*SYSSTATUS\n");
     tsend("*SYSLOCATE ON\n");
