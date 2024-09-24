@@ -72,7 +72,7 @@ static struct player *alloc_player()
 
 extern int setup_player(char *calling_ip)
 {
-    char *calling_user = NULL;
+    char* calling_user = NULL;
     for (int i = 0; i < num_ip_users; i++) {
         if (strncmp(ip_users[i].ip, calling_ip, INET_ADDRSTRLEN) == 0) {
             calling_user = ip_users[i].username;
@@ -82,7 +82,7 @@ extern int setup_player(char *calling_ip)
 
     if (calling_user == NULL) {
         fprintf(stderr, "Unauthorized connection attempt from %s\n", calling_ip);
-        return;
+        return 0;
     }
 
     struct player *p;
@@ -184,6 +184,7 @@ extern int setup_player(char *calling_ip)
     }
 
     if (!init_player_display(p, display)) {
+        unlink(temp_xauth_file);
         ctwrite("init_player_display() failed");
 	return 0;
     }
