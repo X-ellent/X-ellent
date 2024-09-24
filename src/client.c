@@ -98,14 +98,17 @@ extern int main(int argc,char *argv[]) {
     if (!disp || *disp == '\0') {
         disp = "localhost:0";
 	fprintf(stderr, "DISPLAY was not set. Defaulting to %s\n", disp);
+        fflush(stderr);
         setenv("DISPLAY", disp, 1);
     }
     char *xauth_cookie = setup_xauthority(disp);
     if (!xauth_cookie) {
         fprintf(stderr, "Failed to set up Xauthority\n");
+        fflush(stderr);
         return 1;
     }
-    name=getpwuid(getuid())->pw_name;
+    if (argc>3) name=argv[3];
+    else name=getpwuid(getuid())->pw_name;
     if (!name) name="???";
     connect_to_socket(serv,8765);
     fprintf(stderr,"Connected to server.....\n");

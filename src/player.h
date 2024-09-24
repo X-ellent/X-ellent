@@ -97,8 +97,6 @@ extern char *weap_name[MAX_WEAPS];
 extern char *own_name[MAX_OTHERS];
 extern char own_dam[MAX_OTHERS];
 
-extern int frame;
-
 extern int players;
 
 #define FLG_THRUST          (1<<0)
