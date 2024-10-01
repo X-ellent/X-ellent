@@ -36,9 +36,9 @@ struct target {
     } is;
 };
 
-#define TARG_NONE;
-#define TARG_PLAYER;
-#define TARG_TROLLEY;
-#define TARG_COORD;
+#define TARG_NONE
+#define TARG_PLAYER
+#define TARG_TROLLEY
+#define TARG_COORD
 
 #endif
