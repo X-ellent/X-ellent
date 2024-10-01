@@ -1163,6 +1163,7 @@ extern void scribble_map(int n,struct mypixmap *p) {
 		XDrawRectangle(disp,p->pix,ice,cx+lw,cy+lw,hw-lw,hw-lw);
 		break;
 	    default:
+                break;
 	    }
 	}
     for(y=1;y<map.hgt;y++)
