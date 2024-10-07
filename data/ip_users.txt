@@ -1,1 +1,5 @@
 127.0.0.1 rebroad
+10.137.205.192 rebroad
+10.137.206.1 wonderkid
+10.137.206.2 vicco
+10.137.206.3 pi3test
