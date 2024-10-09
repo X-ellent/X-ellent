@@ -69,7 +69,7 @@ static int my_error_handler(Display *d) {
 
 static int my_other_error_handler(Display *d,XErrorEvent *e) {
     DL("XErrorHandler called!!!! Something very nasty happened");
-    fprintf(stderr,"Serial %d Error %d Request %d Minor %d",(int) e->serial,
+    fprintf(stderr,"Serial %d Error %d Request %d Minor %d\n",(int)e->serial,
 	    (int)e->error_code,(int)e->request_code,(int)e->minor_code);
     if (jumpable) longjmp(jmpenv,2);
     DL("ARGH!!! I Can't recover from the situation either!!!");
