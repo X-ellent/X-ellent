@@ -127,7 +127,7 @@ extern char rom[TERM_ROMSIZE];
 
 extern void init_term(struct player *p);
 extern void init_all_term();
-extern void run_program(struct player *p);
+extern int run_program(struct player *p);
 extern void term_option(struct player *p,int n);
 extern int terminal_input(int chan,int state,char *s);
 extern void terminal_disconnect(int n);

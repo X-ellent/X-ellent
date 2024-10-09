@@ -287,7 +287,7 @@ static int find_label(char *s) {
     return 0;
 }
 
-extern void run_program(struct player *p) {
+extern int run_program(struct player *p) {
     struct login *t;
     char *s,*ss;
     char txt[64];
