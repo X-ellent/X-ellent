@@ -784,7 +784,9 @@ static void away_stuff(struct player *p)
 	    return;
 	}
     }
-    if (p->flags&FLG_TERMINAL) run_program(p);
+    if (p->flags&FLG_TERMINAL)
+        if (!run_program(p))
+            player_message(p,"Terminal crashed - We're working on it!");
     if (p->flags&FLG_HOME) do_home(p);
     return;
 }
