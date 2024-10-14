@@ -1,6 +1,6 @@
 # X-ellent
 
-X-ellent is a complex, multiplayer game originally developed in the early 1990s by Daniel Stephens (cheesey@dcs.warwick.ac.uk). This repository contains the source code for the game, which has not been actively maintained since 1993.
+X-ellent is a complex, multiplayer game originally developed in the early 1990s by Daniel Stephens (cheesey@dcs.warwick.ac.uk). While the game was not actively maintained from 1993 until 2024, it has recently been undergoing significant updates and improvements.
 
 ## Overview
 
@@ -14,11 +14,19 @@ X-ellent is a sophisticated multiplayer game that combines elements of strategy,
 4. **Coding Integration**: One of the most unique aspects of X-ellent is its encouragement of player-developed tools. Players are encouraged to create third-party applications that can connect to the game via telnet, allowing for advanced strategies and automation.
 5. **X11 Graphics**: The game uses X11 for its graphical interface, providing a visual representation of the game world.
 
+## Recent Updates
+
+As of 2024, X-ellent is undergoing extensive revisions and updates, including:
+
+- Adaptation for 64-bit systems
+- Improvements to network play, with ongoing work to optimize for internet play and higher latency environments
+- Various bug fixes and performance improvements
+
 ## Technical Details
 
 - **Language**: The game is written in C.
 - **Graphics**: X11 library is used for graphics rendering.
-- **Networking**: The game uses sockets for network communication.
+- **Networking**: The game uses sockets for network communication, with ongoing improvements for internet play.
 - **External Connections**: The game supports telnet connections for third-party tools.
 
 ## Game Components
@@ -43,14 +51,30 @@ This integration of coding into the gameplay makes X-ellent not just a game, but
 
 ## Building and Running
 
-(Note: As this code hasn't been maintained since 1993, it may require significant work to compile and run on modern systems. The following are general steps that might need to be adapted.)
-
 1. Ensure you have a C compiler and X11 development libraries installed.
 2. Navigate to the project directory.
 3. Run `make` to build the project.
 4. Start the server with `./runme`.
 5. Clients can connect using `./myclient` or a custom client.
 
+## Contributing
+
+We welcome contributions to X-ellent! If you're interested in improving the game or adding new features, please feel free to:
+
+1. Fork the repository
+2. Create a new branch for your feature
+3. Commit your changes
+4. Push to your branch
+5. Create a new Pull Request
+
+We're particularly interested in contributions that improve network play, enhance game features, or optimize performance.
+
 ## Credits
 
-X-ellent was originally developed by Daniel Stephens (cheesey@dcs.warwick.ac.uk).
+X-ellent was originally developed by Daniel Stephens (cheesey@dcs.warwick.ac.uk). All source code, unless otherwise noted, was written by Daniel Stephens. Recent updates and maintenance have been carried out by the current project maintainers.
+
+## Get Involved
+
+We're excited to bring X-ellent back to life and introduce it to a new generation of players and developers. Whether you're interested in playing, developing tools, or contributing to the core game, we welcome your involvement!
+
+For questions, suggestions, or to get involved, please open an issue or submit a pull request.
