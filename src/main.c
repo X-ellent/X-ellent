@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <pthread.h>
-#include <string.h>
+#include <sys/stat.h>
 
 #include "ip_user.h"
 #include "fix.h"
@@ -46,9 +46,14 @@ static int lastsave;
 static int sleepsave;
 static int saveall;
 
-extern int main();
+time_t last_ip_users_mtime = 0;
 
 void load_ip_users() {
+    struct stat file_stat;
+    if (stat("ip_users.txt", &file_stat) == 0) {
+        if (file_stat.st_mtime <= last_ip_users_mtime) return;
+        last_ip_users_mtime = file_stat.st_mtime;
+    }
     FILE *fp = fopen("ip_users.txt", "r");
     if (fp == NULL) {
         fprintf(stderr, "Error: Cannot open ip_users.txt\n");
@@ -126,6 +131,7 @@ extern int main(int argc,char *argv[])
     init_all_term();
     init_all_trolleys();
     load_players();
+    last_ip_users_mtime = 0;
     load_ip_users();
     load_mines();
     players=0;

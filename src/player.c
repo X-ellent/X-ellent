@@ -70,8 +70,12 @@ static struct player *alloc_player()
     return p;
 }
 
+extern void load_ip_users();
+extern time_t last_ip_users_mtime;
+
 extern int setup_player(char *calling_ip)
 {
+    load_ip_users(); // Ensure we have the latest version
     char* calling_user = NULL;
     for (int i = 0; i < num_ip_users; i++) {
         if (strncmp(ip_users[i].ip, calling_ip, INET_ADDRSTRLEN) == 0) {
