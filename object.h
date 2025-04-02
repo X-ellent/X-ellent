@@ -27,8 +27,8 @@ struct object {
     int flags;
     int charge;
     union {
-	struct player *owner;
-	struct object *same;
+    struct player *owner;
+    struct object *same;
     } has;
     int slot;
 };

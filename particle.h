@@ -44,7 +44,7 @@ extern struct explosion *bang_first;
 extern struct explosion *bang_free;
 
 extern void fire_particle(struct player *pl,int l,int x,int y,int a,double v,
-			  int d,int r,int m);
+              int d,int r,int m);
 extern void explode(int l,int x, int y,int s,int f,int d,struct player *who);
 extern void move_particles();
 extern struct particle *alloc_particle();

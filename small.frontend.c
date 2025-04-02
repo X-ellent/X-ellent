@@ -53,10 +53,10 @@ extern int main(int argc,char *argv[]) {
     connect_to_socket(serv,8766);
     tsend((sprintf(str,"%s\n",name),str));
     if (argc>2) {
-	tsend(sprintf(str,"%s\n",argv[2]));
+        tsend(sprintf(str,"%s\n",argv[2]));
     } else {
-	fprintf(stderr,"I require a password\n");
-	exit(1);
+        fprintf(stderr,"I require a password\n");
+        exit(1);
     }
     tsend("*SYSSTATUS\n");
     do_cool_thing();
@@ -68,8 +68,8 @@ static void connect_to_socket(char*serv,int p)
     struct sockaddr_in name;
     struct hostent *h;
     if (!(h=gethostbyname(serv))) {
-	fprintf(stderr,"Cannot find host '%s'\n",serv);
-	exit(1);
+        fprintf(stderr,"Cannot find host '%s'\n",serv);
+        exit(1);
     }
     bzero((char *) &name, sizeof(struct sockaddr_in));
     name.sin_family=AF_INET;
@@ -79,11 +79,11 @@ static void connect_to_socket(char*serv,int p)
     name.sin_addr.S_un.S_un_b.s_b3=h->h_addr_list[0][2];
     name.sin_addr.S_un.S_un_b.s_b4=h->h_addr_list[0][3];
     if ((fd=socket(AF_INET,SOCK_STREAM,0))==-1) {
-	fprintf(stderr,"Could not create a socket!\n");
+        fprintf(stderr,"Could not create a socket!\n");
         exit(1);
     }
     if (connect(fd,&name,sizeof(struct sockaddr_in))) {
-	fprintf(stderr,"Could not connect to server on '%s'\n",serv);
+        fprintf(stderr,"Could not connect to server on '%s'\n",serv);
         exit(1);
     }
 }
@@ -93,7 +93,7 @@ static void tsend(char *s) {
     l=strlen(s);
     n=0;
     while(n<l)
-	n+=write(fd,&s[n],l-n);
+        n+=write(fd,&s[n],l-n);
 }
 
 static void do_cool_thing() {
@@ -106,44 +106,44 @@ static void do_cool_thing() {
     termin[0]=0;
     fmask=1|(1<<fd);
     while(1) {
-	tmask=fmask;
-	j=select(32,&tmask,0,0,0);
-	if (j>0) {
-	    if (tmask&1) do_terminal_input();
-	    if (tmask&(1<<fd)) do_server_input();
-	}
+        tmask=fmask;
+        j=select(32,&tmask,0,0,0);
+        if (j>0) {
+            if (tmask&1) do_terminal_input();
+            if (tmask&(1<<fd)) do_server_input();
+        }
     }
 }
 
 static void do_terminal_input() {
     char c;
     if (read(0,&c,1)) {
-	if (c=='\n') {
-	    termin[termi++]=0;
-	    process_input();
-	    termin[termi=0]=0;
-	    return;
-	}
-	if (c<' ') return;
-	termin[termi++]=c;
-	return;
+        if (c=='\n') {
+            termin[termi++]=0;
+            process_input();
+            termin[termi=0]=0;
+            return;
+        }
+        if (c<' ') return;
+        termin[termi++]=c;
+        return;
     }
 }
 
 static void do_server_input() {
     char c;
     if (read(fd,&c,1)) {
-	if (c=='\n') {
-	    servin[servi++]=0;
-	    process_server_input();
-	    servin[servi=0]=0;
-	    return;
-	}
-	servin[servi++]=c;
-	return;
+        if (c=='\n') {
+            servin[servi++]=0;
+            process_server_input();
+            servin[servi=0]=0;
+            return;
+        }
+        servin[servi++]=c;
+        return;
     } else {
-	fprintf(stderr,"Server terminated connection.\n");
-	exit(1);
+        fprintf(stderr,"Server terminated connection.\n");
+        exit(1);
     }
 }
 
@@ -170,11 +170,11 @@ static void draw_line(int x1,int y1,int x2,int y2) {
     drawm=(drawm+1)%64;
     drawn++;
     if (drawn>19) {
-	drawbuf[bp]='\n';
-	drawbuf[bp+1]=0;
-	tsend(drawbuf);
-	bp=8;
-	drawn=0;
+        drawbuf[bp]='\n';
+        drawbuf[bp+1]=0;
+        tsend(drawbuf);
+        bp=8;
+        drawn=0;
     }
 }
 */
@@ -182,33 +182,33 @@ static void draw_line(int x1,int y1,int x2,int y2) {
 static void process_input() {
     switch(termin[0]) {
     default:
-	tsend(sprintf(str,"%s\n",termin));
+        tsend(sprintf(str,"%s\n",termin));
     }
 }
 
 static void process_server_input() {
     switch(servin[0]) {
     case '!':
-	fprintf(stderr,"  %s\n",servin);
-	break;
+        fprintf(stderr,"  %s\n",servin);
+        break;
     case '.':
-	commandline=-1;
-	currentcommand[0]=0;
-	break;
+        commandline=-1;
+        currentcommand[0]=0;
+        break;
     case '=':
-	if (commandline==-1) {
-	    strcpy(currentcommand,&servin[1]);
-	} else {
-	    printf("%s %3d %s\n",currentcommand,commandline,servin);
-	}
-	commandline++;
-	break;
+        if (commandline==-1) {
+            strcpy(currentcommand,&servin[1]);
+        } else {
+            printf("%s %3d %s\n",currentcommand,commandline,servin);
+        }
+        commandline++;
+        break;
     case '#':
-	data_input(&servin[1]);
-	break;
+        data_input(&servin[1]);
+        break;
     default:
-	fprintf(stderr,"Unknown prefix %s\n",servin);
-	break;
+        fprintf(stderr,"Unknown prefix %s\n",servin);
+        break;
     }
 }
 

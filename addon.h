@@ -60,6 +60,6 @@ extern void           free_addon(struct addon *a);
 extern struct addon*  strip_addons(struct player *p,struct addon *a);
 extern void           new_addon_level(struct player *p,struct addon *a);
 extern int            addon_command(struct player *p,struct addon *a,
-				    unsigned char *s);
+                                    unsigned char *s);
 
 #endif

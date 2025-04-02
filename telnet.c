@@ -13,6 +13,7 @@
 #include  <sys/types.h>
 #include  <sys/time.h>
 #include  <sys/socket.h>
+#include  <sys/select.h>
 #include  <netinet/in.h>
 /* #include  <sys/filio.h> */
 #include  <sys/ioctl.h>
@@ -62,12 +63,12 @@ static int open_socket(int port) {
         exit(1);
     }
     if (setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,(char *)&tmp,
-		   sizeof(tmp))<0) {
+                   sizeof(tmp))<0) {
         exit(1);
     }
     if(bind(sock,(struct sockaddr*)&myaddr,
-	    sizeof(struct sockaddr_in))==-1) {
-	exit(1);
+            sizeof(struct sockaddr_in))==-1) {
+        exit(1);
     }
     if(listen(sock,10)==-1) {
         exit(1);
@@ -78,33 +79,38 @@ static int open_socket(int port) {
 }
 
 extern void do_login() {
-    int rdfiled[8];
+    fd_set rdfiled;
     int j;
     tv.tv_usec=10;
-    for(j=0;j<8;j++) rdfiled[j]=fdm[j];
-    if ((j=select(256,(fd_set*)rdfiled,(fd_set*)0,(fd_set*)0,&tv))<0) {
-	exit(1);
+    FD_ZERO(&rdfiled);
+    for(j=0;j<256;j++)
+        if (fdm[j/32]&(1<<(j&31)))
+            FD_SET(j, &rdfiled);
+    if ((j=select(256,&rdfiled,NULL,NULL,&tv))<0) {
+        exit(1);
     }
     if (j>0)
-	for (j=0;j<256;j++)
-	    if (rdfiled[j/32]&(1<<(j&31))) {
-		if (j==mysocket) {
-		    do_connect();
-		} else {
-		    if (j==termsocket) {
-			term_connect();
-		    } else {
-			term_input(j);
-		    }
-		}
-	    }
+        for (j=0;j<256;j++)
+            if (FD_ISSET(j, &rdfiled)) {
+                if (j==mysocket) {
+                    do_connect();
+                } else {
+                    if (j==termsocket) {
+                        term_connect();
+                    } else {
+                        term_input(j);
+                    }
+                }
+            }
 }
 
 static void do_connect() {
-    int cadlen;
-    cadlen=sizeof(connectaddress);
+    struct sockaddr_in connectaddress;
+    socklen_t cadlen;
+
+    cadlen=sizeof(struct sockaddr_in);
     if((path=accept(mysocket,(struct sockaddr*)&connectaddress,&cadlen))<0) {
-	perror("Accept failed ");
+        perror("Accept failed ");
         return;
     }
     there=-1;
@@ -113,10 +119,12 @@ static void do_connect() {
 }
 
 static void term_connect() {
-    int cadlen;
-    cadlen=sizeof(connectaddress);
+    struct sockaddr_in connectaddress;
+    socklen_t cadlen;
+
+    cadlen=sizeof(struct sockaddr_in);
     if((path=accept(termsocket,(struct sockaddr*)&connectaddress,&cadlen))<0) {
-	perror("Accept failed ");
+        perror("Accept failed ");
         return;
     }
     termstate[path]=1;
@@ -126,55 +134,80 @@ static void term_connect() {
 
 extern char *tread() {
     int n,r;
-    int e;
-    int o[8];
+    fd_set readfds;
     char *cp;
-    n=0;e=0;
     if (!there) {
-	st[0]=0;
-	return st;
+        st[0]=0;
+        return st;
     }
-    for (n=0;n<8;n++) o[n]=0;
+
     n=0;
     while(n<256) {
-	o[path/32]=(1<<(path&31));
-	select(256,o,0,0,0);
-	if (o[path/32]&(1<<(path&31))) {
-	    r=read(path,&st[n],256-n);
-	    if (r==0) {
-		st[n]=0;
-		n=256;
-		there=0;
-	    }
-	    n+=r;
-	}
+        FD_ZERO(&readfds);
+        FD_SET(path, &readfds);
+        select(path+1, &readfds, NULL, NULL, NULL);
+        if (FD_ISSET(path, &readfds)) {
+            r=read(path,&st[n],256-n);
+            if (r==0) {
+                st[n]=0;
+                n=256;
+                there=0;
+            }
+            n+=r;
+        }
     }
     for (cp=st;*cp;cp++) if (*cp<' '||*cp>'~') {
-	*cp=0;
-	return st;
+        *cp=0;
+        return st;
     }
     return st;
 }
 
 extern void ctwrite(char *s) {
-    write(path,">",1);
-    write(path,s,strlen(s));
-    write(path,"\n",1);
+    ssize_t bytes_written;
+    bytes_written = write(path,">",1);
+    if (bytes_written < 0) {
+        perror("write error");
+    }
+    bytes_written = write(path,s,strlen(s));
+    if (bytes_written < 0) {
+        perror("write error");
+    }
+    bytes_written = write(path,"\n",1);
+    if (bytes_written < 0) {
+        perror("write error");
+    }
 }
 
 extern char* ctquery(char *s) {
-    char *r;
-    write(path,"?",1);
-    write(path,s,strlen(s));
-    write(path,"\n",1);
-    r=tread();
-    if (!*r) return 0;
-    return r;
+    static char response[256];
+    ssize_t bytes_written;
+    bytes_written = write(path,"?",1);
+    if (bytes_written < 0) {
+        perror("write error");
+    }
+    bytes_written = write(path,s,strlen(s));
+    if (bytes_written < 0) {
+        perror("write error");
+    }
+    bytes_written = write(path,"\n",1);
+    if (bytes_written < 0) {
+        perror("write error");
+    }
+    if (tread(response) < 0) {
+        return 0;
+    }
+    if (!*response) return 0;
+    return response;
 }
 
 extern char* ctpass() {
     char *r;
-    write(path,"P\n",2);
+    ssize_t bytes_written;
+    bytes_written = write(path,"P\n",2);
+    if (bytes_written < 0) {
+        perror("write error");
+    }
     r=tread();
     if (!*r) return 0;
     return r;
@@ -186,31 +219,31 @@ static void term_input(int j) {
     ol=strlen(terminput[j]);
     r=read(j,&terminput[j][ol],128-ol);
     if (r) {
-	while(1) {
-	    if (!(nl=strchr(terminput[j],'\n'))) return;
-	    *nl=0;
-	    for (i=0;terminput[j][i];i++)
-		if (terminput[j][i]=='\r') terminput[j][i]=0;
-	    termstate[j]=terminal_input(j,termstate[j],terminput[j]);
-	    if (termstate[j]) {
-		if (nl!=&terminput[j][ol+r]) {
-		    strncpy(terminput[j],nl+1,127);
-		    ol-=(nl-terminput[j]);
-		} else {
-		    terminput[j][0]=0;
-		    return;
-		}
-	    } else {
-		fdm[j/32]&=~(1<<(j&31));
-		termstate[j]=0;
-		close(j);
-	    }
-	}
+        while(1) {
+            if (!(nl=strchr(terminput[j],'\n'))) return;
+            *nl=0;
+            for (i=0;terminput[j][i];i++)
+                if (terminput[j][i]=='\r') terminput[j][i]=0;
+            termstate[j]=terminal_input(j,termstate[j],terminput[j]);
+            if (termstate[j]) {
+                if (nl!=&terminput[j][ol+r]) {
+                    strncpy(terminput[j],nl+1,127);
+                    ol-=(nl-terminput[j]);
+                } else {
+                    terminput[j][0]=0;
+                    return;
+                }
+            } else {
+                fdm[j/32]&=~(1<<(j&31));
+                termstate[j]=0;
+                close(j);
+            }
+        }
     } else {
-	fdm[j/32]&=~(1<<(j&31));
-	terminal_input(j,-1,0);
-	termstate[j]=0;
-	close(j);
+        fdm[j/32]&=~(1<<(j&31));
+        terminal_input(j,-1,0);
+        termstate[j]=0;
+        close(j);
     }
 }
 

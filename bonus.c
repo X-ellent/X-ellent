@@ -58,12 +58,12 @@ static void add_bonus() {
 extern void vape_bonus(struct object *o) {
     struct object *n;
     if (firstbonus==o) {
-	firstbonus=o->has.same;
+        firstbonus=o->has.same;
     } else {
-	for (n=firstbonus;(n)&&(n->has.same!=o);n=n->has.same);
-	if ((n)&&(n->has.same==o)) {
-	    n->has.same=o->has.same;
-	}
+        for (n=firstbonus;(n)&&(n->has.same!=o);n=n->has.same);
+        if ((n)&&(n->has.same==o)) {
+            n->has.same=o->has.same;
+        }
     }
     bonuscount=BONUS_TIME;
 }
@@ -71,19 +71,19 @@ extern void vape_bonus(struct object *o) {
 extern void update_bonus() {
     struct object *o;
     for (o=firstbonus;o;o=o->has.same) {
-	o->count--;
-	if (o->count<0)
-	    o->flags|=OBJ_F_EXPLODE;
-	if (o->count==BONUS_SHOUT) {
-	    sprintf(txt,"** BONUS On level %d at %d,%d!! **",o->l,
-		    (int)o->x/128,(int)o->y/128);
-	    global_message(txt);
-	}
+        o->count--;
+        if (o->count<0)
+            o->flags|=OBJ_F_EXPLODE;
+        if (o->count==BONUS_SHOUT) {
+            sprintf(txt,"** BONUS On level %d at %d,%d!! **",o->l,
+                    (int)o->x/128,(int)o->y/128);
+            global_message(txt);
+        }
     }
     bonuscount++;
     if (bonuscount>BONUS_TIME) {
-	add_bonus();
-	bonuscount=random()%BONUS_RAND;
+        add_bonus();
+        bonuscount=random()%BONUS_RAND;
     }
 }
 
@@ -123,19 +123,19 @@ static void get_bogus(struct player *p) {
     int s;
     char *txt;
     if ((random()%10)==1) {
-	txt="Most heinous! Mega BOGUS!";
-	damage_player(p,1000,0,DAM_BOGUS);
-	s=2;
+        txt="Most heinous! Mega BOGUS!";
+        damage_player(p,1000,0,DAM_BOGUS);
+        s=2;
     } else {
-	if ((random()%12)==1) {
-	    damage_player(p,p->shield,0,DAM_BOGUS);
-	    txt="BOGUS!!!! Most un-excellent dude!";
-	    s=1;
-	} else {
-	    damage_player(p,100+random()%200,0,DAM_BOGUS);
-	    txt="Oh no dude! BOGUS!!!!";
-	    s=0;
-	}
+        if ((random()%12)==1) {
+            damage_player(p,p->shield,0,DAM_BOGUS);
+            txt="BOGUS!!!! Most un-excellent dude!";
+            s=1;
+        } else {
+            damage_player(p,100+random()%200,0,DAM_BOGUS);
+            txt="Oh no dude! BOGUS!!!!";
+            s=0;
+        }
     }
     explode(p->body.l,(int) p->body.x,(int) p->body.y,8+8*s,400*s,0,0);
     if (txt) player_message(p,txt);
@@ -144,32 +144,32 @@ static void get_bogus(struct player *p) {
 static void get_bonus_mine(struct player *p) {
     int i;
     for (i=0;i<9;i++)
-	if (p->slots[i]==OBJ_EMPTY) {
-	    switch(random()%4) {
-	    case 0:p->slots[i]=OBJ_MINE_TRIG;break;
-	    case 1:p->slots[i]=OBJ_MINE_TIME;break;
-	    case 2:p->slots[i]=OBJ_MINE_PROX;break;
-	    case 3:p->slots[i]=OBJ_MINE_VELY;break;
-	    }
-	    switch(random()%16) {
-	    case 0:p->size[i]=4;break;
-	    case 1:
-	    case 2:p->size[i]=3;break;
-	    case 3:
-	    case 4:
-	    case 5:
-	    case 6:p->size[i]=2;break;
-	    default:p->size[i]=1;break;
-	    }
-	    switch(p->slots[i]) {
-	    case OBJ_MINE_TRIG:p->mode[i]=0;break;
-	    case OBJ_MINE_TIME:p->mode[i]=10;break;
-	    case OBJ_MINE_PROX:p->mode[i]=20+5*p->size[i];break;
-	    case OBJ_MINE_VELY:p->mode[i]=50;break;
-	    }
-	    player_message(p,"A bonus mine!!");
-	    return;
-	}
+        if (p->slots[i]==OBJ_EMPTY) {
+            switch(random()%4) {
+            case 0:p->slots[i]=OBJ_MINE_TRIG;break;
+            case 1:p->slots[i]=OBJ_MINE_TIME;break;
+            case 2:p->slots[i]=OBJ_MINE_PROX;break;
+            case 3:p->slots[i]=OBJ_MINE_VELY;break;
+            }
+            switch(random()%16) {
+            case 0:p->size[i]=4;break;
+            case 1:
+            case 2:p->size[i]=3;break;
+            case 3:
+            case 4:
+            case 5:
+            case 6:p->size[i]=2;break;
+            default:p->size[i]=1;break;
+            }
+            switch(p->slots[i]) {
+            case OBJ_MINE_TRIG:p->mode[i]=0;break;
+            case OBJ_MINE_TIME:p->mode[i]=10;break;
+            case OBJ_MINE_PROX:p->mode[i]=20+5*p->size[i];break;
+            case OBJ_MINE_VELY:p->mode[i]=50;break;
+            }
+            player_message(p,"A bonus mine!!");
+            return;
+        }
     get_bonus(p);
 }
 
@@ -177,11 +177,11 @@ static void get_bonus_ammo(struct player *p) {
     int i,n;
     i=p->weap;
     if (i) {
-	n=random()%200+random()%200+random()%200;
-	n=n/i;
-	p->ammo[i]+=n;
-	player_message(p,"Bonus Ammunition!");
-	return;
+        n=random()%200+random()%200+random()%200;
+        n=n/i;
+        p->ammo[i]+=n;
+        player_message(p,"Bonus Ammunition!");
+        return;
     }
     get_bonus(p);
 }
@@ -192,10 +192,10 @@ static void get_bonus_mapmem(struct player *p) {
 
 static void get_mega_bonus(struct player *p) {
     if ((random()%2)==0) {
-	get_mega_bogus(p);
-	return;
+        get_mega_bogus(p);
+        return;
     }
-	get_bonus(p);
+        get_bonus(p);
 }
 
 static void get_mega_bogus(struct player *p) {

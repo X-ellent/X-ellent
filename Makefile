@@ -62,7 +62,7 @@ frontend:	$(FRONTOBJ)
 
 terminal.temp:	terminal.h
 	sed -n -e '1,/\*\*START\*\*/p' terminal.c > terminal.temp
-	sed -n -e 's/#define.*OP_\([A-Z][A-Z]*\).*/    if (strcmp(str,"\1")==0) {rom[pc++]=OP_\1;return pc;};/p' terminal.h >> terminal.temp
+	sed -n -e 's/#define.*OP_\([A-Z][A-Z]*\).*/	if (strcmp(str,"\1")==0) {rom[pc++]=OP_\1;return pc;};/p' terminal.h >> terminal.temp
 	sed -n -e '/\*\*END\*\*/,$$p' terminal.c >> terminal.temp
 	cp -f terminal.temp terminal.c
 

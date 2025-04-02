@@ -17,7 +17,7 @@
 #define TINYFONT "-*-clean-bold-r-*-*-10-*-*-*-c-*-*-*"
 #define HUGEFONT "-*-lucidatypewriter-medium-r-*-*-34-240-*-*-m-*-*-*"
 #define TERMFONT "-*-lucidatypewriter-bold-r-*-*-17-*-*-*-m-*-*-*"
-/* Bloody mono machines 
+/* Bloody mono machines
 #define HUGEFONT "-*-lucidatypewriter-medium-r-*-*-19-400-*-*-*-*-*-*"
 #define TERMFONT "-*-lucidatypewriter-bold-r-*-*-18-*-*-*-m-*-*-*"
 */

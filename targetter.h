@@ -30,15 +30,15 @@ struct ttarg {
 struct target {
     int type;
     union {
-	struct ptarg play;
-	struct ttarg trol;
-	struct coord coord;
+    struct ptarg play;
+    struct ttarg trol;
+    struct coord coord;
     } is;
 };
 
-#define TARG_NONE;
-#define TARG_PLAYER;
-#define TARG_TROLLEY;
-#define TARG_COORD;
+#define TARG_NONE
+#define TARG_PLAYER
+#define TARG_TROLLEY
+#define TARG_COORD
 
 #endif

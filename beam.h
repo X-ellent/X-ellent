@@ -31,6 +31,6 @@ extern struct beam *freebeam;
 extern struct beam *alloc_beam();
 extern void free_beams();
 extern int fire_beam_weapon(struct player *p,struct body *src,double x,
-			    double y,int rot,int dam);
+                            double y,int rot,int dam);
 
 #endif

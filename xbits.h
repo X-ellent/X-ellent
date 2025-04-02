@@ -23,7 +23,7 @@ struct player_display {
     Window gamewin;
     Pixmap backing;
     GC gc;
-    
+
     GC gc_black;
     GC gc_white;
     GC gc_ice;

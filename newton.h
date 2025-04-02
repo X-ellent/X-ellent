@@ -26,8 +26,8 @@ struct body {
     int height,fallen;                   /* How high and how much falling */
     int on;                              /* Is this body on the map? */
     union {
-	struct player *player;
-	struct trolley *trolley;
+    struct player *player;
+    struct trolley *trolley;
     } is;
 };
 

@@ -141,5 +141,8 @@ extern int terminal_operand(struct player *p,char *s);
 extern int terminal_command(struct player *p,char *sys,char *com);
 extern int system_command(struct player *p,char *com);
 extern int login_command(struct player *p,char *com);
+extern int teleport_command(struct player *p,char *com);
+extern int lift_command(struct player *p,char *com);
+extern int weapons_command(struct player *p,char *com);
 
 #endif

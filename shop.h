@@ -47,15 +47,15 @@ struct item {
     char name[64];
     int type;
     union {
-	struct menu *next;
-	int price;
+    struct menu *next;
+    int price;
     } sel;
     union {
-	struct sh_mine mine;
-	struct sh_ammo ammo;
-	struct sh_weap weap;
-	struct sh_othr othr;
-	struct sh_repr repr;
+    struct sh_mine mine;
+    struct sh_ammo ammo;
+    struct sh_weap weap;
+    struct sh_othr othr;
+    struct sh_repr repr;
     } obj;
 };
 

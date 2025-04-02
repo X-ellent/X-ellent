@@ -40,7 +40,7 @@ static int my_error_handler(Display *d) {
 static int my_other_error_handler(Display *d,XErrorEvent *e) {
     DL("XErrorHandler called!!!! Something very nasty happened");
     fprintf(stderr,"Serial %d Error %d Request %d Minor %d",(int) e->serial,
-	    (int)e->error_code,(int)e->request_code,(int)e->minor_code);
+            (int)e->error_code,(int)e->request_code,(int)e->minor_code);
     if (jumpable) longjmp(jmpenv,2);
     DL("ARGH!!! I Can't recover from the situation either!!!");
     save_players();
@@ -56,15 +56,15 @@ extern void bloody_errors(struct player *p) {
     p->connected=0;
     players--;
     if (!p->body.on) {
-	if (p->flags&FLG_SHOPPING) {
-	    add_body(&p->body);
-	}
-	if (p->flags&FLG_TERMINAL) {
-	    add_body(&p->body);
-	    p->term->p=0;
-	    p->term=0;
-	    return;
-	}
+        if (p->flags&FLG_SHOPPING) {
+            add_body(&p->body);
+        }
+        if (p->flags&FLG_TERMINAL) {
+            add_body(&p->body);
+            p->term->p=0;
+            p->term=0;
+            return;
+        }
     }
     p->flags&=~FLG_DEADCLR;
     sprintf(txt,"%s has just disconnected nastily",p->name);
@@ -84,16 +84,16 @@ extern int init_player_display(struct player *p,char *d)
     int fail;
     /*    DL("Initialising player display");*/
     if ((p->d.disp=XOpenDisplay(d))==0) {
-	ctwrite("Could not open display, sorry");
-	ctwrite(d);
-	return 0;
+        ctwrite("Could not open display, sorry");
+        ctwrite(d);
+        return 0;
     }
     fprintf(stderr,"Display name is %s (%s)\n",d,p->user);
     switch (setjmp(jmpenv)) {
     case 0:break;
     case 1:return -1;
     case 2:
-	bloody_errors(p);
+        bloody_errors(p);
     case 3:return 0;
     }
     p->d.screen=DefaultScreen(p->d.disp);
@@ -101,14 +101,14 @@ extern int init_player_display(struct player *p,char *d)
     vm=GCForeground|GCBackground|GCFont|GCLineStyle|GCFillStyle;
     strncpy(p->d.name,d,19);
     p->d.gamewin=XCreateSimpleWindow(p->d.disp,
-				     RootWindow(p->d.disp,p->d.screen),0,0,
-				     WINWID,WINHGT,0,
-				     WhitePixel(p->d.disp,p->d.screen),
-				     BlackPixel(p->d.disp,p->d.screen));
+                                     RootWindow(p->d.disp,p->d.screen),0,0,
+                                     WINWID,WINHGT,0,
+                                     WhitePixel(p->d.disp,p->d.screen),
+                                     BlackPixel(p->d.disp,p->d.screen));
     if (!p->d.gamewin) {
-	ctwrite("Could not bring up window");
-	XCloseDisplay(p->d.disp);
-	jumpable=0;longjmp(jmpenv,3);
+        ctwrite("Could not bring up window");
+        XCloseDisplay(p->d.disp);
+        jumpable=0;longjmp(jmpenv,3);
     }
     p->flags|=FLG_INWINDOW;
     fail=0;
@@ -121,9 +121,9 @@ extern int init_player_display(struct player *p,char *d)
     ctwrite("Loading term");
     if (!(p->d.lfont=XLoadQueryFont(p->d.disp,TERMFONT))) fail=-1;
     if (fail) {
-	ctwrite("Could not load font");
-	XCloseDisplay(p->d.disp);
-	jumpable=0;longjmp(jmpenv,3);
+        ctwrite("Could not load font");
+        XCloseDisplay(p->d.disp);
+        jumpable=0;longjmp(jmpenv,3);
     }
     p->d.fw=p->d.font->max_bounds.width;
     p->d.fo=p->d.font->max_bounds.ascent;
@@ -191,45 +191,45 @@ extern int init_player_display(struct player *p,char *d)
     XCopyGC(p->d.disp,p->d.gc_blue,vm,p->d.gc_fblue);
     XCopyGC(p->d.disp,p->d.gc_dgrey,vm,p->d.gc_fdgrey);
     if (DefaultDepth(p->d.disp,p->d.screen)==1) {
-	Pixmap greytile;
-	Pixmap bluetile;
-	Pixmap greentile;
-	greytile=XCreatePixmap(p->d.disp,p->d.gamewin,2,2,1);
-	bluetile=XCreatePixmap(p->d.disp,p->d.gamewin,2,2,1);
-	greentile=XCreatePixmap(p->d.disp,p->d.gamewin,2,2,1);
-	XDrawPoint(p->d.disp,greytile,p->d.gc_white,0,0);
-	XDrawPoint(p->d.disp,greytile,p->d.gc_black,0,1);
-	XDrawPoint(p->d.disp,greytile,p->d.gc_white,1,1);
-	XDrawPoint(p->d.disp,greytile,p->d.gc_black,1,0);
+        Pixmap greytile;
+        Pixmap bluetile;
+        Pixmap greentile;
+        greytile=XCreatePixmap(p->d.disp,p->d.gamewin,2,2,1);
+        bluetile=XCreatePixmap(p->d.disp,p->d.gamewin,2,2,1);
+        greentile=XCreatePixmap(p->d.disp,p->d.gamewin,2,2,1);
+        XDrawPoint(p->d.disp,greytile,p->d.gc_white,0,0);
+        XDrawPoint(p->d.disp,greytile,p->d.gc_black,0,1);
+        XDrawPoint(p->d.disp,greytile,p->d.gc_white,1,1);
+        XDrawPoint(p->d.disp,greytile,p->d.gc_black,1,0);
 
-	XDrawPoint(p->d.disp,bluetile,p->d.gc_black,1,1);
-	XDrawPoint(p->d.disp,bluetile,p->d.gc_white,0,1);
-	XDrawPoint(p->d.disp,bluetile,p->d.gc_white,1,0);
-	XDrawPoint(p->d.disp,bluetile,p->d.gc_white,0,0);
+        XDrawPoint(p->d.disp,bluetile,p->d.gc_black,1,1);
+        XDrawPoint(p->d.disp,bluetile,p->d.gc_white,0,1);
+        XDrawPoint(p->d.disp,bluetile,p->d.gc_white,1,0);
+        XDrawPoint(p->d.disp,bluetile,p->d.gc_white,0,0);
 
-	XDrawPoint(p->d.disp,greentile,p->d.gc_white,1,1);
-	XDrawPoint(p->d.disp,greentile,p->d.gc_black,0,1);
-	XDrawPoint(p->d.disp,greentile,p->d.gc_black,1,0);
-	XDrawPoint(p->d.disp,greentile,p->d.gc_black,0,0);
+        XDrawPoint(p->d.disp,greentile,p->d.gc_white,1,1);
+        XDrawPoint(p->d.disp,greentile,p->d.gc_black,0,1);
+        XDrawPoint(p->d.disp,greentile,p->d.gc_black,1,0);
+        XDrawPoint(p->d.disp,greentile,p->d.gc_black,0,0);
 
-	XSetLineAttributes(p->d.disp,p->d.gc_dred,1,LineOnOffDash,0,0);
-	XSetLineAttributes(p->d.disp,p->d.gc_blue,1,LineOnOffDash,0,0);
-	XSetLineAttributes(p->d.disp,p->d.gc_grey,1,LineOnOffDash,0,0);
-	XSetDashes(p->d.disp,p->d.gc_dred,0,"\002\004",2);
-	XSetDashes(p->d.disp,p->d.gc_blue,0,"\007\002",2);
-	XSetDashes(p->d.disp,p->d.gc_grey,0,"\005\001",2);
+        XSetLineAttributes(p->d.disp,p->d.gc_dred,1,LineOnOffDash,0,0);
+        XSetLineAttributes(p->d.disp,p->d.gc_blue,1,LineOnOffDash,0,0);
+        XSetLineAttributes(p->d.disp,p->d.gc_grey,1,LineOnOffDash,0,0);
+        XSetDashes(p->d.disp,p->d.gc_dred,0,"\002\004",2);
+        XSetDashes(p->d.disp,p->d.gc_blue,0,"\007\002",2);
+        XSetDashes(p->d.disp,p->d.gc_grey,0,"\005\001",2);
 
-	XSetFillStyle(p->d.disp,p->d.gc_fred,FillStippled);
-	XSetFillStyle(p->d.disp,p->d.gc_fblue,FillStippled);
-	XSetFillStyle(p->d.disp,p->d.gc_fdgrey,FillStippled);
-	XSetStipple(p->d.disp,p->d.gc_fred,greytile);
-	XSetStipple(p->d.disp,p->d.gc_fblue,bluetile);
-	XSetStipple(p->d.disp,p->d.gc_fdgrey,greentile);
+        XSetFillStyle(p->d.disp,p->d.gc_fred,FillStippled);
+        XSetFillStyle(p->d.disp,p->d.gc_fblue,FillStippled);
+        XSetFillStyle(p->d.disp,p->d.gc_fdgrey,FillStippled);
+        XSetStipple(p->d.disp,p->d.gc_fred,greytile);
+        XSetStipple(p->d.disp,p->d.gc_fblue,bluetile);
+        XSetStipple(p->d.disp,p->d.gc_fdgrey,greentile);
     }
     p->d.backing=XCreatePixmap(p->d.disp,p->d.gamewin,WINWID,WINHGT,
-			       DefaultDepth(p->d.disp,p->d.screen));
+                               DefaultDepth(p->d.disp,p->d.screen));
     XSelectInput(p->d.disp,p->d.gamewin,KeyPressMask|KeyReleaseMask|
-		 EnterWindowMask|LeaveWindowMask|PropertyChangeMask);
+                 EnterWindowMask|LeaveWindowMask|PropertyChangeMask);
     XMapRaised(p->d.disp,p->d.gamewin);
     XFlush(p->d.disp);
     jumpable=0;longjmp(jmpenv,1);
@@ -237,7 +237,7 @@ extern int init_player_display(struct player *p,char *d)
     /* This is actually never reached but who cares? Well, gcc certainly */
     /* seems to so here goes, if I get this far something isnt right so */
     /* i'll return 0 which happens to mean fail in this instance */
-    
+
     return 0;
 }
 
@@ -246,14 +246,14 @@ extern void shutdown_display(struct player *p) {
     DL("Shutting down display");
     y=jumpable;
     if (!y) {
-	jumpable=-1;
-	switch (setjmp(jmpenv)) {
-	case 0:break;
-	case 1:return;
-	case 2:
-	    bloody_errors(p);
-	    return;
-	}
+        jumpable=-1;
+        switch (setjmp(jmpenv)) {
+        case 0:break;
+        case 1:return;
+        case 2:
+            bloody_errors(p);
+            return;
+        }
     }
     XUnmapWindow(p->d.disp,p->d.gamewin);
     XFreePixmap(p->d.disp,p->d.backing);
@@ -271,8 +271,8 @@ extern void shutdown_display(struct player *p) {
     XFlush(p->d.disp);
     p->connected=0;
     if (!y) {
-	jumpable=0;
-	longjmp(jmpenv,1);
+        jumpable=0;
+        longjmp(jmpenv,1);
     }
     return;
 }
@@ -280,24 +280,24 @@ extern void shutdown_display(struct player *p) {
 extern void Setup_color(struct player *p,char *dname,char *dcol) {
     char *str;
     char err[1024];
-    if (str=(char *) ctquery(dname)) {
-	if (XAllocNamedColor(p->d.disp,DefaultColormap(p->d.disp,p->d.screen),
-			     str,&ex,&xc)) return;
-	sprintf(err,"Cannot find color %s\n",str);
-	ctwrite(err);
+    if ((str=(char *) ctquery(dname))) {
+        if (XAllocNamedColor(p->d.disp,DefaultColormap(p->d.disp,p->d.screen),
+                             str,&ex,&xc)) return;
+        sprintf(err,"Cannot find color %s\n",str);
+        ctwrite(err);
     }
     XAllocNamedColor(p->d.disp,DefaultColormap(p->d.disp,p->d.screen),dcol,
-		     &ex,&xc);
+                     &ex,&xc);
 }
 
 extern int Setup_value(struct player *p,char *dname,int val,int min,int max) {
     char *str;
     int v;
-    if (str=(char *) ctquery(dname)) {
-	v=atoi(str);
-	if (v<min) v=min;
-	if (v>max) v=max;
-	return v;
+    if ((str=(char *) ctquery(dname))) {
+        v=atoi(str);
+        if (v<min) v=min;
+        if (v>max) v=max;
+        return v;
     }
     return val;
 }
@@ -306,18 +306,18 @@ extern int Setup_flag(struct player *p,char *dname,int on,int off,int def) {
     char *str;
     int v;
     v=def?on:off;
-    if (str=(char *) ctquery(dname)) {
-	if (strcmp(str,"on")==0) v=on;
-	if (strcmp(str,"yes")==0) v=on;
-	if (strcmp(str,"off")==0) v=off;
-	if (strcmp(str,"no")==0) v=off;
+    if ((str=(char *) ctquery(dname))) {
+        if (strcmp(str,"on")==0) v=on;
+        if (strcmp(str,"yes")==0) v=on;
+        if (strcmp(str,"off")==0) v=off;
+        if (strcmp(str,"no")==0) v=off;
     }
     return v;
 }
 
 extern void Setup_string(struct player *p,char *dname,char *s,int l) {
     char *str;
-    if (str=(char *) ctquery(dname))
-	strncpy(s,str,l);
+    if ((str=(char *) ctquery(dname)))
+        strncpy(s,str,l);
 }
 

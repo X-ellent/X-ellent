@@ -35,6 +35,13 @@
 #include "lift.h"
 #include "addon.h"
 
+/* Function declarations */
+extern void load_mines(void);
+extern void save_mines(void);
+extern void free_beams(void);
+extern void fire_starbursts(void);
+extern void update_teleports(void);
+
 static int lastsave;
 static int sleepsave;
 static int saveall;
@@ -58,20 +65,22 @@ extern int main(int argc,char *argv[])
     struct timeval start_time, end_time;  // For frame timing
     long frame_time_us;  // Frame time in microseconds
     const long target_frame_time_us = 59000;  // Target ~17fps (59ms per frame)
-    
+
     saveall=0;
-    chdir(LIB);
+    if (chdir(LIB) != 0) {
+        fprintf(stderr, "Warning: Failed to change directory to %s\n", LIB);
+    }
     DL("Entering main");
     if ((signal(SIGPIPE,SIG_IGN))==SIG_ERR) {
-	(void) printf("Error: Signals handling failure!\n");
+    (void) printf("Error: Signals handling failure!\n");
         exit(1);
     }
     if ((signal(SIGUSR1,setsave))==SIG_ERR) {
-	(void) printf("Error: Signals handling failure!\n");
+    (void) printf("Error: Signals handling failure!\n");
         exit(1);
     }
     if ((signal(SIGUSR2,setquit))==SIG_ERR) {
-	(void) printf("Error: Signals handling failure!\n");
+    (void) printf("Error: Signals handling failure!\n");
         exit(1);
     }
     time((time_t*)&ti);
@@ -92,12 +101,12 @@ extern int main(int argc,char *argv[])
     setup_error_handler();
     while (1) {
         gettimeofday(&start_time, NULL);  // Get start time of frame
-        
-        for (p=playone;p;p=p->next) 
+
+        for (p=playone;p;p=p->next)
             if (p->connected) draw_all(p);
         free_beams();
         fire_starbursts();
-        for (p=playone;p;p=p->next) 
+        for (p=playone;p;p=p->next)
             if (p->playing) update_player(p);
         update_turrets();
         update_bonus();
@@ -110,7 +119,7 @@ extern int main(int argc,char *argv[])
         move_lifts();
         frame++;
         lastsave++;
-        
+
         if (!players) {
             sleep(1);
             sleepsave++;
@@ -126,7 +135,7 @@ extern int main(int argc,char *argv[])
                 lastsave=0;
             }
         }
-        
+
         if (saveall==-2) {
             saveall=0;
             global_message("Signal recieved: Saving all data...");
@@ -145,18 +154,18 @@ extern int main(int argc,char *argv[])
             exit(0);
         }
         do_login();
-        
+
         // Frame rate limiter
         gettimeofday(&end_time, NULL);
-        frame_time_us = (end_time.tv_sec - start_time.tv_sec) * 1000000 + 
+        frame_time_us = (end_time.tv_sec - start_time.tv_sec) * 1000000 +
                        (end_time.tv_usec - start_time.tv_usec);
-        
+
         if (frame_time_us < target_frame_time_us) {
             // Sleep for the remaining time to achieve target frame rate
             usleep(target_frame_time_us - frame_time_us);
         }
     }
-    
+
     sleep(5);
     DL("Exiting");
     return 0;
