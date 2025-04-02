@@ -21,7 +21,7 @@ struct lift {
     char pass[8];
 };
 
-struct lift *firstlift;
+extern struct lift *firstlift;
 
 #define LIFT_NONE     0
 #define LIFT_CALLED   1

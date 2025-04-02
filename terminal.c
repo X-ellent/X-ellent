@@ -49,8 +49,8 @@ static int comperr;
 static char txt[256];
 static struct player *tuser[256];
 
-#define POP t->num[--t->nsp]
-#define PUSH t->num[t->nsp++]
+#define POP ((ptr_int_t)t->num[--t->nsp])
+#define PUSH(x) (t->num[t->nsp++] = (ptr_int_t)(x))
 
 extern void init_term(struct player *p) {
     int i;
@@ -91,15 +91,15 @@ extern void init_all_term() {
     int pass;
 
     DL("Assembling terminal code");
-    
+
     for (pass=0;pass<2;pass++) {
 	if (pass==1) DL("Second pass");
-	
+
 	if (!(td=fopen("term.asm","rb"))) {
 	    fprintf(stderr,"Cannot open terminal code file for reading\n");
 	    exit(1);
 	}
-	
+
 	pc=0;
 	comperr=pass?0:2;
 	c=getc(td);
@@ -131,10 +131,10 @@ extern void init_all_term() {
 	    }
 	    while (isspace(c=getc(td)));
 	}
-	
+
 	fclose(td);
     }
-    
+
     if (comperr) exit(1);
 }
 
@@ -173,7 +173,7 @@ static int get_string(FILE *td,int pc) {
 static int get_number(char c,FILE *td,int pc) {
     char *nc;
     char d;
-    int n;
+    ptr_int_t n;  /* Changed to ptr_int_t for 64-bit compatibility */
     n=c-'0';
     if ((c=='-')||(c=='+')) n=0;
     while (isdigit(d=getc(td))) n=n*10+d-'0';
@@ -184,9 +184,16 @@ static int get_number(char c,FILE *td,int pc) {
     rom[pc++]=nc[1];
     rom[pc++]=nc[2];
     rom[pc++]=nc[3];
+    #if defined(__LP64__) || defined(_LP64) || defined(__amd64) || defined(__x86_64__) || defined(__aarch64__)
+    /* For 64-bit systems, store the upper 32 bits */
+    rom[pc++]=nc[4];
+    rom[pc++]=nc[5];
+    rom[pc++]=nc[6];
+    rom[pc++]=nc[7];
+    #endif
     return pc;
 }
-    
+
 static int get_thing(char c,FILE *td,int pc) {
     char str[16];
     char *nc;
@@ -295,11 +302,20 @@ extern void run_program(struct player *p) {
 	    case OP_CLS:cts(p);break;
 	    case OP_NEW:term_newline(p);return;
 	    case OP_PSH:
-		s=(char *)&t->num[t->nsp++];
-		s[0]=rom[(t->pc[t->psp]++)-ROMBASE];
-		s[1]=rom[(t->pc[t->psp]++)-ROMBASE];
-		s[2]=rom[(t->pc[t->psp]++)-ROMBASE];
-		s[3]=rom[(t->pc[t->psp]++)-ROMBASE];
+	    {
+		ptr_int_t *pval;
+		pval = (ptr_int_t *)&rom[t->pc[t->psp]-ROMBASE];
+
+		#if defined(__LP64__) || defined(_LP64) || defined(__amd64) || defined(__x86_64__) || defined(__aarch64__)
+		/* On 64-bit systems, we need to read 8 bytes */
+		t->pc[t->psp]+=8;
+		#else
+		/* On 32-bit systems, we need to read 4 bytes */
+		t->pc[t->psp]+=4;
+		#endif
+
+		PUSH(*pval);
+	    }
 		break;
 	    case OP_STR:
 		if (!t->nsp) {
@@ -389,7 +405,7 @@ extern void run_program(struct player *p) {
 	    case OP_SPC:term_print(p," ",1);break;
 	    case OP_TAB:n=POP;if (t->x<n) t->x=n;break;
 	    case OP_BAT:t->x=POP;break;
-	    case OP_POS:PUSH=t->x;break;
+	    case OP_POS:PUSH(t->x);break;
 	    case OP_JSR:
 		n=(int)t->num[--t->nsp];
 		t->pc[++t->psp]=n;
@@ -400,11 +416,11 @@ extern void run_program(struct player *p) {
 		break;
 	    case OP_INC:
 		aa=POP;
-		PUSH=(aa+1);
+		PUSH(aa+1);
 		break;
 	    case OP_DEC:
 		aa=POP;
-		PUSH=(aa-1);
+		PUSH(aa-1);
 		break;
 	    case OP_INCA:t->a++;break;
 	    case OP_INCB:t->b++;break;
@@ -473,26 +489,26 @@ extern void run_program(struct player *p) {
 		case 1:
 		    aa=POP;bb=POP;
 		    get_playerinfo(t,(struct player *)aa,bb);break;
-		case 2:PUSH=(int) playone;break; /* Put playone onto stack */
+		case 2:PUSH((ptr_int_t) playone);break; /* Put playone onto stack */
 		case 3:aa=POP;
 		    bb=getnextplayer((struct player *) aa);
-		    PUSH=bb;break; /* get next player */
+		    PUSH(bb);break; /* get next player */
 		case 4:aa=POP;
-		    PUSH=(int) find_player(&t->ram[aa]);break;
+		    PUSH((ptr_int_t) find_player(&t->ram[aa]));break;
 		case 5:aa=POP;
 		    p->cash-=aa;
 		    get_playerinfo(t,p,0);break;
 		case 6:aa=POP;bb=POP;
 		    s=(aa>=ROMBASE)?&rom[aa-ROMBASE]:&t->ram[aa];
 		    ss=(bb>=ROMBASE)?&rom[bb-ROMBASE]:&t->ram[bb];
-		    PUSH=strcmp(s,ss);break;
+		    PUSH(strcmp(s,ss));break;
 		case 7:aa=POP;bb=POP;
 		    s=(aa>=ROMBASE)?&rom[aa-ROMBASE]:&t->ram[aa];
 		    ss=(bb>=ROMBASE)?&rom[bb-ROMBASE]:&t->ram[bb];
 		    strcpy(s,ss);break;
 		case 8:aa=POP;
 		    s=(aa>=ROMBASE)?&rom[aa-ROMBASE]:&t->ram[aa];
-		    PUSH=atoi(s);break;
+		    PUSH(atoi(s));break;
 		case 9:aa=POP;bb=POP;
 		    s=(aa>=ROMBASE)?&rom[aa-ROMBASE]:&t->ram[aa];
 		    ss=(bb>=ROMBASE)?&rom[bb-ROMBASE]:&t->ram[bb];
@@ -536,22 +552,22 @@ extern void run_program(struct player *p) {
 		} else {
 		    t->status|=PFLG_EQ;
 		}
-		PUSH=bb;
+		PUSH(bb);
 		break;
 	    case OP_POPA:t->a=POP;break;
 	    case OP_POPB:t->b=POP;break;
-	    case OP_PSHA:PUSH=t->a;break;
-	    case OP_PSHB:PUSH=t->b;break;
+	    case OP_PSHA:PUSH(t->a);break;
+	    case OP_PSHB:PUSH(t->b);break;
 	    case OP_POP:n=POP;break;
-	    case OP_NEG:n=POP;PUSH=-n;break;
-	    case OP_SWAP:aa=POP;bb=POP;PUSH=aa;PUSH=bb;break;
-	    case OP_ROT:aa=POP;bb=POP;cc=POP;PUSH=bb;PUSH=aa;PUSH=cc;break;
-	    case OP_ADD:bb=POP;aa=POP;PUSH=(aa+bb);break;
-	    case OP_SUB:bb=POP;aa=POP;PUSH=(aa+bb);break;
-	    case OP_MULT:bb=POP;aa=POP;PUSH=(aa+bb);break;
-	    case OP_DIV:bb=POP;aa=POP;PUSH=(aa+bb);break;
-	    case OP_MOD:bb=POP;aa=POP;PUSH=(aa+bb);break;
-	    case OP_DUP:aa=POP;PUSH=aa;PUSH=aa;break;
+	    case OP_NEG:n=POP;PUSH(-n);break;
+	    case OP_SWAP:aa=POP;bb=POP;PUSH(aa);PUSH(bb);break;
+	    case OP_ROT:aa=POP;bb=POP;cc=POP;PUSH(bb);PUSH(aa);PUSH(cc);break;
+	    case OP_ADD:bb=POP;aa=POP;PUSH((aa+bb));break;
+	    case OP_SUB:bb=POP;aa=POP;PUSH((aa-bb));break;
+	    case OP_MULT:bb=POP;aa=POP;PUSH((aa*bb));break;
+	    case OP_DIV:bb=POP;aa=POP;PUSH((aa/bb));break;
+	    case OP_MOD:bb=POP;aa=POP;PUSH((aa%bb));break;
+	    case OP_DUP:aa=POP;PUSH(aa);PUSH(aa);break;
 	    default:
 		fprintf(stderr,"Illegal opcode %d\n",
 			rom[t->pc[t->psp]-ROMBASE-1]);

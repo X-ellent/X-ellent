@@ -59,7 +59,7 @@ struct item {
     } obj;
 };
 
-struct menu m_root;
+extern struct menu m_root;
 
 #define ITEM_NEXT 1
 #define ITEM_MINE 2

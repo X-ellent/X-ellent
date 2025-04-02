@@ -28,11 +28,11 @@ struct particle {
     struct player *owner;
 };
 
-struct particle *parts[MAXDEPTH];
+extern struct particle *parts[MAXDEPTH];
 
-struct particle *part_free;
+extern struct particle *part_free;
 
-int part_count;
+extern int part_count;
 
 struct explosion {
     int x,y;
@@ -40,8 +40,8 @@ struct explosion {
     struct explosion *next;
 };
 
-struct explosion *bang_first;
-struct explosion *bang_free;
+extern struct explosion *bang_first;
+extern struct explosion *bang_free;
 
 extern void fire_particle(struct player *pl,int l,int x,int y,int a,double v,
 			  int d,int r,int m);

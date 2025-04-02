@@ -15,6 +15,10 @@
 
 #include "constants.h"
 
+/* Define a type that can safely hold pointers on both 32-bit and 64-bit systems */
+#include <stdint.h>
+typedef uintptr_t ptr_int_t; /* Use this type for pointer-integer conversions */
+
  /* I have decided to treat the terminals as if they were all little */
  /* processorts which run their own assembly language, this WILL take */
  /* a bit of writing i guess since ive just decided to rewrite the */
@@ -41,7 +45,7 @@ struct login {
     int tmp;            /* Internal register for operations */
     int tmpb;           /* Internal register for operations */
     int pc[20];         /* My pc stack */
-    int num[64];        /* My num stack */
+    ptr_int_t num[64];  /* My num stack - now uses ptr_int_t to safely store pointers */
     int a,b;            /* Number registers */
     int status;         /* Status register */
     char ram[512];      /* Terminal's ram */
@@ -53,12 +57,12 @@ struct label {
     struct label *next;
 };
 
+/* Use extern for global variables to avoid multiple definition errors */
+extern struct label *firstlabel;
+extern int startpc;
 
-struct label *firstlabel;
-int startpc;
-
-struct login tty[TERM_NUMBER];
-char rom[TERM_ROMSIZE];
+extern struct login tty[TERM_NUMBER];
+extern char rom[TERM_ROMSIZE];
 
 #define OP_RTS 1
 #define OP_JMP 2

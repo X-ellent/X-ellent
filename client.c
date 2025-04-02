@@ -82,8 +82,8 @@ extern int main(int argc,char *argv[]) {
     char *serv;
     int ret;
     serv=(char *)getenv("XELLENT");
-    if (!serv) serv="daniel";
-/*    if (argc>1) serv=argv[1];*/
+    if (!serv) serv="localhost";
+    if (argc>1) serv=argv[1];
     disp=(char *) getenv("DISPLAY");
     if ((!disp)||(*disp==0)) {
 	fprintf(stderr,"Please set your $DISPLAY environment variable.\n");
