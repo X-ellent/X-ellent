@@ -180,22 +180,22 @@ int addon_command(struct player *p,struct addon *a,uchar *s) {
 		snprintf(txt, sizeof(txt), "=%s INFO\n=%s\n=%d %d/%d\n", a->is->subs,
 				a->is->name, a->level, a->damage, a->is->damage);
 		psend(p, txt);
-		return 3;
+		return;
 	}
 	switch(a->is->type) {
 	case ADD_ANTICLOAK:
 		if (strcmp((const char *)s,"HELP")==0) {
 			psend(p,"=ACL HELP\n");
 			psend(p,"=HELP\n=ON\n=OFF\n=STATUS\n");
-			return 3;
+			return;
 		}
 		if (strcmp((const char *)s,"ON")==0) {
 			p->flags|=FLG_ANTICLOAK;
-			return 3;
+			return;
 		}
 		if (strcmp((const char *)s,"OFF")==0) {
 			p->flags&=~FLG_ANTICLOAK;
-			return 3;
+			return;
 		}
 		if (strcmp((const char *)s,"STATUS")==0) {
 			if (p->flags&FLG_ANTICLOAK)
@@ -208,15 +208,15 @@ int addon_command(struct player *p,struct addon *a,uchar *s) {
 		if (strcmp((const char *)s,"HELP")==0) {
 			psend(p,"=MIN HELP\n");
 			psend(p,"=HELP\n=ON\n=OFF\n=STATUS\n");
-			return 3;
+			return;
 		}
 		if (strcmp((const char *)s,"ON")==0) {
 			p->flags|=FLG_MINESWEEP;
-			return 3;
+			return;
 		}
 		if (strcmp((const char *)s,"OFF")==0) {
 			p->flags&=~FLG_MINESWEEP;
-			return 3;
+			return;
 		}
 		if (strcmp((const char *)s,"STATUS")==0) {
 			if (p->flags&FLG_MINESWEEP)
@@ -227,45 +227,45 @@ int addon_command(struct player *p,struct addon *a,uchar *s) {
 		break;
 	case ADD_TARGET:
 		targetter_command(p,a,(char *)s);
-		return 3;
+		return;
 	case ADD_VISUAL:
 		if (strcmp((const char *)s,"HELP")==0) {
 			psend(p,"=VIS HELP\n");
 			psend(p,"=HELP\n=STATUS\n=INFO\n=MODE<num>\n=SCALE<num>\n");
 			psend(p,"=POS<num>,<num>\n=CLEAR\n=DRAW<data>\n");
-			return 3;
+			return;
 		}
 		if (strcmp((const char *)s,"STATUS")==0) {
 			psend(p,"=VIS STATUS\n");
 			snprintf(txt, sizeof(txt), "=M%d %d,%d S%d\n", a->info[0], a->info[2],
 					 a->info[3], a->info[1]);
 			psend(p, txt);
-			return 3;
+			return;
 		}
 		if (strncmp((const char *)s,"MODE",4)==0) {
 			a->info[0]=atoi((const char *)&s[4]);
-			return 3;
+			return;
 		}
 		if (strncmp((const char *)s,"SCALE",5)==0) {
 			a->info[1]=atoi((const char *)&s[5]);
-			return 3;
+			return;
 		}
 		if (strncmp((const char *)s,"POS",3)==0) {
 			char *comma;
 			if (!(comma=strchr((char *)s,','))) {
 				psend(p,"!Bad command\n");
-				return 3;
+				return;
 			}
 			*comma=0;
 			a->info[2]=atoi((const char *)(s+3));
 			*comma=',';
 			a->info[3]=atoi((const char *)(comma+1));
-			return 3;
+			return;
 		}
 		if (strcmp((const char *)s,"CLEAR")==0) {
 			int i;
 			for(i=0;i<64;i++) p->lines[i][0]=0;
-			return 3;
+			return;
 		}
 		if (strncmp((const char *)s,"DRAW",4)==0) {
 			int i,l,n;
@@ -284,10 +284,10 @@ int addon_command(struct player *p,struct addon *a,uchar *s) {
 					}
 				}
 			}
-			return 3;
+			return;
 		}
 		psend(p,"!Invalid command to visual display unit\n");
-		return 3;
+		return;
 	}
 	snprintf(txt, sizeof(txt), "!Unknown command to subsystem %s\n", a->is->subs);
 	psend(p, txt);
