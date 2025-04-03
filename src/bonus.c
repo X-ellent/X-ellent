@@ -33,61 +33,52 @@ static int bonuscount;
 static char txt[256];
 
 static void add_bonus() {
-    int x,y,d;
-    double xv,yv;
-    struct object *o;
-    d=random()%map.depth;
-    x=random()%(map.wid-2)*128+192;
-    y=random()%(map.hgt-2)*128+192;
-    xv=(random()%100-50)/10;
-    yv=(random()%100-50)/10;
-    o=alloc_object();
-    o->next=obj_first;
-    obj_first=o;
-    o->type=OBJ_BONUS;
-    o->l=d;
-    o->x=(double) x;o->y=(double) y;
-    o->xv=xv;o->yv=yv;
-    o->xf=0;o->yf=0;
-    o->flags=OBJ_F_TRIG;
-    o->count=BONUS_AGE+random()%BONUS_RAND;
-    o->has.same=firstbonus;
-    firstbonus=o;
+	struct object *o=alloc_object();
+	o->next=obj_first;
+	obj_first=o;
+	o->type=OBJ_BONUS;
+	o->l=random()%map.depth;
+	o->x=(double)(random()%(map.wid-2)*128+192);
+	o->y=(double)(random()%(map.hgt-2)*128+192);
+	o->xv=(random()%100-50)/10;
+	o->yv=(random()%100-50)/10;
+	o->xf=0;o->yf=0;
+	o->flags=OBJ_F_TRIG;
+	o->count=BONUS_AGE+random()%BONUS_RAND;
+	o->has.same=firstbonus;
+	firstbonus=o;
 }
 
-extern void vape_bonus(struct object *o) {
-    struct object *n;
-    if (firstbonus==o) {
-        firstbonus=o->has.same;
-    } else {
-        for (n=firstbonus;(n)&&(n->has.same!=o);n=n->has.same);
-        if ((n)&&(n->has.same==o)) {
-            n->has.same=o->has.same;
-        }
-    }
-    bonuscount=BONUS_TIME;
+void vape_bonus(struct object *o) {
+	struct object *n;
+	if (firstbonus==o)
+		firstbonus=o->has.same;
+	else {
+		for (n=firstbonus;(n)&&(n->has.same!=o);n=n->has.same);
+		if ((n)&&(n->has.same==o)) n->has.same=o->has.same;
+	}
+	bonuscount=BONUS_TIME;
 }
 
-extern void update_bonus() {
-    struct object *o;
-    for (o=firstbonus;o;o=o->has.same) {
-        o->count--;
-        if (o->count<0)
-            o->flags|=OBJ_F_EXPLODE;
-        if (o->count==BONUS_SHOUT) {
-            sprintf(txt,"** BONUS On level %d at %d,%d!! **",o->l,
-                    (int)o->x/128,(int)o->y/128);
-            global_message(txt);
-        }
-    }
-    bonuscount++;
-    if (bonuscount>BONUS_TIME) {
-        add_bonus();
-        bonuscount=random()%BONUS_RAND;
-    }
+void update_bonus() {
+	for (struct object *o=firstbonus;o;o=o->has.same) {
+		o->count--;
+		if (o->count<0)
+			o->flags|=OBJ_F_EXPLODE;
+		if (o->count==BONUS_SHOUT) {
+			sprintf(txt,"** BONUS On level %d at %d,%d!! **",o->l,
+					(int)o->x/128,(int)o->y/128);
+			global_message(txt);
+		}
+	}
+	bonuscount++;
+	if (bonuscount>BONUS_TIME) {
+		add_bonus();
+		bonuscount=random()%BONUS_RAND;
+	}
 }
 
-extern void get_bonus(struct player *p) {
+void get_bonus(struct player *p) {
     char *txt;
     int r;
     txt=0;
