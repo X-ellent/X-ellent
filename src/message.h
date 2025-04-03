@@ -15,7 +15,7 @@
 
 #include "player.h"
 
-extern void global_message(char *s);
-extern void player_message(struct player *p,char *s);
+void global_message(char *s);
+void player_message(struct player *p,char *s);
 
 #endif

@@ -136,15 +136,15 @@ extern int players;
 #define WEP_TARGLASER 7
 #define WEP_LASER     8
 
-extern void damage_player(struct player *p,int d,struct player *who,int typ);
-extern struct player* find_player(char *n);
-extern int setup_player();
-extern void update_player(struct player *p);
-extern void init_all_weap();
-extern struct player *find_player(char *n);
-extern void save_players();
-extern void load_players();
-extern void next_target(struct player *p);
-extern int can_locate(struct player *p,struct player *t);
+void damage_player(struct player *p,int d,struct player *who,int typ);
+struct player* find_player(char *n);
+int setup_player();
+void update_player(struct player *p);
+void init_all_weap();
+struct player *find_player(char *n);
+void save_players();
+void load_players();
+void next_target(struct player *p);
+int can_locate(struct player *p,struct player *t);
 
 #endif

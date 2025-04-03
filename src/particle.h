@@ -43,13 +43,13 @@ struct explosion {
 extern struct explosion *bang_first;
 extern struct explosion *bang_free;
 
-extern void fire_particle(struct player *pl,int l,int x,int y,int a,double v,
+void fire_particle(struct player *pl,int l,int x,int y,int a,double v,
               int d,int r,int m);
-extern void explode(int l,int x, int y,int s,int f,int d,struct player *who);
-extern void move_particles();
-extern struct particle *alloc_particle();
-extern void free_particle(struct particle *p);
-extern struct explosion *alloc_bang();
-extern void move_explosions();
+void explode(int l,int x, int y,int s,int f,int d,struct player *who);
+void move_particles();
+struct particle *alloc_particle();
+void free_particle(struct particle *p);
+struct explosion *alloc_bang();
+void move_explosions();
 
 #endif

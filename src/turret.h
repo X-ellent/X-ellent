@@ -30,11 +30,11 @@ struct turret {
 
 extern struct turret *firstturret;
 
-extern struct turret *add_turret(int d,int x,int y);
-extern void generate_pass(char *p,int n);
-extern void damage_turret(struct turret *t,int d,struct player *who);
-extern void update_turrets();
-extern struct turret *find_turret(int l,int x,int y);
+struct turret *add_turret(int d,int x,int y);
+void generate_pass(char *p,int n);
+void damage_turret(struct turret *t,int d,struct player *who);
+void update_turrets();
+struct turret *find_turret(int l,int x,int y);
 
 #define TFLG_ACTIVE     (1<<0)
 #define TFLG_DESTROYED  (1<<1)

@@ -21,7 +21,6 @@
 #include "fix.h"
 #include "terminal.h"
 
-// Function prototypes
 extern void targetter_command(struct player *p,struct addon *a,char *s);
 
 static void addme(int n,char *s,char *ss,int u,int d,int rc,int ca,int cb,
@@ -44,8 +43,7 @@ extern void init_addons() {
 	firstaddtype->cost[3]=36000;firstaddtype->cost[4]=43000;
 }
 
-static void addme(int n,char *s,char *ss,int u,int d,int rc,int ca,int cb,
-				  int cc) {
+static void addme(int n,char *s,char *ss,int u,int d,int rc,int ca,int cb, int cc) {
 	struct addtype *at;
 	at=(struct addtype *) calloc(1,sizeof(struct addtype));
 	strcpy(at->name,s);

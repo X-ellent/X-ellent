@@ -13,6 +13,6 @@
 #ifndef My_EVENTS_H
 #define My_EVENTS_H
 
-extern void process_events(struct player *p);
+void process_events(struct player *p);
 
 #endif

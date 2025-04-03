@@ -36,10 +36,10 @@ extern struct body *firstbody;
 #define BODY_PLAYER   1
 #define BODY_TROLLEY  2
 
-extern void add_body(struct body *b);
-extern void remove_body(struct body *b);
-extern int  is_stopped(struct body *b);
-extern void do_collisions();
+void add_body(struct body *b);
+void remove_body(struct body *b);
+int  is_stopped(struct body *b);
+void do_collisions();
 
 #endif
 

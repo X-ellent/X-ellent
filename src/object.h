@@ -70,11 +70,11 @@ extern int obj_free;
 #define OBJ_F_CHAIN      (1<<5)
 
 struct object *alloc_object();
-extern void move_objects();
-extern void take_hold(struct player *p);
-extern void update_trolleys();
-extern void init_all_trolleys();
-extern void create_trolley(struct trolley *tr);
+void move_objects();
+void take_hold(struct player *p);
+void update_trolleys();
+void init_all_trolleys();
+void create_trolley(struct trolley *tr);
 
 #endif
 

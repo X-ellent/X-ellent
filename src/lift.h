@@ -27,15 +27,15 @@ extern struct lift *firstlift;
 #define LIFT_CALLED   1
 #define LIFT_BUSY     2
 
-extern void add_lift(int d,int x,int y);
-extern struct lift *find_lift(int x, int y);
-extern struct lift *scan_lift(int i);
-extern void move_lifts();
-extern int move_lift_up(struct lift *l);
-extern int move_lift_down(struct lift *l);
-extern void move_lift_to(struct lift *l,int d);
-extern int can_lift_ascend(struct lift *l);
-extern int can_lift_descend(struct lift *l);
-extern int summon_lift(int l,int x,int y);
+void add_lift(int d,int x,int y);
+struct lift *find_lift(int x, int y);
+struct lift *scan_lift(int i);
+void move_lifts();
+int move_lift_up(struct lift *l);
+int move_lift_down(struct lift *l);
+void move_lift_to(struct lift *l,int d);
+int can_lift_ascend(struct lift *l);
+int can_lift_descend(struct lift *l);
+int summon_lift(int l,int x,int y);
 
 #endif

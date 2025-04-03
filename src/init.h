@@ -13,6 +13,6 @@
 #ifndef My_INIT_H
 #define My_INIT_H
 
-extern void build_sintable();
+void build_sintable();
 
 #endif

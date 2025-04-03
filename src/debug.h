@@ -16,12 +16,9 @@
 #ifdef EBUG
 
 #define DL(s) logmsg(s)
-extern void logmsg();
-
+void logmsg();
 #else
-
 #define DL(s) /* s */
+#endif // EBUG
 
-#endif
-
-#endif
+#endif // My_DEBUG_H

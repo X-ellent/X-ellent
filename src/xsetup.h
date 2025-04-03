@@ -15,16 +15,16 @@
 
 #include <setjmp.h>
 
-extern void setup_error_handler();
-extern void bloody_errors(struct player *p);
-extern int init_player_display(struct player *p,char *d);
-extern void shutdown_display(struct player *p);
-extern int Setup_value(struct player *p,char *dname,int val,int min,int max);
-extern void Setup_color(struct player *p,char *dname,char *dcol);
-extern void Setup_string(struct player *p,char *dname,char *s,int l);
-extern int Setup_flag(struct player *p,char *dname,int on,int off,int def);
-
-extern jmp_buf jmpenv;
 extern int jumpable;
+extern jmp_buf jmpenv;
+
+void setup_error_handler();
+void bloody_errors(struct player *p);
+int init_player_display(struct player *p,char *d);
+void shutdown_display(struct player *p);
+int Setup_value(struct player *p,char *dname,int val,int min,int max);
+void Setup_color(struct player *p,char *dname,char *dcol);
+void Setup_string(struct player *p,char *dname,char *s,int l);
+int Setup_flag(struct player *p,char *dname,int on,int off,int def);
 
 #endif

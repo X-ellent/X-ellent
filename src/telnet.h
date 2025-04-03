@@ -13,12 +13,12 @@
 #ifndef My_TELNET_H
 #define My_TELNET_H
 
-extern void  do_connect();
-extern void  open_sockets();
-extern void  do_login();
-extern char* tread();
-extern void  ctwrite();
-extern char* ctquery(char *s);
-extern char* ctpass();
+void  do_connect();
+void  open_sockets();
+void  do_login();
+char* tread();
+void  ctwrite();
+char* ctquery(char *s);
+char* ctpass();
 
 #endif

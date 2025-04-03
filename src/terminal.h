@@ -129,20 +129,20 @@ extern char rom[TERM_ROMSIZE];
 #define PSTAT_KEY 2
 #define PSTAT_INS 3
 
-extern void init_term(struct player *p);
-extern void init_all_term();
-extern void run_program(struct player *p);
-extern void term_option(struct player *p,int n);
-extern int terminal_input(int chan,int state,char *s);
-extern void terminal_disconnect(int n);
-extern void tsend(int n,char *s);
-extern void psend(struct player *p,char *s);
-extern int terminal_operand(struct player *p,char *s);
-extern int terminal_command(struct player *p,char *sys,char *com);
-extern int system_command(struct player *p,char *com);
-extern int login_command(struct player *p,char *com);
-extern int teleport_command(struct player *p,char *com);
-extern int lift_command(struct player *p,char *com);
-extern int weapons_command(struct player *p,char *com);
+void init_term(struct player *p);
+void init_all_term();
+void run_program(struct player *p);
+void term_option(struct player *p,int n);
+int terminal_input(int chan,int state,char *s);
+void terminal_disconnect(int n);
+void tsend(int n,char *s);
+void psend(struct player *p,char *s);
+int terminal_operand(struct player *p,char *s);
+int terminal_command(struct player *p,char *sys,char *com);
+int system_command(struct player *p,char *com);
+int login_command(struct player *p,char *com);
+int teleport_command(struct player *p,char *com);
+int lift_command(struct player *p,char *com);
+int weapons_command(struct player *p,char *com);
 
 #endif

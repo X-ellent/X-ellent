@@ -66,11 +66,11 @@ extern int tpcount;
 #define rd2(l,x,y) (map.data2[l][(x)+(y)*map.wid])
 #define rd3(l,x,y) (map.data3[l][(x)+(y)*map.wid])
 
-extern int is_hole(int l,int x,int y);
-extern void create_map();
-extern struct checkpoint *pick_check();
-extern struct teleport *find_teleport(int n);
-extern struct teleport *locate_teleport(int l,int x,int y);
-extern void use_teleport(struct teleport *t);
+int is_hole(int l,int x,int y);
+void create_map();
+struct checkpoint *pick_check();
+struct teleport *find_teleport(int n);
+struct teleport *locate_teleport(int l,int x,int y);
+void use_teleport(struct teleport *t);
 
 #endif

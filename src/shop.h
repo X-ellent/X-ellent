@@ -73,17 +73,16 @@ extern struct menu m_root;
 #define SHOW_WEAPS     2
 #define SHOW_OTHER     3
 
-extern void init_all_shop();
-extern void read_menu(struct menu *m);
-extern void stock_mine(struct item *i);
-extern void stock_ammo(struct item *i);
-extern void stock_weap(struct item *i);
-extern void stock_othr(struct item *i);
-extern void stock_repr(struct item *i);
-extern void init_shop(struct player *p);
-extern void exit_shop(struct player *p);
-extern void enter_shop(struct player *p);
-extern void buy_shop(struct player *p,int n);
-
+void init_all_shop();
+void read_menu(struct menu *m);
+void stock_mine(struct item *i);
+void stock_ammo(struct item *i);
+void stock_weap(struct item *i);
+void stock_othr(struct item *i);
+void stock_repr(struct item *i);
+void init_shop(struct player *p);
+void exit_shop(struct player *p);
+void enter_shop(struct player *p);
+void buy_shop(struct player *p,int n);
 
 #endif
