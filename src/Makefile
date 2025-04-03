@@ -9,51 +9,62 @@
 # some acknowledgement of the source (ie me!) 8-)
 
 MAKE=		make
-CC=		gcc
+CC=			gcc
 SHELL=		/bin/sh
 
-LIBDIR=		\"/home/daniel/etc/src/X11/xellent/\"
+LIBDIR=		\"../data\" # TODO
 
-INCLUDE=	
-LIBS=		-lX11 -lm -lc
-#DEFINES=	-DTEST -DEBUG -DLIB=$(LIBDIR) -DNON_ANSI_HEADERS
-DEFINES=	-DTEST -DEBUG -DLIB=$(LIBDIR) 
-OTHER=		-g -Wall -O2 -fno-common -fcommon
+INCLUDE=
+
+IS_CYGWIN := $(shell uname -s | grep -i cygwin)
+
+# Set LIBS based on platform
+ifeq ($(IS_CYGWIN),)
+	# Linux/Unix systems
+	LIBS=	-lX11 -lm -lc -lpthread
+else
+	LIBS=	-static -lm -lc -lpthread -l:libcygwin.a -l:libX11.dll.a
+endif
+
+DEFINES=	-DLIB=$(LIBDIR) -DEBUG -DSHOW_THIRD_LEVEL
+#CFLAGS=		-g -Wall -O2 -fno-common -fcommon
+CFLAGS=		-g -Wall -O0 -fno-omit-frame-pointer -fstack-protector-all -Wno-incompatible-pointer-types -Wextra -Wconversion
 
 # Clean up dependency tracking
 .PHONY: clean all again
 
-COMP=		$(CC) $(OTHER) $(DEFINES) $(INCLUDE)
+COMP=		$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE)
 
 RUNSRC=		init.c main.c mymath.c debug.c xsetup.c draw.c player.c \
-		object.c map.c events.c particle.c message.c mines.c shop.c \
-		telnet.c terminal.c turret.c bonus.c home.c lift.c addon.c \
-		newton.c targetter.c beam.c starburst.c globals.c
-CLISRC=         client.c
+			object.c map.c events.c particle.c message.c mines.c shop.c \
+			telnet.c terminal.c turret.c bonus.c home.c lift.c addon.c \
+			newton.c targetter.c beam.c starburst.c globals.c
+CLISRC=		client.c
 FRONTSRC=	frontend.c
-SRC=   		$(RUNSRC) $(CLISRC) $(FRONTSRC)
+SRC=		$(RUNSRC) $(CLISRC) $(FRONTSRC)
 
 DATA=		player.data price.data term.asm terminal.opcodes testmap
 
 HEADERS=	bonus.h events.h map.h object.h telnet.h xsetup.h constants.h \
-		fix.h message.h particle.h terminal.h debug.h home.h mines.h \
-		player.h turret.h draw.h init.h mymath.h shop.h xbits.h \
-		lift.h
+			fix.h message.h particle.h terminal.h debug.h home.h mines.h \
+			player.h turret.h draw.h init.h mymath.h shop.h xbits.h \
+			lift.h
 
 RUNOBJ=		$(RUNSRC:%.c=%.o)
 CLIOBJ=		$(CLISRC:%.c=%.o)
 FRONTOBJ=	$(FRONTSRC:%.c=%.o)
-OBJ=            $(SRC:%.c=%.o)
+OBJ=		$(SRC:%.c=%.o)
 
 all:	runme myclient frontend
 
 again:	clean all
 
-runme:	terminal.temp $(RUNOBJ)
+#runme:	terminal.temp $(RUNOBJ)
+runme:	$(RUNOBJ)
 	$(COMP) -o runme $(RUNOBJ) $(LIBS)
 
 myclient:	$(CLIOBJ)
-	$(COMP) -o myclient $(CLIOBJ) $(LIBS)
+	$(COMP) -o xellent $(CLIOBJ) $(LIBS)
 
 frontend:	$(FRONTOBJ)
 	$(COMP) -o frontend $(FRONTOBJ) $(LIBS)
@@ -71,14 +82,14 @@ terminal.temp:	terminal.h
 	$(COMP) -c $<
 
 install:	myclient frontend
-	-strip myclient
+	-strip xellent
 	-strip frontend
-	cp -f myclient /dcs/90/cheesey/bin/xellent
+	cp -f xellent /dcs/90/cheesey/bin/
 	chmod a+x  /dcs/90/cheesey/bin/xellent
 	chmod og-r /dcs/90/cheesey/bin/xellent
 	chmod g+s  /dcs/90/cheesey/bin/xellent
 	cp -f frontend /dcs/90/cheesey/bin/frontend
-	
+
 clean:
 	-rm -f $(OBJ) runme myclient frontend terminal.temp
 
