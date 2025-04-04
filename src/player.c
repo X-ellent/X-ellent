@@ -26,7 +26,6 @@
 #include "message.h"
 #include "turret.h"
 #include "home.h"
-#include "events.h"
 #include "terminal.h"
 #include "xsetup.h"
 #include "beam.h"
@@ -38,14 +37,7 @@ static char inbuf[1024];
 static char txt[256];
 static char *chop[16];
 
-static struct player *alloc_player();
-static void lose_items(struct player *p);
-static void away_stuff(struct player *p);
-static void quit_player(struct player *p);
-static int mygets(FILE *pd);
-static void mychop();
-
-static struct player *alloc_player() {
+static struct player* alloc_player() {
 	struct player* p=freeplay;
 	if (p) freeplay=p->next;
 	else p=(struct player*) calloc(1,sizeof(struct player));
@@ -61,22 +53,25 @@ static struct player *alloc_player() {
 }
 
 int setup_player() {
-	int i;
-	struct player *p;
-	char txt[1024];
 	char* nm = tread(); // Read painintheass
 	if (strcmp(nm,"painintheass")) {
 		ctwrite("You must use the new game client");
 		return 0;
-	};
+	}
 	nm = tread(); // Read requested user
+	struct player *p;
 	if ((p=find_player(nm)))
 		if (p->connected) {
 			ctwrite("You are ALREADY connected...");
 			return 0;
 		}
 	else {
+		printf("DEBUG: Setting up a new player: user=%s\n", nm);
 		p=alloc_player();
+		if (!p) {
+			ctwrite("Unable to create a new player!!!");
+			return 0;
+		}
 		strncpy(p->user,nm,15);
 		strncpy(p->name,nm,31);
 
@@ -133,10 +128,8 @@ int setup_player() {
 		new_name = true;
 		strncpy(p->name, nm, 31);
 	}
-	{
-		char *c = ctpass();
-		if (c && *c) strncpy(p->pass,c,8);
-	}
+	char *c = ctpass();
+	if (c && *c) strncpy(p->pass,c,8);
 	if (new_name) {
 		struct player *op;
 		for (op=playone;op;op=op->next) if (op!=p)
@@ -169,7 +162,7 @@ int setup_player() {
 	p->msg[1][0]=0;
 	p->msg[2][0]=0;
 	p->msg[3][0]=0;
-	for (i=0;i<map.depth;i++) p->mapmem[i]=0;
+	for (int i=0;i<map.depth;i++) p->mapmem[i]=0;
 	players++;
 
 	/* Set configurable things */
@@ -195,8 +188,70 @@ int setup_player() {
 	return 1;
 }
 
-extern void update_player(struct player *p)
-{
+static void quit_player(struct player *p) {
+	char txt[1024];
+	p->flags&=~FLG_DEADCLR;
+	XAutoRepeatOn(p->d.disp);
+	p->qflags=0;
+	shutdown_display(p);
+	players--;
+	psend(p,"#DISCONNECT\n");
+	sprintf(txt,"%s has just disconnected",p->name);
+	global_message(txt);
+}
+
+static void lose_items(struct player *p) {
+	int i;
+	struct addon *ad;
+	for (i=0;i<map.depth;i++) p->mapmem[i]=0;
+	for (i=0;i<9;i++) if (p->slots[i]&&(!p->slotobj[i])) {
+		p->slots[i]=OBJ_EMPTY;
+		p->size[i]=0;
+		p->mode[i]=0;
+	}
+	for (ad=p->firstadd;ad;ad=ad->next)
+		ad->damage--;
+	if (p->firstadd) p->firstadd=strip_addons(p,p->firstadd);
+}
+
+static void away_stuff(struct player *p) {
+	if (!(p->connected)) {
+		p->playing=0;
+		p->home->owner=0;
+		p->home=0;
+		lose_items(p);
+		for (int i=0;i<map.depth;i++) p->mapmem[i]=0;
+		remove_body(&p->body);
+		return;
+	}
+	if (p->flags&FLG_DEAD) {
+		p->delay--;
+		if (p->delay==0) {
+			p->flags&=~FLG_DEADCLR;
+			p->body.x=p->home->x*128+64; p->body.y=p->home->y*128+64;
+			p->body.l=p->home->l;
+			p->rot=0;p->cash=p->cash*9/10;p->fuel=p->fuel*9/10;
+			p->shield=p->maxshield/2;
+			p->immune=DEATH_IMMUNE;
+			if ((p->homefuel+p->fuel)<MIN_FUEL) p->homefuel=MIN_FUEL;
+			init_home(p);
+			return;
+		}
+		if ((p->delay==(DEATH_SHOW+1))&&(p->flags&FLG_FALLEN)) {
+			p->delay=0;
+			p->flags&=~FLG_DEADCLR;
+			p->body.x=p->ox; p->body.y=p->oy; p->body.l=p->olvl;
+			p->immune=FALL_IMMUNE;
+			add_pbody(p);
+			return;
+		}
+	}
+	if (p->flags&FLG_TERMINAL) run_program(p);
+	if (p->flags&FLG_HOME) do_home(p);
+	return;
+}
+
+extern void update_player(struct player *p) {
 	int xc,yc;
 	double oxv,oyv;
 	int t,i;
@@ -600,57 +655,6 @@ extern void damage_player(struct player *p,int d,struct player *who,int how)
 	}
 }
 
-static void lose_items(struct player *p) {
-	int i;
-	struct addon *ad;
-	for (i=0;i<map.depth;i++) p->mapmem[i]=0;
-	for (i=0;i<9;i++) if (p->slots[i]&&(!p->slotobj[i])) {
-		p->slots[i]=OBJ_EMPTY;
-		p->size[i]=0;
-		p->mode[i]=0;
-	}
-	for (ad=p->firstadd;ad;ad=ad->next)
-		ad->damage--;
-	if (p->firstadd) p->firstadd=strip_addons(p,p->firstadd);
-}
-
-static void away_stuff(struct player *p) {
-	if (!(p->connected)) {
-		p->playing=0;
-		p->home->owner=0;
-		p->home=0;
-		lose_items(p);
-		for (int i=0;i<map.depth;i++) p->mapmem[i]=0;
-		remove_body(&p->body);
-		return;
-	}
-	if (p->flags&FLG_DEAD) {
-		p->delay--;
-		if (p->delay==0) {
-			p->flags&=~FLG_DEADCLR;
-			p->body.x=p->home->x*128+64; p->body.y=p->home->y*128+64;
-			p->body.l=p->home->l;
-			p->rot=0;p->cash=p->cash*9/10;p->fuel=p->fuel*9/10;
-			p->shield=p->maxshield/2;
-			p->immune=DEATH_IMMUNE;
-			if ((p->homefuel+p->fuel)<MIN_FUEL) p->homefuel=MIN_FUEL;
-			init_home(p);
-			return;
-		}
-		if ((p->delay==(DEATH_SHOW+1))&&(p->flags&FLG_FALLEN)) {
-			p->delay=0;
-			p->flags&=~FLG_DEADCLR;
-			p->body.x=p->ox; p->body.y=p->oy; p->body.l=p->olvl;
-			p->immune=FALL_IMMUNE;
-			add_pbody(p);
-			return;
-		}
-	}
-	if (p->flags&FLG_TERMINAL) run_program(p);
-	if (p->flags&FLG_HOME) do_home(p);
-	return;
-}
-
 extern void init_all_weap() {
 	weap_name[WEP_RIF]="Rifle";
 	weap_name[WEP_LMG]="Light Machine Gun";
@@ -661,18 +665,6 @@ extern void init_all_weap() {
 	weap_name[WEP_PRONG]="Forked Machine Gun";
 	weap_name[WEP_TARGLASER]="Targetting Laser";
 	weap_name[WEP_LASER]="Laser Cannon";
-}
-
-static void quit_player(struct player *p) {
-	char txt[1024];
-	p->flags&=~FLG_DEADCLR;
-	XAutoRepeatOn(p->d.disp);
-	p->qflags=0;
-	shutdown_display(p);
-	players--;
-	psend(p,"#DISCONNECT\n");
-	sprintf(txt,"%s has just disconnected",p->name);
-	global_message(txt);
 }
 
 extern struct player *find_player(char *n) {
@@ -734,6 +726,32 @@ extern void save_players() {
 	}
 	fprintf(pd,"END\n");
 	fclose(pd);
+}
+
+static void mychop() {
+	char *c;
+	int n;
+	c=(chop[0]=inbuf);
+	n=1;
+	while((c=(char *)strchr(c,'/'))) {
+		*c=0;
+		c++;
+		chop[n++]=c;
+	}
+}
+
+static int mygets(FILE *pd) {
+	int l;
+
+	if (fgets(inbuf, sizeof(inbuf), pd) == NULL) {
+		inbuf[0] = '\0';
+		return 0;
+	}
+
+	if ((l=strlen(inbuf))) {
+		if (inbuf[l-1]=='\n') inbuf[--l]=0;
+	}
+	return l;
 }
 
 extern void load_players() {
@@ -838,32 +856,6 @@ extern void load_players() {
 		}
 	}
 	fclose(pd);
-}
-
-static int mygets(FILE *pd) {
-	int l;
-
-	if (fgets(inbuf, sizeof(inbuf), pd) == NULL) {
-		inbuf[0] = '\0';
-		return 0;
-	}
-
-	if ((l=strlen(inbuf))) {
-		if (inbuf[l-1]=='\n') inbuf[--l]=0;
-	}
-	return l;
-}
-
-static void mychop() {
-	char *c;
-	int n;
-	c=(chop[0]=inbuf);
-	n=1;
-	while((c=(char *)strchr(c,'/'))) {
-		*c=0;
-		c++;
-		chop[n++]=c;
-	}
 }
 
 extern int can_locate(struct player *p,struct player *q) {
