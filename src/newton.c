@@ -59,7 +59,7 @@ int is_stopped(struct body *b) {
 
 void do_collisions() {
 	for (struct body *b=firstbody;b;b=b->next) if (b->on) {
-		int cx=b->x,cy=b->y; double dx,dy,dr;
+		int bx=b->x,by=b->y; double dx,dy,dr;
 		for (struct body *c=b->next;c;c=c->next) if ((c->on)&&(b!=c)&&(b->l==c->l)) {
 			int dist = b->radius + c->radius;
 			dx=c->x-b->x;dy=c->y-b->y;dr=dx*dx+dy*dy;
@@ -68,18 +68,25 @@ void do_collisions() {
 				double bm = b->mass, cm = c->mass;
 				/* Move objects to exact point of bounce. */
 				double rxv = b->xv - c->xv, ryv = b->yv - c->yv;
-				double time = 2; /* (Fix 'cos jon doesnt initialise it) */
+				double time = 2.0; /* (Fix 'cos jon doesnt initialise it) */
 				if (!(rxv == 0 && ryv == 0)) {
 					qa = rxv * rxv + ryv * ryv;
 					qb = 2*(rxv*c->x - rxv*b->x + ryv*c->y - ryv*b->y);
 					qc = b->x*b->x + c->x*c->x + b->y*b->y + c->y*c->y -
 							2*b->x*c->x - 2*b->y*c->y - dist*dist;
 					discrim = qb * qb - 4 * qa * qc;
-					if (discrim < 0) time = 2; /* random value which is > 1 */
-					else time = (-qb + sqrt(discrim)) / (2*qa);
+					if (discrim >= 0) { // Only proceed if roots are real
+						double sqrt_discrim = sqrt(discrim);
+						double t1=(-qb-sqrt_discrim)/(2*qa),t2=(-qb+sqrt_discrim)/(2*qa);
+						// Select the smallest valid time within the current step [0, 1]
+						if (t1>=0 && t1<=1 && (t2<0 || t1<=t2)) {
+							fprintf(stderr, "Collision using t1: %f (t2=%f)\n", t1, t2);
+							time = t1;
+						} else if (t2>=0 && t2<=1) time = t2;
+					}
 				}
 				if ((rxv == 0 && ryv == 0) || time > 1) {
-					sep = sqrt(dr); gap = dist - sep + 1;
+					sep = sqrt(dr); gap = dist - sep;
 					if (sep == 0) {
 						b->x+=gap*cm/(bm+cm); c->x-=gap*bm/(bm+cm);
 					} else {
@@ -157,17 +164,17 @@ void do_collisions() {
 			} // if dr < dist*dist
 		} // c loop
 
-		if (cx<20) cx=20;
-		if (cy<20) cy=20;
-		if (cx>=(map.wid*128-20)) cx=map.wid*128-21;
-		if (cy>=(map.hgt*128-20)) cy=map.hgt*128-21;
+		if (bx<20) bx=20;
+		if (by<20) by=20;
+		if (bx>=(map.wid*128-20)) bx=map.wid*128-21;
+		if (by>=(map.hgt*128-20)) by=map.hgt*128-21;
 
-		switch(rd2(b->l,cx/128,cy/128)) {
+		switch(rd2(b->l,bx/128,by/128)) {
 			case 'O':
-			struct turret *tur=find_turret(b->l,cx/128,cy/128);
+			struct turret *tur=find_turret(b->l,bx/128,by/128);
 			if (tur->flags&TFLG_DESTROYED) break;
-			if (!(dx=(cx&127)-64)) dx=1;
-			if (!(dy=(cy&127)-64)) dy=1;
+			if (!(dx=(bx&127)-64)) dx=1;
+			if (!(dy=(by&127)-64)) dy=1;
 			if ((dx*dx+dy*dy)>(45*45)) break;
 			b->xf+=16000/dx;b->yf+=16000/dy;
 		}
