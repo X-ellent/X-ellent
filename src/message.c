@@ -15,22 +15,19 @@
 #include "message.h"
 #include "player.h"
 
-extern void global_message(char *s)
-{
+void global_message(char *s) {
 	struct player *p;
 	for (p=playone;p;p=p->next) {
-	strcpy(p->msg[3],p->msg[2]);
-	strcpy(p->msg[2],p->msg[1]);
-	strcpy(p->msg[1],p->msg[0]);
-	strncpy(p->msg[0],s,59);
+		strcpy(p->msg[3],p->msg[2]);
+		strcpy(p->msg[2],p->msg[1]);
+		strcpy(p->msg[1],p->msg[0]);
+		strncpy(p->msg[0],s,59);
 	}
 }
 
-extern void player_message(struct player *p,char *s)
-{
+void player_message(struct player *p,char *s) {
 	strcpy(p->msg[3],p->msg[2]);
 	strcpy(p->msg[2],p->msg[1]);
 	strcpy(p->msg[1],p->msg[0]);
 	strncpy(p->msg[0],s,59);
 }
-

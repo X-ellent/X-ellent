@@ -17,8 +17,7 @@
 #include "particle.h"
 #include "constants.h"
 
-extern void activate_slot(struct player *p)
-{
+void activate_slot(struct player *p) {
 	struct object *o;
 	p->immune=0;
 	if ((!p->slot)||(p->slots[p->slot-1]==OBJ_EMPTY)) return;
@@ -33,8 +32,8 @@ extern void activate_slot(struct player *p)
 		o->y=p->body.y;
 		o->xv=p->body.xv;
 		o->yv=p->body.yv;
-		o->xv+=2*sn[(int) p->rot];
-		o->yv-=2*cs[(int) p->rot];
+		o->xv+=2*sn[(int)p->rot]; // Throw it in the direction we're facing
+		o->yv-=2*cs[(int)p->rot];
 		o->flags=0;
 		o->l=p->body.l;
 		o->type=p->slots[p->slot-1];
@@ -50,8 +49,7 @@ extern void activate_slot(struct player *p)
 	}
 }
 
-extern void arm_slot(struct player *p)
-{
+void arm_slot(struct player *p) {
 	struct object *o;
 	if ((!p->slot)||(p->slots[p->slot-1]==OBJ_EMPTY)) return;
 	o=p->slotobj[p->slot-1];
@@ -70,8 +68,7 @@ extern void arm_slot(struct player *p)
 	}
 }
 
-extern void disarm_slot(struct player *p)
-{
+void disarm_slot(struct player *p) {
 	struct object *o;
 	if ((!p->slot)||(p->slots[p->slot-1]==OBJ_EMPTY)) return;
 	o=p->slotobj[p->slot-1];
@@ -87,8 +84,7 @@ extern void disarm_slot(struct player *p)
 	}
 }
 
-extern void detonate_slot(struct player *p)
-{
+void detonate_slot(struct player *p) {
 	struct object *o;
 	if ((!p->slot)||(p->slots[p->slot-1]==OBJ_EMPTY)) return;
 	o=p->slotobj[p->slot-1];
@@ -109,8 +105,7 @@ extern void detonate_slot(struct player *p)
 	}
 }
 
-extern void explode_mine(struct object *o)
-{
+void explode_mine(struct object *o) {
 	struct object *n;
 	if (obj_first==o) {
 		obj_first=o->next;
@@ -128,8 +123,5 @@ extern void explode_mine(struct object *o)
 		vape_bonus(o);return;
 	}
 	if (o->l>=map.depth) return;
-	explode(o->l,(int) o->x,(int) o->y,5+o->charge,400*o->charge,
-			20*o->charge,o->has.owner);
+	explode(o->l,(int)o->x,(int)o->y,5+o->charge,400*o->charge,20*o->charge,o->has.owner);
 }
-
-

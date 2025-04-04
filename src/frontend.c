@@ -1038,118 +1038,96 @@ void save_map() {
 	fclose(mf);
 }
 
-extern void scribble_map(int n,struct mypixmap *p) {
-	int x,y;
-	int sx,sy;
-	int cx,cy;
-	int w,xo,yo;
+void scribble_map(int n,struct mypixmap *p) {
+	int x,y,cx,cy;
 	char c1,c2,c3,cc;
-	int lw,hw;
 	if ((n<0)||(n>=map.dep)) {
 		XFillRectangle(disp,p->pix,black,0,0,p->wid,p->hgt);
 		return;
 	}
-	sx=p->wid/map.wid;
-	sy=p->hgt/map.hgt;
-	w=(sx<sy)?sx:sy;
-	p->sqr=w;
-	xo=(p->wid-(w*map.wid))/2;
-	yo=(p->hgt-(w*map.hgt))/2;
-	p->xo=xo;
-	p->yo=yo;
+	int sx=p->wid/map.wid,sy=p->hgt/map.hgt,w=(sx<sy)?sx:sy;
+	int xo=(p->wid-(w*map.wid))/2,yo=(p->hgt-(w*map.hgt))/2;
+	p->sqr=w;p->xo=xo;p->yo=yo;
 	if (!map.data[n]) {
 		XFillRectangle(disp,p->pix,black,0,0,p->wid,p->hgt);
 		XDrawRectangle(disp,p->pix,blue,xo,yo,map.wid*w-1,map.hgt*w-1);
 		return;
 	}
-	lw=w/4;
-	hw=w-lw-1;
+	int lw=w/4,hw=w-lw-1;
 	XFillRectangle(disp,p->pix,black,0,0,p->wid,p->hgt);
 	XDrawRectangle(disp,p->pix,blue,xo,yo,map.wid*w-1,map.hgt*w-1);
-	for(y=1;y<map.hgt;y++)
-		for(x=1;x<map.wid;x++) {
-			cx=x*w+xo;
-			cy=y*w+yo;
-			cc=rd(n,x,y);
-			if (cc!=' ') XFillRectangle(disp,p->pix,dgrey,cx,cy,w,w);
-			switch (cc) {
-			case ' ':
-				if (n>=map.dep) break;
-				if (!map.data[n+1]) break;
-				if (rd(n+1,x,y)!=' ') {
-					XFillRectangle(disp,p->pix,grey,cx,cy,w,w);
-					if ((rd(n+1,x,y)=='l')||(rd(n+1,x,y)=='L'))
-						XFillRectangle(disp,p->pix,red,cx+lw,cy+lw,
-									   hw-lw,hw-lw);
-				}
-				break;
-			case 'H':
-				XDrawRectangle(disp,p->pix,blue,cx+lw,cy+lw,hw-lw,hw-lw);
-				break;
-			case 'L':
-			case 'l':
-				XDrawRectangle(disp,p->pix,red,cx+lw,cy+lw,hw-lw,hw-lw);
-				break;
-			case 'X':
-				XDrawRectangle(disp,p->pix,green,cx+lw,cy+lw,hw-lw,hw-lw);
-				XDrawArc(disp,p->pix,green,cx+lw,cy+lw,hw-lw,hw-lw,0,360*64);
-				break;
-			case 'Z':
-				XDrawArc(disp,p->pix,blue,cx+lw,cy+lw,hw-lw,hw-lw,0,360*64);
-				break;
-			case 'C':
-				XDrawArc(disp,p->pix,red,cx+lw,cy+lw,hw-lw,hw-lw,0,360*64);
-				break;
-			case 'O':
-				XDrawArc(disp,p->pix,white,cx+lw,cy+lw,hw-lw,hw-lw,0,360*64);
-				break;
-			case 'F':
-				XFillRectangle(disp,p->pix,red,cx+lw,cy+lw,hw-lw,hw-lw);
-				XDrawRectangle(disp,p->pix,white,cx+lw,cy+lw,hw-lw,hw-lw);
-				break;
-			case 'T':
-				XFillRectangle(disp,p->pix,green,cx+lw,cy+lw,hw-lw,hw-lw);
-				XDrawRectangle(disp,p->pix,white,cx+lw,cy+lw,hw-lw,hw-lw);
-				break;
-			case 'S':
-				XFillRectangle(disp,p->pix,blue,cx+lw,cy+lw,hw-lw,hw-lw);
-				XDrawRectangle(disp,p->pix,white,cx+lw,cy+lw,hw-lw,hw-lw);
-				break;
-			case '+':
-				XFillRectangle(disp,p->pix,ice,cx,cy,w,w);
-				break;
-			case '-':
-				XDrawRectangle(disp,p->pix,ice,cx+lw,cy+lw,hw-lw,hw-lw);
-				break;
-			default:
+	for(y=1;y<map.hgt;y++) for(x=1;x<map.wid;x++) {
+		cx=x*w+xo;cy=y*w+yo;
+		cc=rd(n,x,y);
+		if (cc!=' ') XFillRectangle(disp,p->pix,dgrey,cx,cy,w,w);
+		switch (cc) {
+		case ' ':
+			if (n>=map.dep) break;
+			if (!map.data[n+1]) break;
+			if (rd(n+1,x,y)!=' ') {
+				XFillRectangle(disp,p->pix,grey,cx,cy,w,w);
+				if ((rd(n+1,x,y)=='l')||(rd(n+1,x,y)=='L'))
+					XFillRectangle(disp,p->pix,red,cx+lw,cy+lw,
+								   hw-lw,hw-lw);
 			}
+			break;
+		case 'H':
+			XDrawRectangle(disp,p->pix,blue,cx+lw,cy+lw,hw-lw,hw-lw);
+			break;
+		case 'L':
+		case 'l':
+			XDrawRectangle(disp,p->pix,red,cx+lw,cy+lw,hw-lw,hw-lw);
+			break;
+		case 'X':
+			XDrawRectangle(disp,p->pix,green,cx+lw,cy+lw,hw-lw,hw-lw);
+			XDrawArc(disp,p->pix,green,cx+lw,cy+lw,hw-lw,hw-lw,0,360*64);
+			break;
+		case 'Z':
+			XDrawArc(disp,p->pix,blue,cx+lw,cy+lw,hw-lw,hw-lw,0,360*64);
+			break;
+		case 'C':
+			XDrawArc(disp,p->pix,red,cx+lw,cy+lw,hw-lw,hw-lw,0,360*64);
+			break;
+		case 'O':
+			XDrawArc(disp,p->pix,white,cx+lw,cy+lw,hw-lw,hw-lw,0,360*64);
+			break;
+		case 'F':
+			XFillRectangle(disp,p->pix,red,cx+lw,cy+lw,hw-lw,hw-lw);
+			XDrawRectangle(disp,p->pix,white,cx+lw,cy+lw,hw-lw,hw-lw);
+			break;
+		case 'T':
+			XFillRectangle(disp,p->pix,green,cx+lw,cy+lw,hw-lw,hw-lw);
+			XDrawRectangle(disp,p->pix,white,cx+lw,cy+lw,hw-lw,hw-lw);
+			break;
+		case 'S':
+			XFillRectangle(disp,p->pix,blue,cx+lw,cy+lw,hw-lw,hw-lw);
+			XDrawRectangle(disp,p->pix,white,cx+lw,cy+lw,hw-lw,hw-lw);
+			break;
+		case '+':
+			XFillRectangle(disp,p->pix,ice,cx,cy,w,w);
+			break;
+		case '-':
+			XDrawRectangle(disp,p->pix,ice,cx+lw,cy+lw,hw-lw,hw-lw);
+			break;
+		default:
 		}
-	for(y=1;y<map.hgt;y++)
-		for(x=1;x<map.wid;x++) {
-			cx=x*w+xo;
-			cy=y*w+yo;
-			c1=(rd(n,x-1,y)==' ')?' ':'*';
-			c2=(rd(n,x,y-1)==' ')?' ':'*';
-			c3=(rd(n,x,y)==' ')?' ':'*';
-			if (c1!=c3) {
-					if (c1==' ') {
-						XDrawLine(disp,p->pix,white,cx,cy,cx,cy+w);
-					} else {
-						XDrawLine(disp,p->pix,whiteb,cx,cy,cx,cy+w);
-					}
-			}
-			if (c2!=c3) {
-					if (c2==' ') {
-						XDrawLine(disp,p->pix,white,cx,cy,cx+w,cy);
-					} else {
-						XDrawLine(disp,p->pix,whiteb,cx,cy,cx+w,cy);
-					}
-			}
-		}
+	} // for x and for y
+	for(y=1;y<map.hgt;y++) for(x=1;x<map.wid;x++) {
+		cx=x*w+xo;cy=y*w+yo;
+		c1=(rd(n,x-1,y)==' ')?' ':'*';
+		c2=(rd(n,x,y-1)==' ')?' ':'*';
+		c3=(rd(n,x,y)==' ')?' ':'*';
+		if (c1!=c3)
+			if (c1==' ') XDrawLine(disp,p->pix,white,cx,cy,cx,cy+w);
+			else XDrawLine(disp,p->pix,whiteb,cx,cy,cx,cy+w);
+		if (c2!=c3)
+			if (c2==' ') XDrawLine(disp,p->pix,white,cx,cy,cx+w,cy);
+			else XDrawLine(disp,p->pix,whiteb,cx,cy,cx+w,cy);
+	}
 	return;
 }
 
-extern void update_map(int n) {
+void update_map(int n) {
 	if (map.tinymap[n]==&unknown) {
 		map.tinymap[n]=(struct mypixmap *)calloc(1,sizeof(struct mypixmap));
 		alloc_pixmap(map.tinymap[n],MINMAPWID,MINMAPHGT);
@@ -1157,9 +1135,8 @@ extern void update_map(int n) {
 	scribble_map(n,map.tinymap[n]);
 }
 
-extern void special_command(char *s) {
-	int n;
-	int d;
+void special_command(char *s) {
+	int n, d;
 	char *ss;
 	char tstr[64];
 	struct teleport *t,*tt;
@@ -1183,40 +1160,33 @@ extern void special_command(char *s) {
 	}
 	if (strncmp(s,"TLEV",4)==0) {
 		n=atoi(&s[4]);
-		for (t=firsttel;t;t=t->next)
-			if (t->loc.l==n) {
-				tt=find_teleport(t->dest);
-				if (tt) {
-					printf("Teleport %d %d:%d,%d Destination %d %d:%d,%d",
-							t->num,t->loc.l,(int)t->loc.x/128,
-							(int)t->loc.y/128,tt->num,tt->loc.l,
-							(int)tt->loc.x/128,(int)tt->loc.y/128);
-				} else {
-					printf("Teleport %d %d:%d,%d Destination %d",
-							t->num,t->loc.l,(int)t->loc.x/128,
-							(int)t->loc.y/128,t->dest);
-				}
-			}
+		for (t=firsttel;t;t=t->next) if (t->loc.l==n) {
+			tt=find_teleport(t->dest);
+			if (tt)
+				printf("Teleport %d %d:%d,%d Destination %d %d:%d,%d\n",
+					t->num,t->loc.l,(int)t->loc.x/128,(int)t->loc.y/128,tt->num,tt->loc.l,
+					(int)tt->loc.x/128,(int)tt->loc.y/128);
+			else
+				printf("Teleport %d %d:%d,%d Destination %d\n",
+					t->num,t->loc.l,(int)t->loc.x/128, (int)t->loc.y/128,t->dest);
+		}
 		return;
 	}
 	if (strncmp(s,"TDEST",5)==0) {
 		n=atoi(&s[5]);
 		for (t=firsttel;t;t=t->next) {
 			tt=find_teleport(t->dest);
-			if ((tt)&&(tt->loc.l==n)) {
-				printf("Teleport %d %d:%d,%d Destination %d %d:%d,%d",
-						t->num,t->loc.l,(int)t->loc.x/128,
-						(int)t->loc.y/128,tt->num,tt->loc.l,
-						(int)tt->loc.x/128,(int)tt->loc.y/128);
-			}
+			if ((tt)&&(tt->loc.l==n))
+				printf("Teleport %d %d:%d,%d Destination %d %d:%d,%d\n",
+					t->num,t->loc.l,(int)t->loc.x/128,(int)t->loc.y/128,tt->num,tt->loc.l,
+					(int)tt->loc.x/128,(int)tt->loc.y/128);
 		}
 		return;
 	}
 	if (strncmp(s,"TLIST",5)==0) {
 		for (t=firsttel;t;t=t->next)
 			fprintf(stderr,"Teleport %d  %d:%d,%d  -> %d   <%s>\n",t->num,
-					t->loc.l,(int)t->loc.x/128,(int)t->loc.y/128,t->dest,
-					t->pass);
+					t->loc.l,(int)t->loc.x/128,(int)t->loc.y/128,t->dest,t->pass);
 		return;
 	}
 	if (strncmp(s,"TSET",4)==0) {
@@ -1277,14 +1247,13 @@ extern void special_command(char *s) {
 		return;
 	}
 	if (strcmp(s,"?")==0) {
-		fprintf(stderr,
-				"Commands Are: VIS CURS TLEV TDEST TLIST TSET LGET TACT ?\n");
+		fprintf(stderr,"Commands Are: VIS CURS TLEV TDEST TLIST TSET LGET TACT ?\n");
 		return;
 	}
 	fprintf(stderr,"Unknown special command %s\n",s);
 }
 
-extern void process_guess(char *s) {
+void process_guess(char *s) {
 	int n;
 	struct teleport *t;
 	struct lift *l;
@@ -1303,11 +1272,9 @@ extern void process_guess(char *s) {
 				tsend((sprintf(str,"%s%s%s\n",preguess,guessed,postguess),str));
 				return;
 			}
-			guesspos++;
-			if (guesspos==guesslen) {
+			if (++guesspos==guesslen) {
 				guesspos=-1;
-				guessnum++;
-				if (guessnum==10) {
+				if (++guessnum==10) {
 					guessnum=-1;
 					strcpy(guessing,guessed);
 					return;
@@ -1326,18 +1293,16 @@ extern void process_guess(char *s) {
 	}
 	if (strcmp(s,"PASS INCORRECT")==0) {
 		if (guesspos!=-1) {
-			guesspos++;
-			if (guesspos==guesslen) {
+			if (++guesspos==guesslen)
 				guesspos=-1;
-			} else {
+			else {
 				for(n=0;n<guesslen;n++) guessing[n]='-';
 				guessing[guesspos]='0'+guessnum;
 				tsend((sprintf(str,"%s%s%s\n",preguess,guessing,postguess),str));
 				return;
 			}
 		}
-		guessnum++;
-		if (guessnum==10) {
+		if (++guessnum==10) {
 			guessnum=-1;
 			strcpy(guessing,guessed);
 			tsend((sprintf(str,"%s%s%s\n",preguess,guessed,postguess),str));
@@ -1348,18 +1313,17 @@ extern void process_guess(char *s) {
 		return;
 	}
 	fprintf(stderr,"%s <%s> %s\n",guesscom,guessing,s);
-	if (guesspass)
-		strcpy(guesspass,guessing);
+	if (guesspass) strcpy(guesspass,guessing);
 	switch(guesstyp) {
 	case GUESS_TELDEST:
 		t=find_teleport(guessval);
 		t->dest=guessvalb;
-		change=-1;
+		change=1;
 		break;
 	case GUESS_LIFMOVE:
 		l=find_lift(guessval);
 		l->targ=guessvalb;
-		change=-1;
+		change=1;
 		break;
 	case GUESS_TELACTI:
 		break;
@@ -1370,7 +1334,7 @@ extern void process_guess(char *s) {
 	guesscom[0]=0;
 }
 
-extern void summon_lift(int n,int lev) {
+void summon_lift(int n,int lev) {
 	struct lift *l;
 	if (*guesscom) {
 		fprintf(stderr,"Guesser busy...\n");
@@ -1405,7 +1369,7 @@ extern void summon_lift(int n,int lev) {
 	tsend((sprintf(str,"%s%s%s\n",preguess,guessing,postguess),str));
 }
 
-extern void activate_teleport(struct teleport *t) {
+void activate_teleport(struct teleport *t) {
 	int n;
 	if (*guesscom) {
 		fprintf(stderr,"Guesser busy...\n");
@@ -1437,4 +1401,3 @@ extern void activate_teleport(struct teleport *t) {
 	tsend((sprintf(str,"%s%s%s\n",preguess,guessing,postguess),str));
 	return;
 }
-

@@ -19,8 +19,7 @@ struct map {
 	char name[64];
 	char author[64];
 	char comments[256];
-	int  wid,hgt;
-	int  depth;
+	int  wid,hgt,depth;
 	char *data[MAXDEPTH];
 	char *data2[MAXDEPTH];
 	char *data3[MAXDEPTH];
@@ -47,20 +46,20 @@ extern struct teleport *firsttel;
 extern int cpcount;
 extern int tpcount;
 
-#define MAP_SOLID     (1<<0)
-#define MAP_TWALL0    (1<<1)
-#define MAP_TWALL1    (1<<2)
-#define MAP_LWALL0    (1<<3)
-#define MAP_LWALL1    (1<<4)
-#define MAP_OBSC      (1<<5)
-#define MAP_XTRA      (1<<6)
-#define MAP_FRICT     (1<<7)
+#define MAP_SOLID	  (1<<0)
+#define MAP_TWALL0	  (1<<1)
+#define MAP_TWALL1	  (1<<2)
+#define MAP_LWALL0	  (1<<3)
+#define MAP_LWALL1	  (1<<4)
+#define MAP_OBSC	  (1<<5)
+#define MAP_FRICT	  (1<<6)
+//#define MAP_XTRA	  (1<<7)
 
 #define MAP_NET_NODE  (1<<0)
 #define MAP_NET_SHUT  (1<<1)
 
-#define MAP_TWALL   (MAP_TWALL0|MAP_TWALL1)
-#define MAP_LWALL   (MAP_LWALL0|MAP_LWALL1)
+#define MAP_TWALL	(MAP_TWALL0|MAP_TWALL1)
+#define MAP_LWALL	(MAP_LWALL0|MAP_LWALL1)
 
 #define rd(l,x,y) (map.data[l][(x)+(y)*map.wid])
 #define rd2(l,x,y) (map.data2[l][(x)+(y)*map.wid])

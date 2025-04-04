@@ -35,18 +35,9 @@
 #include "lift.h"
 #include "addon.h"
 
-/* Function declarations */
-extern void load_mines(void);
-extern void save_mines(void);
-extern void free_beams(void);
-extern void fire_starbursts(void);
-extern void update_teleports(void);
-
-static int lastsave;
-static int sleepsave;
+static int lastsave=0;
+static int sleepsave=0;
 static int saveall;
-
-extern int main();
 
 static void setsave(int sig) {
 	saveall=-2;
@@ -58,31 +49,33 @@ static void setquit(int sig) {
 	return;
 }
 
-extern int main(int argc,char *argv[])
-{
-	int ti;
-	struct player *p;
+int main(int argc,char *argv[]) {
 	struct timeval start_time, end_time;  // For frame timing
 	long frame_time_us;  // Frame time in microseconds
 	const long target_frame_time_us = 59000;  // Target ~17fps (59ms per frame)
 
 	saveall=0;
+
+	struct player *p;
+
 	if (chdir(LIB) != 0) {
 		fprintf(stderr, "Warning: Failed to change directory to %s\n", LIB);
+		exit(1);
 	}
 	DL("Entering main");
 	if ((signal(SIGPIPE,SIG_IGN))==SIG_ERR) {
-	(void) printf("Error: Signals handling failure!\n");
+		printf("Error: Signals handling failure!\n");
 		exit(1);
 	}
 	if ((signal(SIGUSR1,setsave))==SIG_ERR) {
-	(void) printf("Error: Signals handling failure!\n");
+		printf("Error: Signals handling failure!\n");
 		exit(1);
 	}
 	if ((signal(SIGUSR2,setquit))==SIG_ERR) {
-	(void) printf("Error: Signals handling failure!\n");
+		printf("Error: Signals handling failure!\n");
 		exit(1);
 	}
+	int ti;
 	time((time_t*)&ti);
 	srandom(ti);
 	build_sintable();
@@ -95,19 +88,16 @@ extern int main(int argc,char *argv[])
 	init_all_trolleys();
 	load_players();
 	load_mines();
-	players=0;
-	lastsave=0;
-	sleepsave=0;
 	setup_error_handler();
+
+	// Main loop
 	while (1) {
 		gettimeofday(&start_time, NULL);  // Get start time of frame
 
-		for (p=playone;p;p=p->next)
-			if (p->connected) draw_all(p);
+		for (p=playone;p;p=p->next) if (p->connected) draw_all(p);
 		free_beams();
 		fire_starbursts();
-		for (p=playone;p;p=p->next)
-			if (p->playing) update_player(p);
+		for (p=playone;p;p=p->next) if (p->playing) update_player(p);
 		update_turrets();
 		update_bonus();
 		update_teleports();
@@ -160,13 +150,10 @@ extern int main(int argc,char *argv[])
 		frame_time_us = (end_time.tv_sec - start_time.tv_sec) * 1000000 +
 					   (end_time.tv_usec - start_time.tv_usec);
 
-		if (frame_time_us < target_frame_time_us) {
-			// Sleep for the remaining time to achieve target frame rate
+		if (frame_time_us < target_frame_time_us)
 			usleep(target_frame_time_us - frame_time_us);
-		}
-	}
+	} // Main game loop
 
-	sleep(5);
 	DL("Exiting");
 	return 0;
 }

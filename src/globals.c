@@ -25,13 +25,11 @@
 #include "xsetup.h"
 
 /* From player.h */
-struct player *playone = NULL;
-struct player *freeplay = NULL;
+struct player *playone = NULL, *freeplay = NULL;
 char *weap_name[MAX_WEAPS];
 char *own_name[MAX_OTHERS];
 char own_dam[MAX_OTHERS];
-int frame = 0;
-int players = 0;
+int frame = 0, players = 0;
 
 /* From terminal.h */
 struct label *firstlabel = NULL;
@@ -41,8 +39,7 @@ char rom[TERM_ROMSIZE];
 
 /* From mymath.h */
 double sintable[720];
-double *sn = NULL;
-double *cs = NULL;
+double *sn = NULL, *cs = NULL;
 
 /* From xbits.h */
 XPoint pc[PCACHE];
@@ -51,24 +48,18 @@ XPoint pc[PCACHE];
 struct map map;
 struct teleport *firsttel = NULL;
 struct checkpoint *firstcheck = NULL;
-int tpcount = 0;
-int cpcount = 0;
+int tpcount = 0, cpcount = 0, sbcount = 0;
 struct starburst *firststar = NULL;
-int sbcount = 0;
 
 /* From object.h */
-struct object *obj_first = NULL;
-int obj_free = 0;
-struct object *obj_freepool = NULL;
-int obj_used = 0;
+int obj_free = 0, obj_used = 0;
+struct object *obj_first = NULL, *obj_freepool = NULL;
 struct trolley *firsttrol = NULL;
 
 /* From particle.h */
-struct particle *parts[MAXDEPTH];
-struct particle *part_free = NULL;
 int part_count = 0;
-struct explosion *bang_first = NULL;
-struct explosion *bang_free = NULL;
+struct particle *parts[MAXDEPTH], *part_free = NULL;
+struct explosion *bang_first = NULL, *bang_free = NULL;
 
 /* From xsetup.h */
 int jumpable = 0;
@@ -91,8 +82,7 @@ struct addtype *firstaddtype = NULL;
 struct addon *freeaddon = NULL;
 
 /* From beam.h */
-struct beam *firstbeam = NULL;
-struct beam *freebeam = NULL;
+struct beam *firstbeam = NULL, *freebeam = NULL;
 
 /* From home.h */
 struct home *firsthome = NULL;

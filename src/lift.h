@@ -12,13 +12,16 @@
 
 #ifndef My_LIFT_H
 #define My_LIFT_H
+
+#define LIFT_PASS_LENGTH 8
+
 struct lift {
 	struct lift *next;
 	int x,y;
-	int l,t;
+	int l,t; // current, to
 	int id;
 	int clk;
-	char pass[8];
+	char pass[LIFT_PASS_LENGTH];
 };
 
 extern struct lift *firstlift;
@@ -33,7 +36,6 @@ struct lift *scan_lift(int i);
 void move_lifts();
 int move_lift_up(struct lift *l);
 int move_lift_down(struct lift *l);
-void move_lift_to(struct lift *l,int d);
 int can_lift_ascend(struct lift *l);
 int can_lift_descend(struct lift *l);
 int summon_lift(int l,int x,int y);

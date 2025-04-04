@@ -27,7 +27,7 @@
 
 static void show_home(struct player *p);
 
-extern void add_home(int l,int x,int y) {
+void add_home(int l,int x,int y) {
 	struct home *h;
 	h=(struct home *) calloc(1,sizeof(struct home));
 	h->next=firsthome;
@@ -36,20 +36,20 @@ extern void add_home(int l,int x,int y) {
 	h->owner=0;
 }
 
-extern void exit_home(struct player *p) {
+void exit_home(struct player *p) {
 	char txt[256];
 	add_body(&p->body);
 	p->flags&=~FLG_HOME;
 	p->immune=START_IMMUNE_REJ;
-	snprintf(txt, sizeof(txt), "#HOME EXIT %d:%d,%d\n", p->body.l, (int)p->body.x, (int)p->body.y);
+	snprintf(txt,sizeof(txt),"#HOME EXIT %d:%d,%d\n",p->body.l,(int)p->body.x,
+					(int)p->body.y);
 	psend(p, txt);
 }
 
-extern void init_home(struct player *p) {
-	int f;
+void init_home(struct player *p) {
 	p->flags|=FLG_HOME;
 	p->flags&=~FLG_CTRL;
-	f=p->fuelmin-p->fuel;
+	int f=p->fuelmin-p->fuel;
 	if (f<0) f=0;
 	if (f>p->homefuel) f=p->homefuel;
 	p->fuel+=f;
@@ -60,29 +60,22 @@ extern void init_home(struct player *p) {
 }
 
 static void show_home(struct player *p) {
-	Display *d;
-	Pixmap w;
 	int i;
 	char txt[80];
-	GC red,dgrey;
-	d=p->d.disp;
-	w=p->d.backing;
-	red=p->d.gc_red;
-	dgrey=p->d.gc_dgrey;
+	Display *d=p->d.disp;
+	Pixmap w=p->d.backing;
+	GC red=p->d.gc_red,dgrey=p->d.gc_dgrey;
 	XFillRectangle(p->d.disp,p->d.backing,p->d.gc_black,0,0,WINWID,WINHGT);
 	XDrawString(d,w,red,50,p->d.fh,"Fuel",4);
 	XDrawString(d,w,dgrey,50,p->d.fh*2,"Base",4);
-	DrawMeter(p,50+p->d.fw*7,p->d.fh,WINWID/2,4,p->maxfuel/200,
-			  p->fuel/200);
-	DrawMeter(p,50+p->d.fw*7,p->d.fh*2,WINWID/2,4,p->maxfuel/50,
-			  p->homefuel/200);
+	DrawMeter(p,50+p->d.fw*7,p->d.fh,WINWID/2,4,p->maxfuel/200,p->fuel/200);
+	DrawMeter(p,50+p->d.fw*7,p->d.fh*2,WINWID/2,4,p->maxfuel/50,p->homefuel/200);
 	XDrawString(d,w,red,10,p->d.fh*4,"#",1);
 	XDrawString(d,w,red,40,p->d.fh*4,"Contains",8);
 	for (i=0;i<9;i++) {
 		txt[0]='1'+i;
 		XDrawString(d,w,dgrey,10,p->d.fh*(i+5),txt,1);
-		if (p->slotobj[i])
-			XDrawString(d,w,dgrey,23,p->d.fh*(i+5),
+		if (p->slotobj[i]) XDrawString(d,w,dgrey,23,p->d.fh*(i+5),
 							(p->slotobj[i]->flags&OBJ_F_ARM)?"A":"D",1);
 		switch(p->slots[i]) {
 			case OBJ_EMPTY:strcpy(txt,"Slot Empty");break;
@@ -123,34 +116,29 @@ static void show_home(struct player *p) {
 	}
 }
 
-extern void do_home(struct player *p) {
-	int c;
-	int f;
-	c=0;
+void do_home(struct player *p) {
+	int f,c=0;
 	if (p->flags&FLG_FUELLING) {
 		if (p->flags&FLG_CTRL) {
-			f=p->fuel;
+			c=1; f=p->fuel;
 			if (f>p->maxfuel/100) f=p->maxfuel/100;
-			p->fuel-=f;
-			p->homefuel+=f;
+			p->fuel-=f; p->homefuel+=f;
 			if (p->homefuel>p->maxfuel*4) p->homefuel=p->maxfuel*4;
 		} else {
-			f=p->homefuel;
+			c=1; f=p->homefuel;
 			if (f>2000) f=2000;
-			p->fuel+=f;
-			p->homefuel-=f;
+			p->fuel+=f; p->homefuel-=f;
 			if (p->fuel>p->maxfuel) p->fuel=p->maxfuel;
 		}
-		c=1;
 	}
 	if (p->qflags&16) {
-		home_quit(p);
+		home_quit(p); // Why don't we do this in process_events?
 		return;
 	}
 	if (c) show_home(p);
 }
 
-extern void home_mine(struct player *p,int s) {
+void home_mine(struct player *p,int s) {
 	int i;
 	if (p->flags&FLG_CTRL) {
 		if (p->slotobj[s]||(p->slots[s]==OBJ_EMPTY)) return;
@@ -181,12 +169,12 @@ extern void home_mine(struct player *p,int s) {
 	}
 }
 
-extern void home_quit(struct player *p) {
+void home_quit(struct player *p) {
 	int i;
 	char txt[128];
 	p->playing=0;
 	p->home->owner=0;
-	p->oldhome=p->home;
+	p->oldhome=p->home; // Only remembered as long as the server is running
 	p->home=0;
 	for (i=0;i<map.depth;i++) p->mapmem[i]=0;
 	p->body.xv=0;p->body.yv=0;p->body.xf=0;p->body.yf=0;
@@ -196,82 +184,68 @@ extern void home_quit(struct player *p) {
 	XAutoRepeatOn(p->d.disp);
 	p->qflags=0;
 	shutdown_display(p);
-	players--;
-	snprintf(txt, sizeof(txt), "%s has just quitted", p->name);
+	players--; // No longer connected AND playing
+	snprintf(txt,sizeof(txt),"%s has just quitted",p->name);
 	global_message(txt);
 	psend(p,"#HOME QUIT\n");
 	return;
 }
 
-extern void go_home(struct player *p) {
-	int x,y;
-	x=(int) p->body.x;
-	y=(int) p->body.y;
-	x=x/128;
-	y=y/128;
-	if (is_stopped(&p->body)) {
-		if (rd2(p->body.l,x,y)=='H') {
-			if ((x==p->home->x)&&(y==p->home->y)) {
-				if (p->homing) {
-					player_message(p,"Patience!!!");
-					return;
-				}
-				if (p->holding) {
-					struct trolley *tr;
-					struct player *o;
-					tr=p->holding;
-					p->cash+=tr->body.mass;
-					for(o=tr->holder;o;o=o->nexthold) {
-						if (o->lasthold) {
-							o->lasthold->nexthold=0;
-							o->lasthold=0;
-						}
-						o->holding=0;
-					}
-					tr->holder=0;
-					tr->body.xv=0;tr->body.yv=0;
-					tr->body.xf=0;tr->body.yf=0;
-					create_trolley(tr);
-				}
-				p->flags&=(~(FLG_THRUST|FLG_BRAKING|FLG_ROTCLOCK|
-							 FLG_ROTACLOCK|FLG_FIRING));
-				init_home(p);
-				return;
-			} else {
-				player_message(p,"This is not YOUR home base!");
-				return;
-			}
-		}
+void go_home(struct player *p) {
+	int x=(int)p->body.x/128,y=(int)p->body.y/128;
+	if (!is_stopped(&p->body)) {
+		player_message(p,"You must be stopped on your home base to go home");
+		return;
+	}
+	if (rd2(p->body.l,x,y)!='H') {
 		player_message(p,"Errr.. this isnt a home base");
 		return;
 	}
-	player_message(p,"You must be stopped on your home base to go home");
-	return;
+	if ((x!=p->home->x)||(y!=p->home->y)) {
+		player_message(p,"This is not YOUR home base!");
+		return;
+	}
+	if (p->homing) {
+		player_message(p,"Patience!!!");
+		return;
+	}
+	if (p->holding) {
+		struct trolley *tr=p->holding;
+		p->cash+=tr->body.mass;
+		for(struct player *o=tr->holder;o;o=o->nexthold) {
+			if (o->lasthold) {
+				o->lasthold->nexthold=0;
+				o->lasthold=0;
+			}
+			o->holding=0;
+		}
+		tr->holder=0;
+		tr->body.xv=0;tr->body.yv=0;
+		tr->body.xf=0;tr->body.yf=0;
+		create_trolley(tr);
+	}
+	p->flags&=(~(FLG_THRUST|FLG_BRAKING|FLG_ROTCLOCK|FLG_ROTACLOCK|FLG_FIRING));
+	init_home(p);
 }
 
-extern struct home *pick_home() {
+struct home *pick_home() {
 	struct home *h;
-	int free;
-	int chosen;
-	free=0;
-	for (h=firsthome;h;h=h->next)
-		if (!h->owner) free++;
+	int free=0,chosen;
+	for (h=firsthome;h;h=h->next) if (!h->owner) free++;
 	if (!free) return 0;
 	chosen=random()%free;
-	for (h=firsthome;h;h=h->next)
-		if (!h->owner)
-			if (!chosen--) return h;
+	for (h=firsthome;h;h=h->next) if (!h->owner && !chosen--) return h;
 	return 0;
 }
 
-extern struct home *locate_home(int l,int x,int y) {
+struct home *locate_home(int l,int x,int y) {
 	struct home *h;
 	for (h=firsthome;h;h=h->next)
 		if ((h->l==l)&&(h->x==x)&&(h->y==y)) return h;
 	return 0;
 }
 
-extern void take_home(struct player *p) {
+void take_home(struct player *p) {
 	struct home *h;
 	char txt[256];
 	h=locate_home(p->body.l,(int)p->body.x/128,(int)p->body.y/128);
@@ -288,29 +262,33 @@ extern void take_home(struct player *p) {
 		p->home=h;
 		p->oldhome=h;
 		h->owner=p;
-		snprintf(txt, sizeof(txt), "#HOME NEW %d:%d,%d\n", h->l, h->x*128+64, h->y*128+64);
+		snprintf(txt,sizeof(txt),"#HOME NEW %d:%d,%d\n",h->l,h->x*128+64,h->y*128+64);
 		psend(p, txt);
 		return;
 	} else {
 		if (h->owner->rating>=p->rating) {
 			player_message(p,"You cannot take that home base!");
-			player_message(h->owner, (snprintf(txt, sizeof(txt), "%s just tried to steal your home base", p->name), txt));
+			player_message(h->owner,(snprintf(txt,sizeof(txt),"%s just tried to steal your home base",p->name),txt));
 			return;
 		}
 		p->homing=HOME_TAKE_TIME;
-		player_message(p, (snprintf(txt, sizeof(txt), "You steal this home base from %s.", h->owner->name), txt));
-		player_message(h->owner, (snprintf(txt, sizeof(txt), "%s has stolen your home base.", p->name), txt));
-		player_message(h->owner, (snprintf(txt, sizeof(txt), "Your new home base is %d:%d,%d", p->home->l, p->home->x, p->home->y), txt));
-		snprintf(txt, sizeof(txt), "#HOME NEW %d:%d,%d\n", p->home->l, p->home->x*128+64, p->home->y*128+64);
+		player_message(p,(snprintf(txt,sizeof(txt),"You steal this home base from %s.",
+				h->owner->name),txt));
+		player_message(h->owner,(snprintf(txt,sizeof(txt),"%s has stolen your home base.",
+				p->name),txt));
+		player_message(h->owner,(snprintf(txt,sizeof(txt),"Your new home base is %d:%d,%d",
+				p->home->l,p->home->x,p->home->y),txt));
+		snprintf(txt, sizeof(txt),"#HOME NEW %d:%d,%d\n",p->home->l,p->home->x*128+64,
+				p->home->y*128+64);
 		psend(h->owner, txt);
-		snprintf(txt, sizeof(txt), "#HOME NEW %d:%d,%d\n", h->l, h->x*128+64, h->y*128+64);
+		snprintf(txt, sizeof(txt),"#HOME NEW %d:%d,%d\n",h->l,h->x*128+64,h->y*128+64);
 		psend(p, txt);
-		p->home->owner=h->owner;
-		h->owner->home=p->home;
-		h->owner->oldhome=p->home;
-		p->home=h;
-		p->oldhome=h;
-		h->owner=p;
+		p->home->owner=h->owner; // This owner of this home is now the owner of our home
+		h->owner->home=p->home; // Our home is now the home of the owner of this home
+		h->owner->oldhome=p->home; // Our home is now the preferred home for the owner of this home
+		p->home=h; // Our home is this home
+		p->oldhome=h; // This is our preferred home
+		h->owner=p; // This home is owned by us!
 		return;
 	}
 }
