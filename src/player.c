@@ -45,14 +45,13 @@ static void quit_player(struct player *p);
 static int mygets(FILE *pd);
 static void mychop();
 
-static struct player *alloc_player()
-{
-	struct player *p;
-	p=freeplay;
-	if (p) {
-		freeplay=p->next;
-	} else {
-		p=(struct player *) calloc(1,sizeof(struct player));
+static struct player *alloc_player() {
+	struct player* p=freeplay;
+	if (p) freeplay=p->next;
+	else p=(struct player*) calloc(1,sizeof(struct player));
+	if (!p) {
+		fprintf(stderr, "Failed to allocate player\n");
+		return NULL;
 	}
 	p->body.is.player=p;
 	p->body.type=BODY_PLAYER;
@@ -61,31 +60,29 @@ static struct player *alloc_player()
 	return p;
 }
 
-extern int setup_player()
-{
+int setup_player() {
 	int i;
-	char *nm;
 	struct player *p;
 	char txt[1024];
-	nm=(char *) tread();
+	char* nm = tread(); // Read painintheass
 	if (strcmp(nm,"painintheass")) {
 		ctwrite("You must use the new game client");
 		return 0;
 	};
-	nm=(char *) tread();
-	if ((p=find_player(nm))) {
+	nm = tread(); // Read requested user
+	if ((p=find_player(nm)))
 		if (p->connected) {
 			ctwrite("You are ALREADY connected...");
 			return 0;
 		}
-	} else {
+	else {
 		p=alloc_player();
 		strncpy(p->user,nm,15);
 		strncpy(p->name,nm,31);
 
 		/* Setup brand new player */
 
-/*	p->maxrng=16;*/
+/*		p->maxrng=16;*/
 		p->maxfuel=200000;
 		p->fuel=150000;
 		p->shield=1000;
@@ -93,7 +90,7 @@ extern int setup_player()
 		p->weap=WEP_RIF;
 		p->weap_mask=(1<<0);
 		p->ammo[0]=-1;
-		p->cash=START_CASH;
+		p->cash=START_CASH; // TODO - calculate dynamically based on economy?
 		p->score=0;
 		p->immune=START_IMMUNE;
 		p->deaths=0;
@@ -104,42 +101,49 @@ extern int setup_player()
 		p->next=playone;
 		playone=p;
 	}
-	if ((p->oldhome)&&(!p->oldhome->owner)) {
-		p->home=p->oldhome;
-	} else {
-		if (!p->home) {
-			if (!(p->home=pick_home())) {
-				ctwrite("The map is too full right now, sorry");
-				return 0;
-			}
-		}
-	}
-	if (!init_player_display(p,tread())) {
+
+	if ((p->oldhome)&&(!p->oldhome->owner)) p->home=p->oldhome;
+	else if (!p->home && !(p->home=pick_home())) {
+		ctwrite("The map is too full right now, sorry");
 		return 0;
 	}
 
-	p->connected=-1;
+	p->connected=1; // Set this while trying to open display
 
-	if (p->playing) {
+	if (!init_player_display(p,tread())) {
+		p->connected=0;
+		return 0;
+	}
+
+	if (p->playing) { // Player is in the game but not necessarily connected
 		sprintf(txt,"%s has rejoined us.",p->name);
 		global_message(txt);
 		players++;
 		p->immune=START_IMMUNE_REJ;
-		return -1;
+		return 1;
 	}
 	/* Set up for rejoining or new player */
-	Setup_string(p,"name",p->name,31);
-	{
-		char *c;
-		if ((c=ctpass()))
-			if (*c) strncpy(p->pass,c,8);
+	int new_name = 0;
+	nm = ctquery("name");
+	if (!nm) {
+		shutdown_display(p);
+		return 0;
+	}
+	if (strcmp(nm, p->name)) {
+		new_name = true;
+		strncpy(p->name, nm, 31);
 	}
 	{
+		char *c = ctpass();
+		if (c && *c) strncpy(p->pass,c,8);
+	}
+	if (new_name) {
 		struct player *op;
-		for (op=playone;op;op=op->next)
-			if (op!=p) {
-				if (strcmp(op->name,p->name)==0) strcpy(p->name,p->user);
-				if (strcmp(op->user,p->name)==0) strcpy(p->name,p->user);
+		for (op=playone;op;op=op->next) if (op!=p)
+			if (strcmp(op->name,p->name)==0 || strcmp(op->user,p->name)==0) {
+				strcpy(p->name,p->user);
+				ctwrite("Selected name already taken. Defaulting to username.");
+				break;
 			}
 	}
 	p->rot=0;p->rv=0;p->rt=0;
@@ -150,7 +154,7 @@ extern int setup_player()
 	p->body.y=p->home->y*128+64;
 	p->body.l=p->home->l;
 	p->body.xv=0;p->body.yv=0;p->body.xf=0;p->body.yf=0;
-/*    p->range=p->maxrng;*/
+/*	p->range=p->maxrng;*/
 	p->qflags=0;
 	p->playing=-1;
 	remove_body(&p->body);
@@ -188,7 +192,7 @@ extern int setup_player()
 	init_home(p);
 	sprintf(txt,"%s has just joined us.",p->name);
 	global_message(txt);
-	return -1;
+	return 1;
 }
 
 extern void update_player(struct player *p)
@@ -269,43 +273,7 @@ extern void update_player(struct player *p)
 			p->fuel=0;
 		}
 	}
-	xc=((int)p->body.x)/128;
-	yc=((int)p->body.y)/128;
-	if (rd(p->body.l,xc,yc)&MAP_FRICT)
-		switch(rd2(p->body.l,xc,yc)) {
-		case '8':p->body.yf-=PUSH_FORCE;break;
-		case '2':p->body.yf+=PUSH_FORCE;break;
-		case '4':p->body.xf-=PUSH_FORCE;break;
-		case '6':p->body.xf+=PUSH_FORCE;break;
-		case '7':p->body.xf-=PUSH_FORCES;p->body.yf-=PUSH_FORCES;break;
-		case '1':p->body.xf-=PUSH_FORCES;p->body.yf+=PUSH_FORCES;break;
-		case '3':p->body.xf+=PUSH_FORCES;p->body.yf+=PUSH_FORCES;break;
-		case '9':p->body.xf+=PUSH_FORCES;p->body.yf-=PUSH_FORCES;break;
-		case '5':
-			if ((((int)p->body.x)&127)<50) p->body.xf-=PUSH_FORCES;
-			if ((((int)p->body.x)&127)>78) p->body.xf+=PUSH_FORCES;
-			if ((((int)p->body.y)&127)<50) p->body.yf-=PUSH_FORCES;
-			if ((((int)p->body.y)&127)>78) p->body.yf+=PUSH_FORCES;
-			break;
-		case '0':
-			if ((((int)p->body.x)&127)>78) p->body.xf-=PUSH_FORCES;
-			if ((((int)p->body.x)&127)<50) p->body.xf+=PUSH_FORCES;
-			if ((((int)p->body.y)&127)>78) p->body.yf-=PUSH_FORCES;
-			if ((((int)p->body.y)&127)<50) p->body.yf+=PUSH_FORCES;
-			break;
-		default:break;
-		}
-	oxv=p->body.xv;
-	oyv=p->body.yv;
-	p->body.xv+=p->body.xf/p->body.mass;
-	p->body.yv+=p->body.yf/p->body.mass;
-	if (p->body.xv>MAXVEL) p->body.xv=MAXVEL;
-	if (p->body.yv>MAXVEL) p->body.yv=MAXVEL;
-
-	if (p->body.xv<-MAXVEL) p->body.xv=-MAXVEL;
-	if (p->body.yv<-MAXVEL) p->body.yv=-MAXVEL;
-	p->body.x+=(p->body.xv+oxv)/2;
-	p->body.y+=(p->body.yv+oyv)/2;
+	apply_forces(&p->body,p->flags&FLG_BRAKING);
 	xc=((int)p->body.x)/128;
 	yc=((int)p->body.y)/128;
 	if (p->body.height==0) {
@@ -398,19 +366,6 @@ extern void update_player(struct player *p)
 	}
 	if (bigfall!=-1) {
 		inertia=1-(INERTIA/((double) p->body.mass));
-		if ((p->body.height==0)&&(rd(p->body.l,xc,yc)&MAP_SOLID)) {
-			friction=1-(FRICTION/500);
-			if (rd2(p->body.l,xc,yc)=='-') friction/=4;
-			if (rd2(p->body.l,xc,yc)!='+') {
-				if (p->flags&FLG_BRAKING) {
-					p->body.xv*=(friction/2);
-					p->body.yv*=(friction/2);
-				} else {
-					p->body.xv*=friction;
-					p->body.yv*=friction;
-				}
-			}
-		}
 		p->rv*=inertia;
 		t=SPINSPEED*p->spin/100;
 		switch (p->flags&(FLG_ROTCLOCK|FLG_ROTACLOCK)) {
@@ -533,14 +488,10 @@ extern void update_player(struct player *p)
 		p->delay=DEATH_DELAY;
 		p->shield=p->shield*9/10;
 		if (p->shield<FALL_MIN_SHIELD) p->shield=FALL_MIN_SHIELD;
-		if (p->body.l<map.depth)
-			explode(p->body.l,p->body.x,p->body.y,30,0,0,0);
+		if (p->body.l<map.depth) explode(p->body.l,p->body.x,p->body.y,30,0,0,0);
 		p->fuel=p->fuel*9/10;
 		if (p->fuel<FALL_MIN_FUEL) p->fuel=FALL_MIN_FUEL;
 		p->cash=p->cash*19/20;
-		p->body.xv=0;p->body.xf=0;
-		p->body.fallen=0;
-		p->body.yv=0;p->body.yf=0;
 		remove_body(&p->body);
 	}
 	jumpable=0;
@@ -663,17 +614,13 @@ static void lose_items(struct player *p) {
 	if (p->firstadd) p->firstadd=strip_addons(p,p->firstadd);
 }
 
-static void away_stuff(struct player *p)
-{
-	int i;
+static void away_stuff(struct player *p) {
 	if (!(p->connected)) {
 		p->playing=0;
 		p->home->owner=0;
 		p->home=0;
 		lose_items(p);
-		for (i=0;i<map.depth;i++) p->mapmem[i]=0;
-		p->body.xv=0;p->body.yv=0;p->body.xf=0;p->body.yf=0;
-		p->rv=0;p->rt=0;
+		for (int i=0;i<map.depth;i++) p->mapmem[i]=0;
 		remove_body(&p->body);
 		return;
 	}
@@ -681,34 +628,21 @@ static void away_stuff(struct player *p)
 		p->delay--;
 		if (p->delay==0) {
 			p->flags&=~FLG_DEADCLR;
-			p->body.x=p->home->x*128+64;
-			p->body.y=p->home->y*128+64;
-			p->body.xv=0;p->body.xf=0;
-			p->body.yv=0;p->body.yf=0;
+			p->body.x=p->home->x*128+64; p->body.y=p->home->y*128+64;
 			p->body.l=p->home->l;
-			p->rv=0;p->rt=0;p->rot=0;p->cash=p->cash*9/10;p->fuel=p->fuel*9/10;
+			p->rot=0;p->cash=p->cash*9/10;p->fuel=p->fuel*9/10;
 			p->shield=p->maxshield/2;
 			p->immune=DEATH_IMMUNE;
-			remove_body(&p->body);
-			p->body.fallen=0;
 			if ((p->homefuel+p->fuel)<MIN_FUEL) p->homefuel=MIN_FUEL;
-			p->body.height=0;
 			init_home(p);
 			return;
 		}
 		if ((p->delay==(DEATH_SHOW+1))&&(p->flags&FLG_FALLEN)) {
 			p->delay=0;
 			p->flags&=~FLG_DEADCLR;
-			p->body.x=p->ox;
-			p->body.y=p->oy;
-			p->body.xv=0;p->body.xf=0;
-			p->body.yv=0;p->body.yf=0;
-			p->body.l=p->olvl;
-			p->rv=0;p->rt=0;
+			p->body.x=p->ox; p->body.y=p->oy; p->body.l=p->olvl;
 			p->immune=FALL_IMMUNE;
-			add_body(&p->body);
-			p->body.fallen=0;
-			p->body.height=0;
+			add_pbody(p);
 			return;
 		}
 	}

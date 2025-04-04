@@ -20,34 +20,26 @@
 #include "player.h"
 #include "debug.h"
 
-extern struct particle *alloc_particle()
-{
-	struct particle *p;
-	p=part_free;
-	if (p) {
-		part_free=p->next;
-	} else {
-		p=(struct particle *) calloc(1,sizeof(struct particle));
-	}
+struct particle *alloc_particle() {
+	struct particle *p=part_free;
+	if (p) part_free=p->next;
+	else p=(struct particle *) calloc(1,sizeof(struct particle));
 	part_count++;
 	return p;
 }
 
-extern void free_particle(struct particle *p)
-{
+void free_particle(struct particle *p) {
 	p->next=part_free;
 	part_free=p;
 	part_count--;
 }
 
-extern void fire_particle(struct player *pl,int l,int x,int y,int a,double v,
-						  int d,int r,int m)
-{
+void fire_particle(struct player *pl,int l,int x,int y,int a,double v,
+						  int d,int r,int m) {
 	struct particle *p;
 	if (a<0) a=(a+360)%360;
 	if (pl) {
-		pl->body.xf-=v*m*sn[a]/10;
-		pl->body.yf+=v*m*cs[a]/10;
+		pl->body.xf-=v*m*sn[a]/10;pl->body.yf+=v*m*cs[a]/10;
 	}
 	p=alloc_particle();
 	p->x=x;
@@ -62,26 +54,22 @@ extern void fire_particle(struct player *pl,int l,int x,int y,int a,double v,
 	parts[l]=p;
 }
 
-extern void move_particles()
-{
-	int l;
-	struct particle *p;
-	struct particle *t;
-	struct particle *n;
+void move_particles() {
+	struct particle *p; // previous?
+	struct particle *t; // this?
+	struct particle *n; // next
 	struct player *pl;
 	struct turret *tu;
 	struct trolley *tr;
 	double x,y;
 	int dx,dy;
-	for(l=0;l<map.depth;l++)
+	for(int l=0;l<map.depth;l++) {
 		if (parts[l]) for (p=0,t=parts[l],n=t->next;t;p=t,t=n,t?n=t->next:0) {
 			if ((--t->life)>0) {
-				t->x+=t->vely*sn[t->rot];
-				t->y-=t->vely*cs[t->rot];
-				if ((t->x<0)||(t->x>=map.wid*128)||
-					(t->y<0)||(t->y>=map.hgt*128)) {
+				t->x+=t->vely*sn[t->rot];t->y-=t->vely*cs[t->rot];
+				if ((t->x<0)||(t->x>=map.wid*128)||(t->y<0)||(t->y>=map.hgt*128))
 					t->life=0;
-				} else {
+				else {
 					switch (rd2(l,(int) t->x/128,(int) t->y/128)) {
 					case 'O':
 						if (!((tu=find_turret(l,(int) t->x/128,(int) t->y/128))
@@ -97,15 +85,13 @@ extern void move_particles()
 					}
 				}
 			} else {
-				if (p) {
-					p->next=n;
-				} else {
-					parts[l]=n;
-				}
+				if (p) p->next=n;
+				else parts[l]=n;
 				free_particle(t);
-				t=p;
+				t=p; // Move pointer to previous
 			}
-		}
+		} // loop through parts[]
+	} // loop through map levels
 	for (pl=playone;pl;pl=pl->next)
 		if (pl->body.on) {
 			x=pl->body.x;y=pl->body.y;
@@ -116,7 +102,7 @@ extern void move_particles()
 					/* Do bullet collision */
 					p->life=-1;
 					if (!pl->immune) {
-						damage_player(pl,p->dam,p->owner,DAM_SHOT);
+						damage_player(pl,p->dam,p->owner,DAM_SHOT); // TODO money here
 						pl->body.xf+=p->vely*p->mass*sn[p->rot]/10;
 						pl->body.yf-=p->vely*p->mass*cs[p->rot]/10;
 					}
@@ -138,28 +124,19 @@ extern void move_particles()
 	}
 }
 
-
-extern struct explosion *alloc_bang()
-{
-	struct explosion *p;
-	p=bang_free;
-	if (p) {
-		bang_free=p->next;
-	} else {
-		p=(struct explosion *) calloc(1,sizeof(struct explosion));
-	}
+struct explosion *alloc_bang() {
+	struct explosion *p=bang_free;
+	if (p) bang_free=p->next;
+	else p=(struct explosion *) calloc(1,sizeof(struct explosion));
 	return p;
 }
 
-extern void explode(int l,int x, int y,int s,int f,int d,struct player *who)
-{
-	struct explosion *e;
+void explode(int l,int x, int y,int s,int f,int d,struct player *who) {
 	struct player *p;
 	int dx,dy;
 	double r;
-	e=alloc_bang();
-	e->next=bang_first;
-	bang_first=e;
+	struct explosion *e=alloc_bang();
+	e->next=bang_first;bang_first=e;
 	e->x=x; /* X pos */
 	e->y=y; /* Y pos */
 	e->d=l; /* Level */
@@ -167,66 +144,46 @@ extern void explode(int l,int x, int y,int s,int f,int d,struct player *who)
 	e->a=0; /* Current Age */
 	e->s=s; /* Size */
 	f=f*s*10;
-	for (p=playone;p;p=p->next)
-		if (!p->immune)
-			if ((p->body.on)&&(p->body.l==l)) {
-				dx=x-p->body.x;
-				dy=y-p->body.y;
-				if ((r=(dx*dx+dy*dy))<=((s*10+5)*(s*10+5))) {
-					r+=0.1;
-					p->body.xf-=dx*f/r;
-					p->body.yf-=dy*f/r;
-					if (d) {
-						int dam;
-						dam=d*s*s*10/r;
-						if (dam>d) dam=d;
-						damage_player(p,dam,who,DAM_EXPL);
-					}
-				}
+	for (p=playone;p;p=p->next) if ((!p->immune)&&(p->body.on)&&(p->body.l==l)) {
+		dx=x-p->body.x;dy=y-p->body.y;
+		if (r=dx*dx+dy*dy, r<=(s*10+5)*(s*10+5)) {
+			r+=0.1;
+			p->body.xf-=dx*f/r;p->body.yf-=dy*f/r;
+			if (d) {
+				int dam=d*s*s*10/r;
+				if (dam>d) dam=d;
+				damage_player(p,dam,who,DAM_EXPL);
 			}
+		}
+	}
 	{
-		struct object *o;
-		struct object *n;
-		n=0;
+		struct object *o,*n=0;
 		for (o=obj_first,o?n=o->next:0;o;o=n,n?n=n->next:0)
 			if ((o->l==l)&&(o->flags&OBJ_F_ARM)) {
-				dx=x-o->x;
-				dy=y-o->y;
-				if ((r=(dx*dx+dy*dy))<=((s*10+5)*(s*10+5)))
-					if (r!=0) {
-						if ((f/r)>30) {
-							if (o->slot) {
-								o->has.owner->slots[o->slot-1]=0;
-								o->has.owner->slotobj[o->slot-1]=0;
-								o->slot=0;
-							}
-							o->flags|=OBJ_F_CHAIN;
-						}
+				dx=x-o->x;dy=y-o->y;
+				if (r=dx*dx+dy*dy, r<=(s*10+5)*(s*10+5) && r!=0 && f/r>30) {
+					if (o->slot) {
+						o->has.owner->slots[o->slot-1]=0;
+						o->has.owner->slotobj[o->slot-1]=0;
+						o->slot=0;
 					}
+					o->flags|=OBJ_F_CHAIN;
+				}
 			}
 	}
 	return;
 }
 
-extern void move_explosions()
-{
-	struct explosion *e;
-	struct explosion *l;
-	struct explosion *n;
-	l=0;
-	if (bang_first) {
-		for (e=bang_first,n=e->next;e;l=e,e=n,e?n=e->next:0) {
-			e->r+=10;
-			if (e->a++>e->s) {
-				if (l) {
-					l->next=e->next;
-				} else {
-					bang_first=e->next;
-				}
-				e->next=bang_free;
-				bang_free=e;
-				e=l;
-			}
+void move_explosions() {
+	struct explosion *e,*l=0,*n;
+	if (bang_first) for (e=bang_first,n=e->next;e;l=e,e=n,e?n=e->next:0) {
+		e->r+=10;
+		if (e->a++>e->s) {
+			if (l) l->next=e->next;
+			else bang_first=e->next;
+			e->next=bang_free;
+			bang_free=e;
+			e=l;
 		}
 	}
 }

@@ -27,8 +27,8 @@ struct object {
 	int flags;
 	int charge;
 	union {
-	struct player *owner;
-	struct object *same;
+		struct player *owner;
+		struct object *same;
 	} has;
 	int slot;
 };
@@ -77,4 +77,3 @@ void init_all_trolleys();
 void create_trolley(struct trolley *tr);
 
 #endif
-

@@ -30,97 +30,72 @@ static int mygets(FILE *pd);
 static char inbuf[1024];
 static struct trolley *spottrol;
 
-struct object *alloc_object()
-{
+struct object *alloc_object() {
 	struct object *p;
 	p=obj_freepool;
 	if (p) {
 		obj_freepool=p->next;
 		obj_free--;
-	} else {
+	} else
 		p=(struct object *) calloc(1,sizeof(struct object));
-	}
 	obj_used++;
 	return p;
 }
 
-extern void move_objects()
-{
-	struct object *o;
-	struct object *n;
+void move_objects() {
+	struct object *o, *n;
 	struct player *p;
-	double friction;
 	double dx,dy;
 	int rng,det,det2;
 	if (!obj_first) return;
 	for (o=obj_first,n=o->next;o;o=n,o?n=o->next:0) {
-		if (o->flags&OBJ_F_ARMING)
-			if (!(--o->count)) {
-				o->flags|=OBJ_F_ARM;
-				o->flags&=(~OBJ_F_ARMING);
-			}
-		if (o->flags&OBJ_F_TRIG) {
-			switch (o->type) {
-			case OBJ_MINE_TRIG:
-				o->flags|=OBJ_F_EXPLODE;
-				break;
-			case OBJ_MINE_TIME:
-				if (!(--o->mode))
-					o->flags|=OBJ_F_EXPLODE;
+		if (o->flags&OBJ_F_ARMING && !(--o->count)) {
+			o->flags|=OBJ_F_ARM;
+			o->flags&=(~OBJ_F_ARMING);
+		}
+		if (o->flags&OBJ_F_TRIG) switch (o->type) {
+			case OBJ_MINE_TRIG:o->flags|=OBJ_F_EXPLODE;break;
+			case OBJ_MINE_TIME:if (!(--o->mode)) o->flags|=OBJ_F_EXPLODE;
 				break;
 			case OBJ_MINE_PROX:
-				det=o->mode*2;
-				det2=det-100;
+				det=o->mode*2;det2=det-100;
 				if (det2<0) det2=0;
-				det*=det;
-				det2=det2*det2;
-				for (p=playone;p;p=p->next)
-					if (p->body.l==o->l) {
-						dx=(p->body.x-o->x);
-						dy=(p->body.y-o->y);
-						rng=(int) (dx*dx)+(dy*dy);
-						if ((rng<=det)&&(rng>det2))
-							o->flags|=OBJ_F_EXPLODE;
-					}
-				break;
+				det*=det; det2=det2*det2;
+				for (p=playone;p;p=p->next) if (p->body.l==o->l) {
+					dx=(p->body.x-o->x); dy=(p->body.y-o->y);
+					rng=(int)(dx*dx+dy*dy);
+					if ((rng<=det)&&(rng>det2)) o->flags|=OBJ_F_EXPLODE;
+				} break;
 			case OBJ_MINE_VELY:
-				for (p=playone;p;p=p->next)
-					if (p->body.l==o->l) {
-						dx=(p->body.x-o->x);
-						dy=(p->body.y-o->y);
-						rng=(int) (dx*dx)+(dy*dy);
-						if (rng<=10000) {
-							dx=(double) o->mode/10;
-							dy=p->body.xv*p->body.xv+p->body.yv*p->body.yv;
-							if ((dy>(dx*dx))&&(dy<((dx+5)*(dx+5))))
-								o->flags|=OBJ_F_EXPLODE;
-						}
-					}
-
-				break;
-			case OBJ_BONUS:
-				for (p=playone;p;p=p->next)
-					if (p->body.l==o->l) {
-						dx=(p->body.x-o->x);
-						dy=(p->body.y-o->y);
-						rng=(int) (dx*dx)+(dy*dy);
-						if (rng<=400) {
-							get_bonus(p);
+				for (p=playone;p;p=p->next) if (p->body.l==o->l) {
+					dx=(p->body.x-o->x); dy=(p->body.y-o->y);
+					rng=(int)(dx*dx+dy*dy);
+					if (rng<=10000) {
+						dx=(double) o->mode/10;
+						dy=p->body.xv*p->body.xv+p->body.yv*p->body.yv;
+						if ((dy>(dx*dx))&&(dy<((dx+5)*(dx+5))))
 							o->flags|=OBJ_F_EXPLODE;
-						}
 					}
-			default:
-				break;
-			}
+				} break;
+			case OBJ_BONUS:
+				for (p=playone;p;p=p->next) if (p->body.l==o->l) {
+					dx=(p->body.x-o->x); dy=(p->body.y-o->y);
+					rng=(int)(dx*dx+dy*dy);
+					if (rng<=400) {
+						get_bonus(p); o->flags|=OBJ_F_EXPLODE;
+					}
+				} break;
+			default: break;
 		}
 		if (!(o->flags&OBJ_F_EXPLODE)) {
-			friction=1-(FRICTION/1000);
-			if (!(rd(o->l,(int) (o->x/128),(int) (o->y/128))&MAP_FRICT)) {
-				o->xv*=friction;
-				o->yv*=friction;
+			//apply_forces(&p->body,0);
+			double friction=FRICTION/1000;
+			if (rd2(o->l,(int)(o->x/128),(int)(o->y/128))&&
+					rd2(o->l,(int)(o->x/128),(int)(o->y/128))!='+') {
+				if (rd2(o->l,(int)(o->x/128),(int)(o->y/128))=='-') friction*=4;
+				o->xv*=(1-friction); o->yv*=(1-friction);
 			}
-			o->x+=o->xv;
-			o->y+=o->yv;
+			o->x+=o->xv; o->y+=o->yv;
 			if (is_hole(o->l,o->x,o->y)) {
 				o->l++;
 				if (o->l>=map.depth) {
@@ -136,33 +111,23 @@ extern void move_objects()
 			}
 		}
 	}
-	rng=1;
-	while(rng==1) {
+	rng=1; while(rng==1) {
 		rng=0;
-		for (o=obj_first;o;o?o=o->next:0)
-			if (o->flags&OBJ_F_EXPLODE) {
-				explode_mine(o);
-				o=0;rng=1;
-			} else {
-				if (o->flags&OBJ_F_CHAIN) o->flags|=OBJ_F_EXPLODE;
-			}
+		for (o=obj_first;o;o?o=o->next:0) if (o->flags&OBJ_F_EXPLODE) {
+			explode_mine(o);o=0;rng=1;
+		} else if (o->flags&OBJ_F_CHAIN) o->flags|=OBJ_F_EXPLODE;
 	}
 }
 
-extern void init_all_trolleys() {
-	int n;
-	for (n=0;n<12;n++)
-		create_trolley(0);
+void init_all_trolleys() {
+	for (int n=0;n<12;n++) create_trolley(0);
 }
 
-extern void create_trolley(struct trolley *tr) {
+void create_trolley(struct trolley *tr) {
 	struct trolley *t;
 	if (firstcheck==0) return;
-	if (tr) {
-		t=tr;
-	} else {
-		t=(struct trolley *) calloc(1,sizeof(struct trolley));
-	}
+	if (tr) t=tr;
+	else t=(struct trolley *) calloc(1,sizeof(struct trolley));
 	t->body.is.trolley=t;
 	t->body.type=BODY_TROLLEY;
 	t->body.radius=20;
@@ -180,120 +145,50 @@ extern void create_trolley(struct trolley *tr) {
 	add_body(&t->body);
 }
 
-
 static void move_trolley(struct trolley *p) {
-	int xc,yc;
-	double oxv,oyv;
-	double friction;
-	int l;
-	struct player *o;
-	struct player *n;
-	char str[256];
+	struct player *o, *n;
+	char txt[256];
 	p->ang=(p->ang+17)%360;
-	if (p->holder)
-		for (o=p->holder,n=o->nexthold;o;o=n,n=n?n->nexthold:0)
-			if ((!o->body.on)||(o->body.l!=p->body.l)) {
-				if (o->lasthold) {
-					o->lasthold->nexthold=o->nexthold;
-				} else {
-					p->holder=o->nexthold;
-				}
-				if (o->nexthold) o->nexthold->lasthold=o->lasthold;
-				o->lasthold=0;
-				o->nexthold=0;
-				o->holding=0;
-			}
-	xc=((int)p->body.x)/128;
-	yc=((int)p->body.y)/128;
-	if (rd(p->body.l,xc,yc)&MAP_FRICT)
-		switch(rd2(p->body.l,xc,yc)) {
-		case '8':p->body.yf-=PUSH_FORCE;break;
-		case '2':p->body.yf+=PUSH_FORCE;break;
-		case '4':p->body.xf-=PUSH_FORCE;break;
-		case '6':p->body.xf+=PUSH_FORCE;break;
-		case '7':p->body.xf-=PUSH_FORCES;p->body.yf-=PUSH_FORCES;break;
-		case '1':p->body.xf-=PUSH_FORCES;p->body.yf+=PUSH_FORCES;break;
-		case '3':p->body.xf+=PUSH_FORCES;p->body.yf+=PUSH_FORCES;break;
-		case '9':p->body.xf+=PUSH_FORCES;p->body.yf-=PUSH_FORCES;break;
-		case '5':
-			if ((((int)p->body.x)&127)<50) p->body.xf-=PUSH_FORCES;
-			if ((((int)p->body.x)&127)>78) p->body.xf+=PUSH_FORCES;
-			if ((((int)p->body.y)&127)<50) p->body.yf-=PUSH_FORCES;
-			if ((((int)p->body.y)&127)>78) p->body.yf+=PUSH_FORCES;
-			break;
-		case '0':
-			if ((((int)p->body.x)&127)>78) p->body.xf-=PUSH_FORCES;
-			if ((((int)p->body.x)&127)<50) p->body.xf+=PUSH_FORCES;
-			if ((((int)p->body.y)&127)>78) p->body.yf-=PUSH_FORCES;
-			if ((((int)p->body.y)&127)<50) p->body.yf+=PUSH_FORCES;
-			break;
-		default:break;
+	if (p->holder) for (o=p->holder,n=o->nexthold;o;o=n,n=n?n->nexthold:0)
+		if ((!o->body.on)||(o->body.l!=p->body.l)) {
+			if (o->lasthold) o->lasthold->nexthold=o->nexthold;
+			else p->holder=o->nexthold;
+			if (o->nexthold) o->nexthold->lasthold=o->lasthold;
+			o->lasthold=o->nexthold=o->holding=0;
 		}
-	oxv=p->body.xv;
-	oyv=p->body.yv;
-	p->body.xv+=p->body.xf/p->body.mass;
-	p->body.yv+=p->body.yf/p->body.mass;
-	p->body.xf=0;p->body.yf=0;
-	if (p->body.xv>MAXVEL) p->body.xv=MAXVEL;
-	if (p->body.yv>MAXVEL) p->body.yv=MAXVEL;
-	if (p->body.xv<-MAXVEL) p->body.xv=-MAXVEL;
-	if (p->body.yv<-MAXVEL) p->body.yv=-MAXVEL;
-	p->body.x+=(p->body.xv+oxv)/2;
-	p->body.y+=(p->body.yv+oyv)/2;
-	xc=((int)p->body.x)/128;
-	yc=((int)p->body.y)/128;
+	apply_forces(&p->body,0);
 
-	if (is_hole(p->body.l,p->body.x,p->body.y)) {
-		if (p->falltime) {
-			p->falltime--;
-		} else {
-			char txt[256];
+	if (is_hole(p->body.l,p->body.x,p->body.y))
+		if (p->falltime) p->falltime--;
+		else {
 			p->body.l++;
-			if (p->body.l>=map.depth) {
-				create_trolley(p);
-			}
+			if (p->body.l>=map.depth) create_trolley(p);
 			sprintf(txt,"Thingy at %d:%d,%d",p->body.l,(int)p->body.x/128,(int)p->body.y/128);
 			global_message(txt);
 			p->falltime=TROLLEY_FALL_TIME;
 		}
-	} else {
-		int ux,uy,sx,sy;
+	else {
 		p->falltime=TROLLEY_FALL_TIME;
 		if (p->body.l==p->cp->l) {
-			ux=(int) p->body.x;
-			uy=(int) p->body.y;
-			sx=ux-p->cp->x*128-64;
-			sy=uy-p->cp->y*128-64;
+			int ux=(int)p->body.x, uy=(int)p->body.y;
+			int sx=ux-p->cp->x*128-64, sy=uy-p->cp->y*128-64;
 			ux=sx*sx+sy*sy;
 			if (ux<(25*25)) {
 				struct player *pl;
 				p->cp=pick_check(p->cp);
 				p->body.mass*=2;
-				sprintf(str,"Mass %d    Take to check at %d:%d,%d",p->body.mass,
+				sprintf(txt,"Mass %d    Take to check at %d:%d,%d",p->body.mass,
 						p->cp->l,p->cp->x,p->cp->y);
 				for (pl=p->holder;pl;pl=pl->nexthold) {
-					player_message(pl,str);
+					player_message(pl,txt);
 					pl->cash+=100;
 				}
 			}
 		}
 	}
-	friction=1-(FRICTION/500);
-	if (rd2(p->body.l,xc,yc)=='-') friction/=4;
-	if ((rd(p->body.l,xc,yc)&MAP_SOLID)&&(rd2(p->body.l,xc,yc)!='+')) {
-		p->body.xv*=friction;
-		p->body.yv*=friction;
-	}
-	if (p->body.x<20) p->body.x=20;
-	if (p->body.y<20) p->body.y=20;
-	if (p->body.x>=(map.wid*128-20)) p->body.x=map.wid*128-21;
-	if (p->body.y>=(map.hgt*128-20)) p->body.y=map.hgt*128-21;
 
 	for (o=p->holder;o;o=o->nexthold) {
-		int dx,dy;
-		dx=o->body.x-p->body.x;
-		dy=o->body.y-p->body.y;
-		l=dx*dx+dy*dy;
+		int dx=o->body.x-p->body.x,dy=o->body.y-p->body.y,l=dx*dx+dy*dy;
 		if (l>(STRING_LENGTH*STRING_LENGTH)) {
 			double ll,el;
 			double fx,fy;
@@ -307,52 +202,38 @@ static void move_trolley(struct trolley *p) {
 	}
 }
 
-extern void update_trolleys() {
-	struct trolley *t;
-	for (t=firsttrol;t;t=t->next)
-		move_trolley(t);
+void update_trolleys() {
+	for (struct trolley *t=firsttrol;t;t=t->next) move_trolley(t);
 }
 
-
-extern void take_hold(struct player *p) {
-	struct trolley *tr;
-	struct trolley *mtr;
-	int len,minlen;
-	char str[256];
+void take_hold(struct player *p) {
 	if (p->holding) {
-		if (p->lasthold) {
-			p->lasthold->nexthold=p->nexthold;
-		} else {
-			p->holding->holder=p->nexthold;
-		}
+		if (p->lasthold) p->lasthold->nexthold=p->nexthold;
+		else p->holding->holder=p->nexthold;
 		if (p->nexthold) p->nexthold->lasthold=p->lasthold;
 		p->lasthold=0;
 		p->nexthold=0;
 		p->holding=0;
 		return;
 	}
-	mtr=0;
-	minlen=0;
-	for (tr=firsttrol;tr;tr=tr->next)
-		if (tr->body.l==p->body.l) {
-			len=((p->body.x-tr->body.x)*(p->body.x-tr->body.x)+
-				 (p->body.y-tr->body.y)*(p->body.y-tr->body.y));
-			if (len<STRING_MAX_LENGTH*STRING_MAX_LENGTH) {
-				if ((!minlen)||(len<minlen)) {
-					minlen=len;
-					mtr=tr;
-				}
-			}
+	int len, minlen=0;
+	struct trolley *tr, *mtr=0;
+	for (tr=firsttrol;tr;tr=tr->next) if (tr->body.l==p->body.l) {
+		len=((p->body.x-tr->body.x)*(p->body.x-tr->body.x)+
+			 (p->body.y-tr->body.y)*(p->body.y-tr->body.y));
+		if ((len<STRING_MAX_LENGTH*STRING_MAX_LENGTH)&&(!minlen||(len<minlen))) {
+			minlen=len;mtr=tr;
 		}
+	}
+	char txt[256];
 	if (!mtr) {
 		if (firsttrol) {
-			if (spottrol)
-				spottrol=spottrol->next;
+			if (spottrol) spottrol=spottrol->next;
 			if (!spottrol) spottrol=firsttrol;
-			sprintf(str,"The object in question is at %d:%d,%d",
+			sprintf(txt,"The object in question is at %d:%d,%d",
 					spottrol->body.l,(int) spottrol->body.x/128,
 					(int) spottrol->body.y/128);
-			player_message(p,str);
+			player_message(p,txt);
 		}
 		return;
 	}
@@ -361,13 +242,12 @@ extern void take_hold(struct player *p) {
 	p->nexthold=mtr->holder;
 	if (p->nexthold) p->nexthold->lasthold=p;
 	mtr->holder=p;
-	sprintf(str,"Mass %d    Take to check at %d:%d,%d",mtr->body.mass,
+	sprintf(txt,"Mass %d    Take to check at %d:%d,%d",mtr->body.mass,
 			mtr->cp->l,mtr->cp->x,mtr->cp->y);
-	player_message(p,str);
+	player_message(p,txt);
 }
 
-extern void save_mines() {
-	struct object *o;
+void save_mines() {
 	FILE *pd;
 
 	if (!(pd=fopen("mines.data.file","w"))) {
@@ -375,42 +255,48 @@ extern void save_mines() {
 		return;
 	}
 
-	for (o=obj_first;o;o=o->next) {
+	for (struct object *o=obj_first;o;o=o->next) {
 		switch(o->type) {
 		case OBJ_MINE_TRIG:
 		case OBJ_MINE_TIME:
 		case OBJ_MINE_VELY:
 		case OBJ_MINE_PROX:
 		case OBJ_MINE_SMART:
-			if ((o->flags&OBJ_F_ARM)&&(o->has.owner)) {
+			if ((o->flags&OBJ_F_ARM)&&(o->has.owner))
 				fprintf(pd,"%d/%d/%f/%f/%f/%f/%d/%d/%d/%d/%s/\n",o->type,
 						o->l,o->x,o->y,o->xv,o->yv,o->count,
 						o->mode,o->flags,o->charge,o->has.owner->user);
-			}
 			break;
 		default:
-		case OBJ_BONUS:
-			break;
+		case OBJ_BONUS: break;
 		}
 	}
 	fprintf(pd,"END\n");
 	fclose(pd);
 }
 
-extern void load_mines() {
+static int mygets(FILE *pd) {
+	int l;
+	*inbuf=0;
+	if (!fgets(inbuf, sizeof(inbuf), pd)) return 0;
+	if ((l=strlen(inbuf)))
+		if (inbuf[l-1]=='\n') inbuf[--l]=0;
+	return l;
+}
+
+void load_mines() {
 	struct object *o;
 	FILE *pd;
 	char *nb,*onb;
 
 	if (!(pd=fopen("mines.data.file","rb"))) {
-		fprintf(stderr,"!!!ERROR - Cannot open mines file for reading.!!!");
+		fprintf(stderr,"!!!ERROR - Cannot open mines file for reading.!!!\n");
 		return;
 	}
 	while(mygets(pd),strcmp(inbuf,"END")) {
 		nb=inbuf;
 		o=alloc_object();
-		o->next=obj_first;
-		obj_first=o;
+		o->next=obj_first; obj_first=o;
 		onb=nb;nb=strchr(nb,'/');*nb++=0;o->type=atoi(onb);
 		onb=nb;nb=strchr(nb,'/');*nb++=0;o->l=atoi(onb);
 		onb=nb;nb=strchr(nb,'/');*nb++=0;o->x=atof(onb);
@@ -424,17 +310,4 @@ extern void load_mines() {
 		onb=nb;nb=strchr(nb,'/');*nb++=0;o->has.owner=find_player(onb);
 	}
 	fclose(pd);
-}
-
-
-
-static int mygets(FILE *pd) {
-	int l;
-	*inbuf=0;
-	if (fgets(inbuf, sizeof(inbuf), pd) == NULL) {
-		return 0;
-	}
-	if ((l=strlen(inbuf)))
-		if (inbuf[l-1]=='\n') inbuf[--l]=0;
-	return l;
 }

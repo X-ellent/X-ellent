@@ -34,6 +34,12 @@ void add_body(struct body *b) {
 	b->on=1;
 }
 
+void add_pbody(struct player *p) {
+	p->rv=p->rt=0;
+	p->flags&=~(FLG_THRUST|FLG_BRAKING|FLG_ROTCLOCK|FLG_ROTACLOCK|FLG_FIRING);
+	add_body(&p->body);
+}
+
 void remove_body(struct body *b) {
 	if (!b->on) return;
 	if (b->last) b->last->next=b->next;
@@ -63,26 +69,30 @@ void do_collisions() {
 		for (struct body *c=b->next;c;c=c->next) if ((c->on)&&(b!=c)&&(b->l==c->l)) {
 			int dist = b->radius + c->radius;
 			dx=c->x-b->x;dy=c->y-b->y;dr=dx*dx+dy*dy;
-			if (dr < (dist * dist)) {
+			if (dr < (dist*dist)) {
 				double st,ct,ub,uc,sep,gap,vb,vc,qa,qb,qc,discrim;
 				double bm = b->mass, cm = c->mass;
 				/* Move objects to exact point of bounce. */
 				double rxv = b->xv - c->xv, ryv = b->yv - c->yv;
-				double time = 2.0; /* (Fix 'cos jon doesnt initialise it) */
+				double time = 2; /* (Fix 'cos jon doesnt initialise it) */
 				if (!(rxv == 0 && ryv == 0)) {
-					qa = rxv * rxv + ryv * ryv;
+					qa = rxv*rxv + ryv*ryv;
 					qb = 2*(rxv*c->x - rxv*b->x + ryv*c->y - ryv*b->y);
 					qc = b->x*b->x + c->x*c->x + b->y*b->y + c->y*c->y -
 							2*b->x*c->x - 2*b->y*c->y - dist*dist;
-					discrim = qb * qb - 4 * qa * qc;
+					discrim = qb*qb - 4*qa*qc;
 					if (discrim >= 0) { // Only proceed if roots are real
 						double sqrt_discrim = sqrt(discrim);
 						double t1=(-qb-sqrt_discrim)/(2*qa),t2=(-qb+sqrt_discrim)/(2*qa);
 						// Select the smallest valid time within the current step [0, 1]
 						if (t1>=0 && t1<=1 && (t2<0 || t1<=t2)) {
-							fprintf(stderr, "Collision using t1: %f (t2=%f)\n", t1, t2);
+							fprintf(stderr, "Collision new t1=%f (old=%f) discrim=%f\n",
+									t1, t2, discrim);
 							time = t1;
-						} else if (t2>=0 && t2<=1) time = t2;
+						} else if (t2>=0 && t2<=1) {
+							fprintf(stderr, "Collision orig %f discrim=%f\n", t2, discrim);
+							time = t2;
+						}
 					}
 				}
 				if ((rxv == 0 && ryv == 0) || time > 1) {
@@ -181,3 +191,45 @@ void do_collisions() {
 	} // b loop
 }
 
+void apply_forces(struct body *b, bool braking) {
+	int xc=(int)(b->x/128),yc=(int)(b->y/128);
+	switch(rd2(b->l,xc,yc)) {
+		case '8':b->yf-=PUSH_FORCE;break;
+		case '2':b->yf+=PUSH_FORCE;break;
+		case '4':b->xf-=PUSH_FORCE;break;
+		case '6':b->xf+=PUSH_FORCE;break;
+		case '7':b->xf-=PUSH_FORCES;b->yf-=PUSH_FORCES;break;
+		case '1':b->xf-=PUSH_FORCES;b->yf+=PUSH_FORCES;break;
+		case '3':b->xf+=PUSH_FORCES;b->yf+=PUSH_FORCES;break;
+		case '9':b->xf+=PUSH_FORCES;b->yf-=PUSH_FORCES;break;
+		case '5':
+			if ((((int)b->x)&127)<50) b->xf-=PUSH_FORCES;
+			if ((((int)b->x)&127)>78) b->xf+=PUSH_FORCES;
+			if ((((int)b->y)&127)<50) b->yf-=PUSH_FORCES;
+			if ((((int)b->y)&127)>78) b->yf+=PUSH_FORCES;
+			break;
+		case '0':
+			if ((((int)b->x)&127)>78) b->xf-=PUSH_FORCES;
+			if ((((int)b->x)&127)<50) b->xf+=PUSH_FORCES;
+			if ((((int)b->y)&127)>78) b->yf-=PUSH_FORCES;
+			if ((((int)b->y)&127)<50) b->yf+=PUSH_FORCES;
+			break;
+		default:break;
+	}
+	double oxv=b->xv,oyv=b->yv;
+	b->xv+=b->xf/b->mass;b->yv+=b->yf/b->mass;
+	b->xf=0;b->yf=0;
+	double over=(b->xv*b->xv+b->yv*b->yv)/(MAXVEL*MAXVEL)*1.5;
+	if (over>1.0) {b->xv/=over; b->yv/=over;}
+	if ((b->height==0)&&(rd2(b->l,xc,yc)&&rd(b->l,xc,yc)!='+')) {
+		double friction=FRICTION/500;
+		if (rd2(b->l,xc,yc)=='-') friction*=4;
+		if (braking) friction*=2;
+		b->xv*=(1-friction);b->yv*=(1-friction);
+	}
+	b->x+=(b->xv+oxv)/2;b->y+=(b->yv+oyv)/2;
+	if (b->x<20) b->x=20;
+	if (b->y<20) b->y=20;
+	if (b->x>=(map.wid*128-20)) b->x=map.wid*128-21;
+	if (b->y>=(map.hgt*128-20)) b->y=map.hgt*128-21;
+}

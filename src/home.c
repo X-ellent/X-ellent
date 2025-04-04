@@ -47,13 +47,11 @@ void exit_home(struct player *p) {
 }
 
 void init_home(struct player *p) {
-	p->flags|=FLG_HOME;
-	p->flags&=~FLG_CTRL;
+	p->flags&=(~(FLG_THRUST|FLG_BRAKING|FLG_ROTCLOCK|FLG_ROTACLOCK|FLG_FIRING));
+	p->flags|=FLG_HOME; p->flags&=~FLG_CTRL;
 	int f=p->fuelmin-p->fuel;
-	if (f<0) f=0;
-	if (f>p->homefuel) f=p->homefuel;
-	p->fuel+=f;
-	p->homefuel-=f;
+	f = f < 0 ? 0 : (f > p->homefuel ? p->homefuel : f);
+	p->fuel+=f; p->homefuel-=f;
 	remove_body(&p->body);
 	psend(p,"#HOME ENTER\n");
 	show_home(p);
@@ -177,8 +175,6 @@ void home_quit(struct player *p) {
 	p->oldhome=p->home; // Only remembered as long as the server is running
 	p->home=0;
 	for (i=0;i<map.depth;i++) p->mapmem[i]=0;
-	p->body.xv=0;p->body.yv=0;p->body.xf=0;p->body.yf=0;
-	p->rv=0;p->rt=0;
 	remove_body(&p->body);
 	p->flags&=~FLG_DEADCLR;
 	XAutoRepeatOn(p->d.disp);
@@ -224,7 +220,6 @@ void go_home(struct player *p) {
 		tr->body.xf=0;tr->body.yf=0;
 		create_trolley(tr);
 	}
-	p->flags&=(~(FLG_THRUST|FLG_BRAKING|FLG_ROTCLOCK|FLG_ROTACLOCK|FLG_FIRING));
 	init_home(p);
 }
 

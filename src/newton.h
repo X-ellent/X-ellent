@@ -37,6 +37,7 @@ extern struct body *firstbody;
 #define BODY_TROLLEY  2
 
 void add_body(struct body *b);
+void add_pbody(struct player *p);
 void remove_body(struct body *b);
 int  is_stopped(struct body *b);
 void do_collisions();
