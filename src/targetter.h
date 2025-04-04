@@ -14,26 +14,26 @@
 #define My_TARGETTER_H
 
 struct coord {
-    int l,x,y;
+	int l,x,y;
 };
 
 struct ptarg {
-    struct player *player;
-    struct body *body;
+	struct player *player;
+	struct body *body;
 };
 
 struct ttarg {
-    struct trolley *trolley;
-    struct body *body;
+	struct trolley *trolley;
+	struct body *body;
 };
 
 struct target {
-    int type;
-    union {
-    struct ptarg play;
-    struct ttarg trol;
-    struct coord coord;
-    } is;
+	int type;
+	union {
+	struct ptarg play;
+	struct ttarg trol;
+	struct coord coord;
+	} is;
 };
 
 #define TARG_NONE

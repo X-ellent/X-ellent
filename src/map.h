@@ -16,29 +16,29 @@
 #define MAXDEPTH 64
 
 struct map {
-    char name[64];
-    char author[64];
-    char comments[256];
-    int  wid,hgt;
-    int  depth;
-    char *data[MAXDEPTH];
-    char *data2[MAXDEPTH];
-    char *data3[MAXDEPTH];
+	char name[64];
+	char author[64];
+	char comments[256];
+	int  wid,hgt;
+	int  depth;
+	char *data[MAXDEPTH];
+	char *data2[MAXDEPTH];
+	char *data3[MAXDEPTH];
 };
 
 struct checkpoint {
-    struct checkpoint *next;
-    int l,x,y;
-    int num;
+	struct checkpoint *next;
+	int l,x,y;
+	int num;
 };
 
 struct teleport {
-    struct teleport *next;
-    int l,x,y;
-    int num;
-    int clk;
-    struct teleport *dest;
-    char pass[5];
+	struct teleport *next;
+	int l,x,y;
+	int num;
+	int clk;
+	struct teleport *dest;
+	char pass[5];
 };
 
 extern struct map map;

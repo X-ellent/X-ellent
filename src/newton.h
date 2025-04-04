@@ -14,21 +14,21 @@
 #define My_NEWTON_H
 
 struct body {
-    struct body *next;
-    struct body *last;
-    int l;                               /* What level at I am */
-    double x,y;                          /* What coords am I at? */
-    double xv,yv;                        /* What velocity am i going at */
-    double xf,yf;                        /* What force is acting upon me */
-    int type;                            /* What type of body is this? */
-    int radius;                          /* How wide is this body */
-    int mass;                            /* What mass does this body have */
-    int height,fallen;                   /* How high and how much falling */
-    int on;                              /* Is this body on the map? */
-    union {
-    struct player *player;
-    struct trolley *trolley;
-    } is;
+	struct body *next;
+	struct body *last;
+	int l;                               /* What level at I am */
+	double x,y;                          /* What coords am I at? */
+	double xv,yv;                        /* What velocity am i going at */
+	double xf,yf;                        /* What force is acting upon me */
+	int type;                            /* What type of body is this? */
+	int radius;                          /* How wide is this body */
+	int mass;                            /* What mass does this body have */
+	int height,fallen;                   /* How high and how much falling */
+	int on;                              /* Is this body on the map? */
+	union {
+	struct player *player;
+	struct trolley *trolley;
+	} is;
 };
 
 extern struct body *firstbody;

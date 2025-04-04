@@ -14,49 +14,49 @@
 #define My_SHOP_H
 
 struct menu {
-    char name[64];
-    struct item *item[10];
-    struct menu *prev;
-    int show;
+	char name[64];
+	struct item *item[10];
+	struct menu *prev;
+	int show;
 };
 
 struct sh_mine {
-    int type;
-    int charge;
+	int type;
+	int charge;
 };
 
 struct sh_ammo {
-    int type;
-    int qty;
+	int type;
+	int qty;
 };
 
 struct sh_weap {
-    int type;
-    int ammo;
+	int type;
+	int ammo;
 };
 
 struct sh_othr {
-    int type;
+	int type;
 };
 
 struct sh_repr {
-    int type;
+	int type;
 };
 
 struct item {
-    char name[64];
-    int type;
-    union {
-    struct menu *next;
-    int price;
-    } sel;
-    union {
-    struct sh_mine mine;
-    struct sh_ammo ammo;
-    struct sh_weap weap;
-    struct sh_othr othr;
-    struct sh_repr repr;
-    } obj;
+	char name[64];
+	int type;
+	union {
+	struct menu *next;
+	int price;
+	} sel;
+	union {
+	struct sh_mine mine;
+	struct sh_ammo ammo;
+	struct sh_weap weap;
+	struct sh_othr othr;
+	struct sh_repr repr;
+	} obj;
 };
 
 extern struct menu m_root;

@@ -25,9 +25,9 @@ struct home *locate_home(int l,int x,int y);
 void take_home(struct player *p);
 
 struct home {
-    int l,x,y;
-    struct player *owner;
-    struct home *next;
+	int l,x,y;
+	struct player *owner;
+	struct home *next;
 };
 
 extern struct home* firsthome;

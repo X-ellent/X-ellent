@@ -25,11 +25,7 @@
 #include <malloc.h>
 #include <math.h>
 #include <X11/keysym.h>
-#include <X11/XKBlib.h>  /* For XkbKeycodeToKeysym */
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+#include <X11/XKBlib.h>
 
 #include "fix.h"
 #include "fonts.h"
@@ -94,7 +90,6 @@ double *cs;
 
 #define ABS(x) (((x)>=0)?(x):-(x))
 
-char otxt[256];
 int dashrot;
 
 Display *disp;
@@ -173,29 +168,27 @@ char *guesspass;
 #define GUESS_LIFMOVE 2
 #define GUESS_TELACTI 3
 
-extern int main(int argc,char *argv[]);
-extern void data_input(char *s);
-extern void get_location(struct location *l,char *s);
-extern struct teleport *find_teleport(int n);
-extern void read_teleport(char *s);
-extern void read_map(char *s,int l);
-extern void init_display(char *d);
-extern void alloc_pixmap(struct mypixmap *p,int w,int h);
-extern void Setup_color(char *dname,char *dcol);
-extern void print_text(char *s);
-extern void draw_map(int n);
-extern void build_sintable();
-extern void load_map();
-extern void save_map();
-extern void scribble_map(int n,struct mypixmap *p);
-
-extern struct teleport *locate_teleport(int l,int x,int y);
-extern void activate_teleport(struct teleport *t);
-extern void process_guess(char *s);
-extern void read_lift(char *s);
-extern void special_command(char *s);
-extern void summon_lift(int n,int lev);
-extern void update_map(int n);
+int main(int argc,char *argv[]);
+void data_input(char *s);
+void get_location(struct location *l,char *s);
+struct teleport *find_teleport(int n);
+void read_teleport(char *s);
+void read_map(char *s,int l);
+int init_display(char *d);
+void alloc_pixmap(struct mypixmap *p,int w,int h);
+void Setup_color(char *dname,char *dcol);
+void draw_map(int n);
+void build_sintable();
+void load_map();
+void save_map();
+void scribble_map(int n,struct mypixmap *p);
+struct teleport *locate_teleport(int l,int x,int y);
+void activate_teleport(struct teleport *t);
+void process_guess(char *s);
+void read_lift(char *s);
+void special_command(char *s);
+void summon_lift(int n,int lev);
+void update_map(int n);
 
 static void connect_to_socket(char*serv,int p);
 static void tsend(char *s);
@@ -208,7 +201,7 @@ static void process_server_input();
 #define rd(l,x,y) map.data[l][(x)+((y)*map.wid)]
 #define scc(a,b,c) Setup_color(a,b);XSetForeground(disp,c,xc.pixel);
 
-extern int main(int argc,char *argv[]) {
+int main(int argc,char *argv[]) {
 	char *name;
 	char *disp;
 	char *serv;
@@ -223,10 +216,12 @@ extern int main(int argc,char *argv[]) {
 	}
 	build_sintable();
 	home=getenv("HOME");
-	if (home && chdir(home) != 0) {
-			fprintf(stderr, "Warning: Failed to change directory to %s\n", home);
+	if (home && chdir(home) != 0)
+		fprintf(stderr, "Warning: Failed to change directory to %s\n", home);
+	if (!init_display(disp=getenv("DISPLAY"))) {
+		fprintf(stderr, "Failed to init_display()\n");
+		return 0;
 	}
-	init_display(disp=getenv("DISPLAY"));
 	for (i=0;i<64;i++) map.tinymap[i]=&unknown;
 	load_map();
 	for (i=0;i<6;i++) {
@@ -235,9 +230,9 @@ extern int main(int argc,char *argv[]) {
 	}
 	connect_to_socket(serv,8766);
 	tsend((sprintf(str,"%s\n",name),str));
-	if (argc>2) {
+	if (argc>2)
 		tsend((sprintf(str,"%s\n",argv[2]),str));
-	} else {
+	else {
 		fprintf(stderr,"I require a password\n");
 		exit(1);
 	}
@@ -258,26 +253,24 @@ static void connect_to_socket(char*serv,int p)
 		fprintf(stderr,"Cannot find host '%s'\n",serv);
 		exit(1);
 	}
-	bzero((char *) &name, sizeof(struct sockaddr_in));
+	bzero((char*)&name,sizeof(struct sockaddr_in));
 	name.sin_family=AF_INET;
-	name.sin_port=p;
+	name.sin_port=htons((in_port_t)p);
 	memcpy(&name.sin_addr, h->h_addr_list[0], 4);
 	if ((fd=socket(AF_INET,SOCK_STREAM,0))==-1) {
 		fprintf(stderr,"Could not create a socket!\n");
 		exit(1);
 	}
-	if (connect(fd, (struct sockaddr *)&name, sizeof(struct sockaddr_in))) {
+	if (connect(fd,(struct sockaddr *)&name,sizeof(struct sockaddr_in))) {
 		fprintf(stderr,"Could not connect to server on '%s'\n",serv);
 		exit(1);
 	}
 }
 
 static void tsend(char *s) {
-	int l,n;
+	int l,n=0;
 	l=strlen(s);
-	n=0;
-	while(n<l)
-		n+=write(fd,&s[n],l-n);
+	while(n<l) n+=write(fd,&s[n],l-n);
 }
 
 static void do_cool_thing() {
@@ -301,9 +294,8 @@ static void do_cool_thing() {
 		if (j>0) {
 			if (FD_ISSET(0, &tmask)) do_terminal_input();
 			if (FD_ISSET(fd, &tmask)) do_server_input();
-		} else {
+		} else
 			draw_map(me.l);
-		}
 	}
 }
 
@@ -391,18 +383,17 @@ static void process_input() {
 static void process_server_input() {
 	switch(servin[0]) {
 	case '!':
-		snprintf(otxt, sizeof(otxt), "  %s", servin);
-		print_text(otxt);
+		printf("  %s\n",servin);
 		break;
 	case '.':
 		commandline=-1;
 		if (strcmp(currentcommand,"TER MAP")==0) {
 			update_map(me.l);
-			change=-1;
+			change=1;
 			save_map();
 		}
 		if (strcmp(currentcommand,"TER TELEPORTS")==0) {
-			change=-1;
+			change=1;
 		}
 		currentcommand[0]=0;
 		break;
@@ -420,8 +411,7 @@ static void process_server_input() {
 				get_location(&home,&servin[1]);break;}
 			if (strcmp(currentcommand,guesscom)==0) {
 				process_guess(&servin[1]);break;}
-			sprintf(otxt,"%s %3d %s",currentcommand,commandline,servin);
-			print_text(otxt);
+			printf("%s %3d %s\n",currentcommand,commandline,servin);
 		}
 		commandline++;
 		break;
@@ -448,9 +438,9 @@ static void process_server_input() {
 			switch(servin[3]) {
 			case '1':
 				for(levs[1]=(levs[1]+1)&63;!map.data[levs[1]];
-					levs[1]=(levs[1]+1)&63);
+					levs[1]=(levs[1]+1)&63); // fallthrough
 			case '2':
-				change=-1;
+				change=1;
 				break;
 			case '3':
 				for(t=firsttel;t;t=t->next)
@@ -458,31 +448,26 @@ static void process_server_input() {
 				break;
 			case '4':
 				scribble_map(displev,&back);
-				change=-1;
+				change=1;
 				break;
 			default:
-				snprintf(otxt, sizeof(otxt), "Keypress %.*s", (int)(sizeof(otxt) - 10), &servin[1]);
-				print_text(otxt);
+				printf("Keypress %s\n", &servin[1]);
 				break;
 			}
 			break;
 		}
-		snprintf(otxt, sizeof(otxt), "Keypress %.*s", (int)(sizeof(otxt) - 10), &servin[1]);
-		print_text(otxt);
+		printf("Keypress %s\n", &servin[1]);
 		break;
 	default:
-		snprintf(otxt, sizeof(otxt), "Unknown prefix %.*s", (int)(sizeof(otxt) - 16), servin);
-		print_text(otxt);
+		printf("Unknown prefix %s\n", servin);
 		break;
 	}
 }
 
-extern void data_input(char *s) {
+void data_input(char *s) {
 	char *ss,*sss;
 	char tempname[32];
-	int n;
-	int lm,ln;
-	double x,y;
+	double x,y; int n;
 	if (strncmp(s,"TARGET ",7)==0) {
 		ss=strchr(&s[7],' ');
 		if (!ss) return;
@@ -492,37 +477,33 @@ extern void data_input(char *s) {
 		return;
 	}
 	if (strncmp(s,"LOCATE ",7)==0) {
-/*	fprintf(stderr, s);*/
+/*		fprintf(stderr, s);*/
 		ss=strchr(&s[7],' ');
 		if (!ss) return;
-		*ss=0;
-		ss++;
+		*ss=0;ss++;
 		myrot=atoi(&s[7]);
 		get_location(&me,ss);
 		draw_map(me.l);
+		int lm,ln;
 		if ((lm=strlen(myname))!=(ln=strlen(newname))) {
 			if (lm>ln) {
 				n=random()%lm;
 				strcpy(tempname,myname);
 				strcpy(&myname[n],&tempname[n+1]);
+			} else if (lm) {
+				n=random()%lm;
+				strcpy(tempname,myname);
+				strcpy(&myname[n+1],&tempname[n]);
+				myname[n]=newname[n];
 			} else {
-				if (lm) {
-					n=random()%lm;
-					strcpy(tempname,myname);
-					strcpy(&myname[n+1],&tempname[n]);
-					myname[n]=newname[n];
-				} else {
-					myname[1]=0;
-					myname[0]=newname[random()%ln];
-				}
+				myname[1]=0;
+				myname[0]=newname[random()%ln];
 			}
 			tsend((sprintf(str,"*SYSNAME%s\n",myname),str));
-		} else {
-			if (strcmp(myname,newname)) {
-				for (n=random()&31;myname[n]==newname[n];n=random()&31);
-				myname[n]=newname[n];
-				tsend((sprintf(str,"*SYSNAME%s\n",myname),str));
-			}
+		} else if (strcmp(myname,newname)) {
+			for (n=random()&31;myname[n]==newname[n];n=random()&31);
+			myname[n]=newname[n];
+			tsend((sprintf(str,"*SYSNAME%s\n",myname),str));
 		}
 		return;
 	}
@@ -539,14 +520,12 @@ extern void data_input(char *s) {
 		n=atoi(sss);
 		x=me.x+n*128*sn[myrot]/100;
 		y=me.y-n*128*cs[myrot]/100;
-		spot.x=x;
-		spot.y=y;
+		spot.x=x;spot.y=y;
 		spot.l=me.l;
-/*	draw_map(me.l);*/
-		if (map.data[me.l])
-			if (rd(me.l,(int)x/128,(int)y/128)=='O') return;
+/*		draw_map(me.l);*/
+		if (map.data[me.l] && rd(me.l,(int)x/128,(int)y/128)=='O') return;
 		tsend("*WEPSELECT8\n");
-		tsend("*SYSNAMEA Damn Good Shot\n");
+		tsend("*SYSNAMEA Damn Good Shot\n"); // TODO - Change for other users
 		strcpy(myname,newname);
 		return;
 	}
@@ -561,10 +540,10 @@ extern void data_input(char *s) {
 		interminal=0;
 		return;
 	}
-	sprintf(otxt,"  Exception -> %s",s);print_text(otxt);
+	printf("  Exception -> %s\n",s);
 }
 
-extern void get_location(struct location *l,char *s) {
+void get_location(struct location *l,char *s) {
 	char *ss,*sss;
 	ss=strchr(s,':');
 	sss=strchr(s,',');
@@ -578,35 +557,35 @@ extern void get_location(struct location *l,char *s) {
 	*sss=',';
 }
 
-extern struct teleport *find_teleport(int n) {
+struct teleport *find_teleport(int n) {
 	struct teleport *t;
 	for (t=firsttel;t;t=t->next)
 		if (t->num==n) return t;
 	return 0;
 }
 
-extern struct lift *find_lift(int n) {
+struct lift *find_lift(int n) {
 	struct lift *l;
 	for (l=firstlift;l;l=l->next)
 		if (l->num==n) return l;
 	return 0;
 }
 
-extern struct teleport *locate_teleport(int l,int x,int y) {
+struct teleport *locate_teleport(int l,int x,int y) {
 	struct teleport *t;
 	for (t=firsttel;t;t=t->next)
 		if ((t->loc.l==l)&&((t->loc.x/128)==x)&&((t->loc.y/128)==y)) return t;
 	return 0;
 }
 
-extern struct lift *locate_lift(int x,int y) {
+struct lift *locate_lift(int x,int y) {
 	struct lift *l;
 	for (l=firstlift;l;l=l->next)
 		if (((l->loc.x/128)==x)&&((l->loc.y/128)==y)) return l;
 	return 0;
 }
 
-extern void read_teleport(char *s) {
+void read_teleport(char *s) {
 	char *ds,*loc;
 	int num;
 	struct teleport *t;
@@ -624,13 +603,12 @@ extern void read_teleport(char *s) {
 		firsttel=t;
 		strcpy(t->pass,"----");
 		get_location(&t->loc,loc);
-		sprintf(otxt,"Initialising storage for teleport %d",num);
-		print_text(otxt);
+		printf("Initialising storage for teleport %d\n",num);
 	}
 	t->dest=atoi(ds);
 }
 
-extern void read_lift(char *s) {
+void read_lift(char *s) {
 	char *tl,*loc;
 	int num;
 	struct lift *l;
@@ -648,14 +626,13 @@ extern void read_lift(char *s) {
 		firstlift=l;
 		strcpy(l->pass,"------");
 		get_location(&l->loc,loc);
-		sprintf(otxt,"Initialising storage for lift %d",num);
-		print_text(otxt);
+		printf("Initialising storage for lift %d\n",num);
 	}
 	l->targ=atoi(tl);
 }
 
 
-extern void read_map(char *s,int l) {
+void read_map(char *s,int l) {
 	char *lev,*wid,*hgt;
 	int x,sx,sy;
 	if (l==0) {
@@ -670,8 +647,7 @@ extern void read_map(char *s,int l) {
 		sy=MAPWID/map.wid;
 		map.sqr=(sx<sy)?sx:sy;
 		if (!map.data[map.lev]) {
-			sprintf(otxt,"Initialising storage space for level %d",map.lev);
-			print_text(otxt);
+			printf("Initialising storage space for level %d\n", map.lev);
 			map.data[map.lev]=calloc(map.hgt,map.wid);
 		}
 	} else {
@@ -679,16 +655,26 @@ extern void read_map(char *s,int l) {
 			rd(map.lev,x,l-1)=s[x];
 		if (l==map.hgt) {
 			scribble_map(displev,&back);
-			change=-1;
+			change=1;
 		}
 	}
 }
 
-extern void init_display(char *d) {
-	unsigned long vm;
+XFontStruct *load_font_with_fallback(Display *disp, const char *font_names[]) {
+	XFontStruct *font = NULL;
+	for (int i = 0; font_names[i] != NULL; i++) {
+		fprintf(stderr, "Trying font %s\n", font_names[i]);
+		font = XLoadQueryFont(disp, font_names[i]);
+		if (font) return font;
+	}
+	return NULL;
+}
+
+int init_display(char *d) {
+	ulong vm;
 	if (!(disp=XOpenDisplay(d))) {
 		fprintf(stderr,"Could not open display, sorry");
-		return;
+		return 0;
 	}
 	screen=DefaultScreen(disp);
 	gc=DefaultGC(disp,screen);
@@ -696,10 +682,25 @@ extern void init_display(char *d) {
 	win=XCreateSimpleWindow(disp,RootWindow(disp,screen),0,0,
 								FWINWID,FWINHGT,0,WhitePixel(disp,screen),
 								BlackPixel(disp,screen));
-	if (!(tfont=XLoadQueryFont(disp,FRONTFONT))) fprintf(stderr, "Failed to load FRONTFONT\n");
-	if (!(bfont=XLoadQueryFont(disp,HUGEFONT))) fprintf(stderr, "Failed to load HUGEFONT\n");
-	if (!(font=XLoadQueryFont(disp,GAMEFONT))) fprintf(stderr, "Failed to load GAMEFONT\n");
-	if (!(lfont=XLoadQueryFont(disp,TERMFONT))) fprintf(stderr, "Failed to load TERMFONT\n");
+	const char *front_fonts[] = {
+		FRONTFONT, "-misc-fixed-bold-r-normal--10-100-75-75-c-60-iso8859-1",
+		"fixed" };
+	if (!(tfont=load_font_with_fallback(disp,front_fonts))) {
+		fprintf(stderr, "Failed to load FRONTFONT\n");
+		return 0;
+	}
+	if (!(bfont=XLoadQueryFont(disp,HUGEFONT))) {
+		fprintf(stderr, "Failed to load HUGEFONT\n");
+		return 0;
+	}
+	if (!(font=XLoadQueryFont(disp,GAMEFONT))) {
+		fprintf(stderr, "Failed to load GAMEFONT\n");
+		return 0;
+	}
+	if (!(lfont=XLoadQueryFont(disp,TERMFONT))) {
+		fprintf(stderr, "Failed to load TERMFONT\n");
+		return 0;
+	}
 	fw=font->max_bounds.width;
 	fo=font->max_bounds.ascent;
 	fh=fo+font->max_bounds.descent;
@@ -747,9 +748,11 @@ extern void init_display(char *d) {
 	XClearWindow(disp,win);
 	XDrawRectangle(disp,back.pix,blue,0,0,back.wid-1,back.hgt-1);
 	XFillRectangle(disp,unknown.pix,red,0,0,unknown.wid-1,unknown.hgt-1);
+
+	return 1;
 }
 
-extern void alloc_pixmap(struct mypixmap *p,int w,int h) {
+void alloc_pixmap(struct mypixmap *p,int w,int h) {
 	p->pix=XCreatePixmap(disp,win,w,h,DefaultDepth(disp,screen));
 	p->wid=w;
 	p->hgt=h;
@@ -757,7 +760,7 @@ extern void alloc_pixmap(struct mypixmap *p,int w,int h) {
 	XDrawRectangle(disp,p->pix,blue,0,0,p->wid-1,p->hgt-1);
 }
 
-extern void Setup_color(char *dname,char *dcol) {
+void Setup_color(char *dname,char *dcol) {
 	char *cc;
 	cc=XGetDefault(disp,"xellentf",dname);
 	if (cc) {
@@ -768,69 +771,46 @@ extern void Setup_color(char *dname,char *dcol) {
 	XAllocNamedColor(disp,DefaultColormap(disp,screen),dcol,&ex,&xc);
 }
 
-extern void print_text(char *s) {
-	printf("%s\n",s);
-}
-
-extern void draw_map(int n) {
-	int xo,yo;
-	struct teleport *t,*td;
-	struct mypixmap *m;
-	XEvent xev;
-	int w,i;
-	w=map.sqr;
+void draw_map(int n) {
 	if (displev!=n) {
 		scribble_map(n,&back);
-		change=-1;
+		change=1;
 		displev=n;
 		if (n>0) {
-			levs[0]=n-1;
-			change=-1;
+			levs[0]=n-1;change=1;
 		}
 		if (n<(map.dep-1)) {
-			levs[2]=n+1;
-			change=-1;
+			levs[2]=n+1;change=1;
 		}
 	}
 	if (levs[1]==displev) {
-		for(levs[1]=(levs[1]+1)&63;!
-			map.data[levs[1]];
-			levs[1]=(levs[1]+1)&63);
-		change=-1;
+		for(levs[1]=(levs[1]+1)&63;!map.data[levs[1]];levs[1]=(levs[1]+1)&63);
+		change=1;
 	}
 	if (levs[1]==levs[0]) {
-		change=-1;
-		for(levs[1]=(levs[1]+1)&63;!
-			map.data[levs[1]];
-			levs[1]=(levs[1]+1)&63);
+		change=1;
+		for(levs[1]=(levs[1]+1)&63;!map.data[levs[1]];levs[1]=(levs[1]+1)&63);
 	}
 	if (levs[1]==levs[2]) {
-		change=-1;
-		for(levs[1]=(levs[1]+1)&63;!
-			map.data[levs[1]];
-			levs[1]=(levs[1]+1)&63);
+		change=1;
+		for(levs[1]=(levs[1]+1)&63;!map.data[levs[1]];levs[1]=(levs[1]+1)&63);
 	}
-	xo=(back.wid-(w*map.wid))/2;
-	yo=(back.hgt-(w*map.hgt))/2;
-	if (change) {
+	xo=(back.wid-(w*map.wid))/2;yo=(back.hgt-(w*map.hgt))/2;
+	if (change)
 		XCopyArea(disp,back.pix,win,gc,0,0,back.wid,back.hgt,0,0);
-	} else {
+	else {
 		XCopyArea(disp,back.pix,win,gc,mapx-20,mapy-20,40,40,mapx-20,mapy-20);
 		XCopyArea(disp,back.pix,win,gc,tarx-20,tary-20,40,40,tarx-20,tary-20);
-		XCopyArea(disp,back.pix,win,gc,spotx-20,spoty-20,40,40,
-				  spotx-20,spoty-20);
+		XCopyArea(disp,back.pix,win,gc,spotx-20,spoty-20,40,40,spotx-20,spoty-20);
 	}
 	sprintf(str,"%d:%d,%d          ",me.l,me.x/128,me.y/128);
 	XDrawImageString(disp,win,red,4,fh,str,strlen(str));
 	if (change) {
-		XCopyArea(disp,map.tinymap[levs[0]]->pix,win,gc,0,0,
-				  map.tinymap[levs[0]]->wid,
+		XCopyArea(disp,map.tinymap[levs[0]]->pix,win,gc,0,0,map.tinymap[levs[0]]->wid,
 				  map.tinymap[levs[0]]->hgt,0,MAPHGT);
-		XCopyArea(disp,map.tinymap[levs[1]]->pix,win,gc,0,0,
-				  map.tinymap[levs[1]]->wid,
+		XCopyArea(disp,map.tinymap[levs[1]]->pix,win,gc,0,0,map.tinymap[levs[1]]->wid,
 				  map.tinymap[levs[1]]->hgt,150,MAPHGT);
-		XCopyArea(disp,map.tinymap[levs[2]]->pix,win,gc,0,0,
-				  map.tinymap[levs[2]]->wid,
+		XCopyArea(disp,map.tinymap[levs[2]]->pix,win,gc,0,0,map.tinymap[levs[2]]->wid,
 				  map.tinymap[levs[2]]->hgt,300,MAPHGT);
 	}
 	sprintf(str,"%d",levs[0]);
@@ -840,12 +820,9 @@ extern void draw_map(int n) {
 	sprintf(str,"%d",levs[2]);
 	XDrawImageString(disp,win,red,375,MAPHGT,str,strlen(str));
 	if (home.l==me.l) {
-		XDrawRectangle(disp,win,black,home.x*w/128-7+xo,home.y*w/128-7+yo,
-					   15,15);
-		XDrawRectangle(disp,win,yellow,home.x*w/128+xo-8,home.y*w/128+yo-8,
-					   17,17);
-		XDrawRectangle(disp,win,black,home.x*w/128-9+xo,home.y*w/128-9+yo,
-					   19,19);
+		XDrawRectangle(disp,win,black,home.x*w/128-7+xo,home.y*w/128-7+yo,15,15);
+		XDrawRectangle(disp,win,yellow,home.x*w/128+xo-8,home.y*w/128+yo-8,17,17);
+		XDrawRectangle(disp,win,black,home.x*w/128-9+xo,home.y*w/128-9+yo,19,19);
 	}
 	XDrawRectangle(disp,win,black,me.x*w/128-1+xo,me.y*w/128-1+yo,3,3);
 	XDrawRectangle(disp,win,yellow,me.x*w/128+xo-2,me.y*w/128+yo-2,5,5);
@@ -866,75 +843,56 @@ extern void draw_map(int n) {
 			  me.x*w/128+xo+16*sn[myrot],me.y*w/128+yo-16*cs[myrot]);
 	XDrawLine(disp,win,red,mapx=me.x*w/128+xo,mapy=me.y*w/128+yo,
 			  me.x*w/128+xo+16*sn[myrot],me.y*w/128+yo-16*cs[myrot]);
-	dashrot-=5;
-	dashrot&=63;
+	dashrot-=5;dashrot&=63;
 	XSetDashes(disp,stripea,(dashrot&63),"\040\040",2);
 	XSetDashes(disp,stripeb,(dashrot+32)&63,"\040\040",2);
-	for (t=firsttel;t;t=t->next)
-		if (t->loc.l==me.l)
-			if ((td=find_teleport(t->dest))) {
-				if (t->loc.l==td->loc.l) {
-					XDrawLine(disp,win,stripea,t->loc.x*w/128+xo,
-							  t->loc.y*w/128+yo,
-							  td->loc.x*w/128+xo,td->loc.y*w/128+yo);
-					XDrawLine(disp,win,stripeb,t->loc.x*w/128+xo,
-							  t->loc.y*w/128+yo,
-							  td->loc.x*w/128+xo,td->loc.y*w/128+yo);
-				} else {
-					for (i=0;i<3;i++)
-						if (levs[i]==td->loc.l) {
-							m=map.tinymap[levs[i]];
-							XDrawLine(disp,win,stripea,
-									  t->loc.x*w/128+xo,t->loc.y*w/128+yo,
-									  td->loc.x*m->sqr/128+m->xo+(150*(i%3)),
-									  td->loc.y*m->sqr/128+m->yo+MAPHGT+
-									  (150*((int)i/3)));
-							XDrawLine(disp,win,stripeb,
-									  t->loc.x*w/128+xo,t->loc.y*w/128+yo,
-									  td->loc.x*m->sqr/128+m->xo+(150*(i%3)),
-									  td->loc.y*m->sqr/128+m->yo+MAPHGT+
-									  (150*((int)i/3)));
-						}
-				}
-			}
-	if (change) change=0;
-	XFlush(disp);
+	for (t=firsttel;t;t=t->next) if (t->loc.l==me.l && td=find_teleport(t->dest)) {
+		if (t->loc.l==td->loc.l) {
+			XDrawLine(disp,win,stripea,t->loc.x*w/128+xo,t->loc.y*w/128+yo,
+					td->loc.x*w/128+xo,td->loc.y*w/128+yo);
+			XDrawLine(disp,win,stripeb,t->loc.x*w/128+xo,t->loc.y*w/128+yo,
+					td->loc.x*w/128+xo,td->loc.y*w/128+yo);
+		} else for (i=0;i<3;i++) if (levs[i]==td->loc.l) {
+			m=map.tinymap[levs[i]];
+			XDrawLine(disp,win,stripea,t->loc.x*w/128+xo,t->loc.y*w/128+yo,
+					td->loc.x*m->sqr/128+m->xo+(150*(i%3)),
+					td->loc.y*m->sqr/128+m->yo+MAPHGT+(150*((int)i/3)));
+			XDrawLine(disp,win,stripeb,t->loc.x*w/128+xo,t->loc.y*w/128+yo,
+					td->loc.x*m->sqr/128+m->xo+(150*(i%3)),
+					td->loc.y*m->sqr/128+m->yo+MAPHGT+(150*((int)i/3)));
+		}
+	}
+	XFlush(disp); // TODO - maybe only do if change set?
+	change=0;
 	while (XPending(disp)) {
-		int x,y,lvl;
-		int xx,yy;
-		int k;
 		struct lift *l;
 		struct teleport *t;
-		lvl=-1;
+		int lvl=-1;
 		XNextEvent(disp,&xev);
 		switch(xev.xany.type) {
 		case KeyPress:
-			k=XkbKeycodeToKeysym(disp, xev.xkey.keycode, 0, 0);
+			KeySym k=XkbKeycodeToKeysym(disp, xev.xkey.keycode, 0, 0);
 			switch(k) {
 			case XK_t:
 				for(t=firsttel;t;t=t->next)
-					tsend((sprintf(str,"*TELACTIVATE%d %s\n",t->num,t->pass),
-						   str));
+					tsend((sprintf(str,"*TELACTIVATE%d %s\n",t->num,t->pass),str));
 				break;
 			case XK_r:
 				scribble_map(displev,&back);
-				change=-1;
+				change=1;
 				break;
 			case XK_space:
-				for(levs[1]=(levs[1]+1)&63;!map.data[levs[1]];
-					levs[1]=(levs[1]+1)&63);
-				change=-1;
+				for(levs[1]=(levs[1]+1)&63;!map.data[levs[1]];levs[1]=(levs[1]+1)&63);
+				change=1;
 				break;
 			}
 			break;
 		case ButtonPress:
-/*	    fprintf(stderr,"Button %d at %d,%d\n",xev.xbutton.button,
+/*			fprintf(stderr,"Button %d at %d,%d\n",xev.xbutton.button,
 					xev.xbutton.x,xev.xbutton.y);*/
-			x=xev.xbutton.x;
-			y=xev.xbutton.y;
+			int x=xev.xbutton.x,y=xev.xbutton.y;
 			if ((x<MAPWID)&&(y<MAPHGT)) {
-				xx=(x-xo)*128/w;
-				yy=(y-yo)*128/w;
+				int xx=(x-xo)*128/w,yy=(y-yo)*128/w;
 				if (xev.xbutton.state&ControlMask) {
 					tsend((sprintf(str,"*VISPOS%d,%d\n",xx,yy),str));
 					spot.x=xx;
@@ -947,28 +905,22 @@ extern void draw_map(int n) {
 			if ((y>=MAPHGT)&&(y<MAPHGT+MINMAPHGT)) {
 				if ((x>=0)&&(x<MINMAPWID)) {
 					x=(x-map.tinymap[levs[0]]->xo)/map.tinymap[levs[0]]->sqr;
-					y=(y-map.tinymap[levs[0]]->yo-MAPHGT)
-						/map.tinymap[levs[0]]->sqr;
+					y=(y-map.tinymap[levs[0]]->yo-MAPHGT)/map.tinymap[levs[0]]->sqr;
 					lvl=levs[0];
 				}
 				if ((x>=MINMAPWID)&&(x<MINMAPWID*2)) {
-					x=(x-map.tinymap[levs[1]]->xo-MINMAPWID)/
-						map.tinymap[levs[1]]->sqr;
-					y=(y-map.tinymap[levs[1]]->yo-MAPHGT)/
-						map.tinymap[levs[1]]->sqr;
+					x=(x-map.tinymap[levs[1]]->xo-MINMAPWID)/map.tinymap[levs[1]]->sqr;
+					y=(y-map.tinymap[levs[1]]->yo-MAPHGT)/map.tinymap[levs[1]]->sqr;
 					lvl=levs[1];
 				}
 				if ((x>=MINMAPWID*2)&&(x<MINMAPWID*3)) {
-					x=(x-map.tinymap[levs[2]]->xo-MINMAPWID*2)/
-						map.tinymap[levs[2]]->sqr;
-					y=(y-map.tinymap[levs[2]]->yo-MAPHGT)/
-						map.tinymap[levs[2]]->sqr;
+					x=(x-map.tinymap[levs[2]]->xo-MINMAPWID*2)/map.tinymap[levs[2]]->sqr;
+					y=(y-map.tinymap[levs[2]]->yo-MAPHGT)/map.tinymap[levs[2]]->sqr;
 					lvl=levs[2];
 				}
 			}
 			fprintf(stderr,"Map coordinates... %d:%d,%d\n",lvl,x,y);
-			if ((lvl!=-1)&&(map.data[lvl]))
-				switch(rd(lvl,x,y)) {
+			if ((lvl!=-1)&&(map.data[lvl])) switch(rd(lvl,x,y)) {
 				case 'l':
 				case 'L':
 					l=locate_lift(x,y);
@@ -987,101 +939,84 @@ extern void draw_map(int n) {
 							fprintf(stderr,"Lowering Lift %d\n",l->num);
 							break;
 						}
-					} else {
+					} else
 						fprintf(stderr,"Unknown Lift\n");
-					}
 					break;
 				case 'X':
 					t=locate_teleport(lvl,x,y);
 					if (t) {
-						if (xev.xbutton.button==2) {
+						if (xev.xbutton.button==2)
 							fprintf(stderr,"Teleport number %d\n",t->num);
-						} else {
-							fprintf(stderr,"Activating teleport... %d\n",
-									t->num);
+						else {
+							fprintf(stderr,"Activating teleport... %d\n",t->num);
 							activate_teleport(t);
 						}
-					} else {
+					} else
 						fprintf(stderr,"Unknown teleport...\n");
-					}
 					break;
-				default:
-					break;
-				}
-			break;
-		default:
-			break;
-		}
-	}
+				default: break;
+			} // switch rd
+			break; // case ButtonPress
+		default: break;
+		} // switch xev.xany.type
+	} // while XPending
 }
 
-extern void build_sintable()
-{
-	int i;
-	for (i=1;i<90;i++) {
+void build_sintable() {
+	for (int i=1;i<90;i++) {
 		sintable[i]=sin(((double) i)/180.0*PI);
 		sintable[180-i]=sintable[i];
 	}
-	sintable[0]=0;
-	sintable[90]=1;
-	for (i=0;i<180;i++)
-		sintable[i+180]=-sintable[i];
-	for (i=0;i<360;i++)
-		sintable[i+360]=sintable[i];
-	sn=sintable;
-	cs=&sintable[90];
+	sintable[0]=0;sintable[90]=1;
+	for (int i=0;i<180;i++) sintable[i+180]=-sintable[i];
+	for (int i=0;i<360;i++) sintable[i+360]=sintable[i];
+	sn=sintable;cs=&sintable[90];
 }
 
-extern void load_map() {
+int load_map() {
 	FILE *mf;
-	char *cc,*oc;
-	int n,x,y;
-	int sx,sy;
-	char inp[1024];
 	if (!(mf=fopen(".xellent.map","rb"))) {
 		fprintf(stderr,"Cannot open .xellent.map\n");
 		return;
 	}
+	char inp[1024];
 	*inp=0;
-	if (fgets(inp,1023,mf) == NULL) {
+	if (!fgets(inp,1023,mf)) {
 		fprintf(stderr, "Error reading from .xellent.map\n");
 		fclose(mf);
-		return;
+		return 0;
 	}
-	cc=inp;
+	char *cc=inp, *oc;
 	oc=cc;cc=strchr(cc,' ');*cc++=0;map.wid=atoi(oc);
 	oc=cc;cc=strchr(cc,' ');*cc++=0;map.hgt=atoi(oc);
 	oc=cc;cc=strchr(cc,' ');*cc++=0;map.dep=atoi(oc);
+	int n,x,y;
 	while(1) {
 		*inp=0;
-		if (fgets(inp,1023,mf) == NULL || strcmp(inp,"END\n") == 0) {
-			break;
-		}
+		if(!fgets(inp,1023,mf)||!strcmp(inp,"END\n")) break;
 		cc=inp;
 		n=atoi(inp);
-		sx=MAPWID/map.wid;
-		sy=MAPWID/map.wid;
+		int sx=MAPWID/map.wid,sy=MAPWID/map.wid;
 		map.sqr=(sx<sy)?sx:sy;
-		if (!map.data[n])
-			map.data[n]=calloc(map.hgt,map.wid);
+		if (!map.data[n]) map.data[n]=calloc(map.hgt,map.wid);
 		for (y=0;y<map.hgt;y++) {
 			*inp=0;
-			if (fgets(inp,1023,mf) == NULL) {
+			if (!fgets(inp,1023,mf)) {
 				fprintf(stderr, "Unexpected end of file in .xellent.map\n");
 				fclose(mf);
-				return;
+				return 0;
 			}
 			cc=inp;
-			for (x=0;x<map.wid;x++)
-				rd(n,x,y)=inp[x];
+			for (x=0;x<map.wid;x++) rd(n,x,y)=inp[x];
 		}
 	}
 	fclose(mf);
-	for (n=0;n<64;n++)
-		if (map.data[n]) update_map(n);
+	for (n=0;n<64;n++) if (map.data[n]) update_map(n);
+
+	return 1;
 }
 
-extern void save_map() {
+void save_map() {
 	FILE *mf;
 	int n,x,y;
 	char inp[1024];

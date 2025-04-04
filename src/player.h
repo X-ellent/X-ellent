@@ -23,68 +23,68 @@
 #include "damages.h"
 
 struct player {
-    char name[32];                     /* What name do I want to go by? */
-    char user[16];                     /* Whats my usercode */
-    char pass[9];                      /* Whats the password */
-    struct player_display d;           /* What display am I on? Its a struct */
-    double rot;                        /* How far am i rotated? */
-    struct body body;                  /* Details of me */
-    double ox,oy;                      /* Next to last place on ground */
-    double oox,ooy;                    /* Last place on ground */
-    int olvl;                          /* Next to last level on ground on */
-    int oolvl;                         /* Last level on ground on */
-    int onground;                      /* How long until classed as on ground*/
-    double rv;                         /* Rotational velocity */
-    double rt;                         /* Target rotational velocity */
-    int rating;                        /* What is my rating?? */
-    int score;                         /* What is my score? */
-    int cash;                          /* How much cash do i have */
-    int step;                          /* What step do i alter things in */
-    int thrust,spin,ethrust,espin;     /* What are my settings */
-    int fuel,maxfuel;                  /* How much fuel do i have from what */
-    int flags;                         /* What flags do i have set */
-    struct addon *firstadd;
-    struct player *next;
-    struct home *home;
-    struct home *oldhome;
-    int shield;
-    int maxshield;
-    int scount;
-    int weap;
-    int ammo[MAX_WEAPS];
-    int weap_mask;
-    int playing;
-    int connected;
-    int qflags;
-    int slots[9];
-    int size[9];
-    int mode[9];
-    struct object *slotobj[9];
-    int slot;
-    int delay;
-    struct menu *shopmenu;
-    struct login *term;
-    char mapmem[MAXDEPTH];
-    int shopsel;
-    int immune;
-    struct player *ptarg;
-    char msg[4][60];
-    int deaths;
-    int kills;
-    int tkills;
-    int homefuel;
-    int homeslots[9];
-    int homesize[9];
-    int homemode[9];
-    int fuelmin;
-    struct player *lasthold;
-    struct player *nexthold;
-    struct trolley *holding;
-    int channel;                  /* For the telnet connection thing */
-    unsigned char lines[64][4];
-    int locate,loctime,tartime;
-    int homing;                   /* Time for nicking home base */
-    int recharge;                 /* Time until can fire again */
+	char name[32];                     /* What name do I want to go by? */
+	char user[16];                     /* Whats my usercode */
+	char pass[9];                      /* Whats the password */
+	struct player_display d;           /* What display am I on? Its a struct */
+	double rot;                        /* How far am i rotated? */
+	struct body body;                  /* Details of me */
+	double ox,oy;                      /* Next to last place on ground */
+	double oox,ooy;                    /* Last place on ground */
+	int olvl;                          /* Next to last level on ground on */
+	int oolvl;                         /* Last level on ground on */
+	int onground;                      /* How long until classed as on ground*/
+	double rv;                         /* Rotational velocity */
+	double rt;                         /* Target rotational velocity */
+	int rating;                        /* What is my rating?? */
+	int score;                         /* What is my score? */
+	int cash;                          /* How much cash do i have */
+	int step;                          /* What step do i alter things in */
+	int thrust,spin,ethrust,espin;     /* What are my settings */
+	int fuel,maxfuel;                  /* How much fuel do i have from what */
+	int flags;                         /* What flags do i have set */
+	struct addon *firstadd;
+	struct player *next;
+	struct home *home;
+	struct home *oldhome;
+	int shield;
+	int maxshield;
+	int scount;
+	int weap;
+	int ammo[MAX_WEAPS];
+	int weap_mask;
+	int playing;
+	int connected;
+	int qflags;
+	int slots[9];
+	int size[9];
+	int mode[9];
+	struct object *slotobj[9];
+	int slot;
+	int delay;
+	struct menu *shopmenu;
+	struct login *term;
+	char mapmem[MAXDEPTH];
+	int shopsel;
+	int immune;
+	struct player *ptarg;
+	char msg[4][60];
+	int deaths;
+	int kills;
+	int tkills;
+	int homefuel;
+	int homeslots[9];
+	int homesize[9];
+	int homemode[9];
+	int fuelmin;
+	struct player *lasthold;
+	struct player *nexthold;
+	struct trolley *holding;
+	int channel;                  /* For the telnet connection thing */
+	unsigned char lines[64][4];
+	int locate,loctime,tartime;
+	int homing;                   /* Time for nicking home base */
+	int recharge;                 /* Time until can fire again */
 };
 
 extern struct player *playone;
@@ -122,9 +122,9 @@ extern int players;
 #define FLG_ANTICLOAK       (1<<20)
 
 #define FLG_DEADCLR         (FLG_THRUST|FLG_BRAKING|FLG_ROTCLOCK|FLG_FIRING|\
-                             FLG_ROTACLOCK|FLG_CLOAKING|FLG_MINESWEEP|\
-                             FLG_HOME|FLG_INVIS|FLG_TERMINAL|FLG_SHOPPING|\
-                             FLG_FUELLING|FLG_FALLEN|FLG_DEAD|FLG_ANTICLOAK)
+							 FLG_ROTACLOCK|FLG_CLOAKING|FLG_MINESWEEP|\
+							 FLG_HOME|FLG_INVIS|FLG_TERMINAL|FLG_SHOPPING|\
+							 FLG_FUELLING|FLG_FALLEN|FLG_DEAD|FLG_ANTICLOAK)
 
 #define WEP_RIF       0
 #define WEP_LMG       1

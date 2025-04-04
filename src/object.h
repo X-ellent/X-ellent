@@ -16,30 +16,30 @@
 #include "newton.h"
 
 struct object {
-    int type;
-    struct object *next;
-    int l;
-    double x,y;
-    double xv,yv;
-    double xf,yf;
-    int count;
-    int mode;
-    int flags;
-    int charge;
-    union {
-    struct player *owner;
-    struct object *same;
-    } has;
-    int slot;
+	int type;
+	struct object *next;
+	int l;
+	double x,y;
+	double xv,yv;
+	double xf,yf;
+	int count;
+	int mode;
+	int flags;
+	int charge;
+	union {
+	struct player *owner;
+	struct object *same;
+	} has;
+	int slot;
 };
 
 struct trolley {
-    struct body body;
-    struct trolley *next;
-    struct player *holder;
-    int falltime;
-    int ang;
-    struct checkpoint *cp;
+	struct body body;
+	struct trolley *next;
+	struct player *holder;
+	int falltime;
+	int ang;
+	struct checkpoint *cp;
 };
 
 extern struct trolley *firsttrol;

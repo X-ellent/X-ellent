@@ -33,8 +33,7 @@ static void key_unpress(struct player *p,int k);
 static char c;
 static struct addon *ad;
 
-extern void process_events(struct player *p)
-{
+extern void process_events(struct player *p) {
 	XEvent xev;
 	if (!p->connected) return;
 	XSync(p->d.disp,False);
@@ -73,22 +72,14 @@ extern void process_events(struct player *p)
 	}
 }
 
-static void key_press(struct player *p,int k)
-{
+static void key_press(struct player *p,int k) {
 	int t;
 	if (!p->body.on) {
-		if (p->flags&FLG_HOME)
-			switch (k) {
-			case XK_Escape:
-				exit_home(p);
-				break;
+		if (p->flags&FLG_HOME) switch (k) {
+			case XK_Escape:exit_home(p);break;
 			case XK_Control_L:
-			case XK_Control_R:
-				p->flags|=FLG_CTRL;
-				break;
-			case XK_f:
-				p->flags|=FLG_FUELLING;
-				break;
+			case XK_Control_R:p->flags|=FLG_CTRL;break;
+			case XK_f:p->flags|=FLG_FUELLING;break;
 			case XK_1:home_mine(p,0);break;
 			case XK_2:home_mine(p,1);break;
 			case XK_3:home_mine(p,2);break;
@@ -98,9 +89,7 @@ static void key_press(struct player *p,int k)
 			case XK_7:home_mine(p,6);break;
 			case XK_8:home_mine(p,7);break;
 			case XK_9:home_mine(p,8);break;
-			case XK_q:
-				p->qflags|=16;
-				break;
+			case XK_q:p->qflags|=16;break;
 			case XK_F1:psend(p,"KF1\n");break;
 			case XK_F2:psend(p,"KF2\n");break;
 			case XK_F3:psend(p,"KF3\n");break;
@@ -117,12 +106,9 @@ static void key_press(struct player *p,int k)
 			case XK_KP_F2:psend(p,"KPF2\n");break;
 			case XK_KP_F3:psend(p,"KPF3\n");break;
 			case XK_KP_F4:psend(p,"KPF4\n");break;
-			}
-		if (p->flags&FLG_SHOPPING)
-			switch (k) {
-			case XK_Escape:
-				exit_shop(p);
-				break;
+		}
+		if (p->flags&FLG_SHOPPING) switch (k) {
+			case XK_Escape:exit_shop(p);break;
 			case XK_1:buy_shop(p,0);break;
 			case XK_2:buy_shop(p,1);break;
 			case XK_3:buy_shop(p,2);break;
@@ -148,9 +134,8 @@ static void key_press(struct player *p,int k)
 			case XK_KP_F2:psend(p,"KPF2\n");break;
 			case XK_KP_F3:psend(p,"KPF3\n");break;
 			case XK_KP_F4:psend(p,"KPF4\n");break;
-			}
-		if (p->flags&FLG_TERMINAL)
-			switch (k) {
+		}
+		if (p->flags&FLG_TERMINAL) switch (k) {
 			case XK_Escape:term_option(p,10);break;
 			case XK_0:term_option(p,'0');break;
 			case XK_1:term_option(p,'1');break;
@@ -208,22 +193,15 @@ static void key_press(struct player *p,int k)
 			case XK_KP_F2:psend(p,"KPF2\n");break;
 			case XK_KP_F3:psend(p,"KPF3\n");break;
 			case XK_KP_F4:psend(p,"KPF4\n");break;
-			}
-	} else
-		switch(k) {
-		case XK_z:
-			p->flags|=FLG_ROTACLOCK;
-			break;
-		case XK_x:
-			p->flags|=FLG_ROTCLOCK;
-			break;
-		case XK_minus:
-			p->immune=0;
+		} // in terminal
+	} else switch(k) {
+		case XK_z:p->flags|=FLG_ROTACLOCK;break;
+		case XK_x:p->flags|=FLG_ROTCLOCK;break;
+		case XK_minus:p->immune=0;
 			if (!(ad=find_addon(p->firstadd,ADD_RADAR))) break;
 			if (ad->info[0]>0) ad->info[0]--;
 			break;
-		case XK_equal:
-			p->immune=0;
+		case XK_equal:p->immune=0;
 			if (!(ad=find_addon(p->firstadd,ADD_RADAR))) break;
 			if (ad->info[2]>ad->info[0]) ad->info[0]++;
 			break;
@@ -231,94 +209,60 @@ static void key_press(struct player *p,int k)
 		case XK_KP_Subtract:
 		case XK_KP_Divide:
 		case XK_KP_Multiply:
-			p->immune=0;
-			p->qflags|=4;
+		case XK_r:p->immune=0;
 			if (!(ad=find_addon(p->firstadd,ADD_RADAR))) break;
 			if (ad->level>1) ad->info[1]=-1;
 			break;
 		case XK_KP_4:
 		case XK_KP_Add:
 		case XK_KP_Separator:
-			p->immune=0;
+		case XK_g:p->immune=0;
 			if (!(ad=find_addon(p->firstadd,ADD_RADAR))) break;
 			if (ad->level>1) ad->info[1]=0;
 			break;
 		case XK_KP_1:
 		case XK_KP_Enter:
-			p->immune=0;
+		case XK_v:p->immune=0;
 			if (!(ad=find_addon(p->firstadd,ADD_RADAR))) break;
 			if (ad->level>1) ad->info[1]=1;
 			break;
 		case XK_Shift_L:
-		case XK_Shift_R:
-			p->flags|=FLG_THRUST;
-			break;
-		case XK_space:
-			p->flags|=FLG_BRAKING;
-			break;
-		case XK_s:
-			p->flags^=FLG_STATUS;
-			break;
-		case XK_n:
-			p->flags^=FLG_IDENT;
-			break;
-		case XK_m:
-			p->flags^=FLG_NOMSG;
-			break;
-		case XK_w:
-			p->flags^=FLG_NOWEP;
-			break;
-		case XK_f:
-			p->immune=0;
-			p->flags|=FLG_FUELLING;
-			break;
-		case XK_Delete:
-			p->flags^=FLG_NOINSTR;
-			break;
-		case XK_b:
-			take_hold(p);
-			break;
-		case XK_i:
-			p->immune=0;
+		case XK_Shift_R:p->flags|=FLG_THRUST;break;
+		case XK_space:p->qflags|=4;p->flags|=FLG_BRAKING;break;
+		case XK_s:p->flags^=FLG_STATUS;break;
+		case XK_n:p->flags^=FLG_IDENT;break;
+		case XK_m:p->flags^=FLG_NOMSG;break;
+		case XK_w:p->flags^=FLG_NOWEP;break;
+		case XK_f:p->immune=0;p->flags|=FLG_FUELLING;break;
+		case XK_Delete:p->flags^=FLG_NOINSTR;break;
+		case XK_b:p->immune=0;take_hold(p);break;
+		case XK_i:p->immune=0;
 			if (find_addon(p->firstadd,ADD_INVIS)) p->flags^=FLG_INVIS;
 			break;
-		case XK_o:
-			p->immune=0;
+		case XK_o:p->immune=0;
 			if (find_addon(p->firstadd,ADD_CLOAKING)) p->flags^=FLG_CLOAKING;
 			break;
-		case XK_y:
-			p->immune=0;
-			if (find_addon(p->firstadd,ADD_ANTICLOAK))
-				p->flags^=FLG_ANTICLOAK;
+		case XK_y:p->immune=0;
+			if (find_addon(p->firstadd,ADD_ANTICLOAK)) p->flags^=FLG_ANTICLOAK;
 			break;
-		case XK_p:
-			p->immune=0;
+		case XK_p:p->immune=0;
 			if (find_addon(p->firstadd,ADD_MINESWEEP)) p->flags^=FLG_MINESWEEP;
 			break;
-		case XK_c:
-			p->immune=0;
+		case XK_c:p->immune=0;
 			for (p->weap=(p->weap+1)%MAX_WEAPS;
 				 !((p->weap_mask&(1<<p->weap))&&(p->ammo[p->weap]));
 				 p->weap=(p->weap+1)%MAX_WEAPS);
 			break;
-		case XK_t:
-			p->immune=0;
-			next_target(p);
-			break;
-		case XK_h:
-			p->immune=0;
-			if (rd2(p->body.l,(int) p->body.x/128,(int) p->body.y/128)!='H')
-				break;
+		case XK_t:p->immune=0;next_target(p);break;
+		case XK_h:p->qflags|=2;p->immune=0;
+			if (rd2(p->body.l,(int) p->body.x/128,(int) p->body.y/128)!='H') break;
 			if (!is_stopped(&p->body)) break;
-			take_home(p);
-			break;
-		case XK_e:
-			p->immune=0;
+			take_home(p);break;
+		case XK_e:p->immune=0;
 			c=rd2(p->body.l,(int) p->body.x/128,(int) p->body.y/128);
 			if (c=='X') {
 				struct teleport *tp;
-				tp=locate_teleport(p->body.l,(int)p->body.x/128,
-								   (int)p->body.y/128);
+				tp=locate_teleport(p->body.l,(int)p->body.x/128,(int)p->body.y/128);
 				if (!tp->clk) tp->clk=1;
 				break;
 			}
@@ -327,21 +271,17 @@ static void key_press(struct player *p,int k)
 			case 'S': enter_shop(p);break;
 			case 'T': init_term(p);break;
 			case 'H': go_home(p);break;
-			}
-			break;
-		case XK_l:
-			p->immune=0;
-			if (rd2(p->body.l,(int) p->body.x/128,(int) p->body.y/128)=='l') {
-				switch (summon_lift(p->body.l,(int)p->body.x/128,(int)p->body.y/128)) {
+			} break;
+		case XK_l:p->immune=0;
+			if (rd2(p->body.l,(int) p->body.x/128,(int) p->body.y/128)=='l')
+			switch (summon_lift(p->body.l,(int)p->body.x/128,(int)p->body.y/128)) {
 				case LIFT_NONE:player_message(p,"No lift here!");break;
 				case LIFT_BUSY:player_message(p,"Lift Busy...");break;
 				case LIFT_CALLED:player_message(p,"Lift Called...");break;
 				default:player_message(p,"Lift knackered...");break;
-				}
-			}
-			break;
+			} break;
 		case XK_Up:
-			p->immune=0;
+		case XK_Down:p->immune=0;
 			if (rd2(p->body.l,(int) p->body.x/128,(int) p->body.y/128)=='L') {
 				int x,y;
 				x=(int) p->body.x;y=(int) p->body.y;
@@ -349,43 +289,16 @@ static void key_press(struct player *p,int k)
 				if ((x>32)&&(x<=96)&&(y>32)&&(y<=96)) {
 					struct lift *l;
 					l=find_lift((int) p->body.x/128,(int) p->body.y/128);
-					if (l->t==l->l) {
-						if (!can_lift_ascend(l)) {
-							player_message(p,"Lift Cannot Go Up.");
-						} else {
+					if (l->t==l->l)
+						if ((k==XK_Up && can_lift_ascend(l)) || (k==XK_Down && can_lift_descend(l))) {
 							player_message(p,"Lift Activated...");
 							l->clk=0;
-							l->t--;
-						}
-					} else {
-						player_message(p,"Lift Busy...");
-					}
+							k==XK_Up ? l->t-- : l->t++;
+						} else k==XK_Up ? player_message(p,"Lift Cannot Go Up.")
+							: player_message(p,"Lift Cannot Go Down.");
+					else player_message(p,"Lift Busy...");
 				}
-			}
-			break;
-		case XK_Down:
-			p->immune=0;
-			if (rd2(p->body.l,(int) p->body.x/128,(int) p->body.y/128)=='L') {
-				int x,y;
-				x=(int) p->body.x;y=(int) p->body.y;
-				x&=127;y&=127;
-				if ((x>32)&&(x<=96)&&(y>32)&&(y<=96)) {
-					struct lift *l;
-					l=find_lift((int) p->body.x/128,(int) p->body.y/128);
-					if (l->t==l->l) {
-						if (!can_lift_descend(l)) {
-							player_message(p,"Lift Cannot Go Down.");
-						} else {
-							player_message(p,"Lift Activated...");
-							l->clk=0;
-							l->t++;
-						}
-					} else {
-						player_message(p,"Lift Busy...");
-					}
-				}
-			}
-			break;
+			} break;
 		case XK_KP_8:
 		case XK_bracketleft:
 			p->thrust-=p->step;
@@ -394,9 +307,9 @@ static void key_press(struct player *p,int k)
 		case XK_KP_9:
 		case XK_bracketright:
 			p->thrust+=p->step;
-			p->qflags|=1;
 			if (p->thrust>100) p->thrust=100;
 			break;
+		case XK_q: p->qflags|=1;break;
 		case XK_KP_5:
 		case XK_semicolon:
 			p->spin-=p->step;
@@ -408,9 +321,7 @@ static void key_press(struct player *p,int k)
 			if (p->spin>100) p->spin=100;
 			break;
 		case XK_KP_2:
-		case XK_period:
-			p->immune=0;
-			p->qflags|=2;
+		case XK_period:p->immune=0;
 			if ((p->slot)&&(p->mode[p->slot-1])) {
 				p->mode[p->slot-1]-=p->step;
 				if (p->mode[p->slot-1]<=0) p->mode[p->slot-1]=0;
@@ -418,8 +329,7 @@ static void key_press(struct player *p,int k)
 			}
 			break;
 		case XK_KP_3:
-		case XK_slash:
-			p->immune=0;
+		case XK_slash:p->immune=0;
 			if ((p->slot)&&(p->mode[p->slot-1])) {
 				if (p->mode[p->slot-1]==-1) p->mode[p->slot-1]=0;
 				p->mode[p->slot-1]+=p->step;
@@ -430,10 +340,7 @@ static void key_press(struct player *p,int k)
 			t=p->spin;p->spin=p->espin;p->espin=t;
 			t=p->thrust;p->thrust=p->ethrust;p->ethrust=t;
 			break;
-		case XK_Return:
-			p->immune=0;
-			p->flags|=FLG_FIRING;
-			break;
+		case XK_Return:p->immune=0;p->flags|=FLG_FIRING;break;
 		case XK_0:p->slot=0;break;
 		case XK_1:p->slot=1;break;
 		case XK_2:p->slot=2;break;
@@ -444,22 +351,10 @@ static void key_press(struct player *p,int k)
 		case XK_7:p->slot=7;break;
 		case XK_8:p->slot=8;break;
 		case XK_9:p->slot=9;break;
-		case XK_Tab:
-			p->immune=0;
-			activate_slot(p);
-			break;
-		case XK_a:
-			p->immune=0;
-			arm_slot(p);
-			break;
-		case XK_u:
-			p->immune=0;
-			disarm_slot(p);
-			break;
-		case XK_d:
-			p->immune=0;
-			detonate_slot(p);
-			break;
+		case XK_Tab:p->immune=0;activate_slot(p);break;
+		case XK_a:p->immune=0;arm_slot(p);break;
+		case XK_u:p->immune=0;disarm_slot(p);break;
+		case XK_d:p->immune=0;detonate_slot(p);break;
 		case XK_F1:psend(p,"KF1\n");break;
 		case XK_F2:psend(p,"KF2\n");break;
 		case XK_F3:psend(p,"KF3\n");break;
@@ -476,14 +371,12 @@ static void key_press(struct player *p,int k)
 		case XK_KP_F2:psend(p,"KPF2\n");break;
 		case XK_KP_F3:psend(p,"KPF3\n");break;
 		case XK_KP_F4:psend(p,"KPF4\n");break;
-		}
+	}
 }
 
-static void key_unpress(struct player *p,int k)
-{
+static void key_unpress(struct player *p,int k) {
 	if (!p->body.on) {
-		if (p->flags&FLG_HOME)
-			switch (k) {
+		if (p->flags&FLG_HOME) switch (k) {
 			case XK_Control_L:
 			case XK_Control_R:
 				p->flags&=~FLG_CTRL;
@@ -491,40 +384,17 @@ static void key_unpress(struct player *p,int k)
 			case XK_f:
 				p->flags&=~FLG_FUELLING;
 				break;
-			}
-	} else
-		switch(k) {
-		case XK_z:
-			p->flags&=(~FLG_ROTACLOCK);
-			break;
-		case XK_x:
-			p->flags&=(~FLG_ROTCLOCK);
-			break;
-		case XK_Shift_R:
-		case XK_Shift_L:
-			p->flags&=(~FLG_THRUST);
-			break;
-		case XK_space:
-			p->flags&=(~FLG_BRAKING);
-			break;
-		case XK_Return:
-			p->flags&=~(FLG_FIRING);
-			break;
-		case XK_KP_9:
-		case XK_bracketright:
-			p->qflags&=~1;
-			break;
-		case XK_KP_2:
-		case XK_period:
-			p->qflags&=~2;
-			break;
-		case XK_KP_7:
-		case XK_KP_Subtract:
-			p->qflags&=~4;
-			break;
-		case XK_f:
-			p->flags&=~FLG_FUELLING;
-			break;
 		}
+	} else switch(k) {
+		case XK_z:p->flags&=(~FLG_ROTACLOCK);break;
+		case XK_x:p->flags&=(~FLG_ROTCLOCK);break;
+		case XK_Shift_R:
+		case XK_Shift_L:p->flags&=(~FLG_THRUST);break;
+		case XK_space:p->qflags&=~4;p->flags&=(~FLG_BRAKING);break;
+		case XK_Return:p->flags&=~(FLG_FIRING);break;
+		case XK_q:p->qflags&=~1;break;
+		case XK_h:p->qflags&=~2;break;
+		case XK_f:p->flags&=~FLG_FUELLING;break;
+	}
 }
 

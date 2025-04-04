@@ -37,24 +37,24 @@ typedef uintptr_t ptr_int_t; /* Use this type for pointer-integer conversions */
 #define ROMBASE 1024
 
 struct login {
-    struct player *p;
-    int x;              /* Cursor address on screen */
-    int psp;            /* Position in pc stack */
-    int nsp;            /* Position in num stack */
-    int state;          /* Set if performing operation of some sort */
-    int tmp;            /* Internal register for operations */
-    int tmpb;           /* Internal register for operations */
-    int pc[20];         /* My pc stack */
-    ptr_int_t num[64];  /* My num stack - now uses ptr_int_t to safely store pointers */
-    int a,b;            /* Number registers */
-    int status;         /* Status register */
-    char ram[512];      /* Terminal's ram */
+	struct player *p;
+	int x;              /* Cursor address on screen */
+	int psp;            /* Position in pc stack */
+	int nsp;            /* Position in num stack */
+	int state;          /* Set if performing operation of some sort */
+	int tmp;            /* Internal register for operations */
+	int tmpb;           /* Internal register for operations */
+	int pc[20];         /* My pc stack */
+	ptr_int_t num[64];  /* My num stack - now uses ptr_int_t to safely store pointers */
+	int a,b;            /* Number registers */
+	int status;         /* Status register */
+	char ram[512];      /* Terminal's ram */
 };
 
 struct label {
-    char name[16];
-    int adr;
-    struct label *next;
+	char name[16];
+	int adr;
+	struct label *next;
 };
 
 /* Use extern for global variables to avoid multiple definition errors */

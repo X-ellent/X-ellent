@@ -13,12 +13,12 @@
 #ifndef My_LIFT_H
 #define My_LIFT_H
 struct lift {
-    struct lift *next;
-    int x,y;
-    int l,t;
-    int id;
-    int clk;
-    char pass[8];
+	struct lift *next;
+	int x,y;
+	int l,t;
+	int id;
+	int clk;
+	char pass[8];
 };
 
 extern struct lift *firstlift;

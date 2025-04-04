@@ -16,16 +16,16 @@
 #include "player.h"
 
 struct turret {
-    int x,y,d;
-    int rot;
-    int targ;
-    int shield;
-    int frame;
-    int count;
-    int flags;
-    struct turret *next;
-    struct player *victim;
-    char pass[6];
+	int x,y,d;
+	int rot;
+	int targ;
+	int shield;
+	int frame;
+	int count;
+	int flags;
+	struct turret *next;
+	struct player *victim;
+	char pass[6];
 };
 
 extern struct turret *firstturret;

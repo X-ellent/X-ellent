@@ -18,14 +18,14 @@
 #define PARTICLES 10000
 
 struct particle {
-    double x,y;
-    int rot;
-    int life;
-    int dam;
-    int mass;
-    double vely;
-    struct particle *next;
-    struct player *owner;
+	double x,y;
+	int rot;
+	int life;
+	int dam;
+	int mass;
+	double vely;
+	struct particle *next;
+	struct player *owner;
 };
 
 extern struct particle *parts[MAXDEPTH];
@@ -35,16 +35,16 @@ extern struct particle *part_free;
 extern int part_count;
 
 struct explosion {
-    int x,y;
-    int r,d,s,a;
-    struct explosion *next;
+	int x,y;
+	int r,d,s,a;
+	struct explosion *next;
 };
 
 extern struct explosion *bang_first;
 extern struct explosion *bang_free;
 
 void fire_particle(struct player *pl,int l,int x,int y,int a,double v,
-              int d,int r,int m);
+			  int d,int r,int m);
 void explode(int l,int x, int y,int s,int f,int d,struct player *who);
 void move_particles();
 struct particle *alloc_particle();

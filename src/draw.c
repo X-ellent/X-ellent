@@ -89,17 +89,13 @@ static void draw_map(struct player *p,int l,int x,int y)
 				if (e->r>10)
 					XDrawArc(d,w,yellow,ddx+mx-e->r+10,ddy-e->r+10+my,
 							 e->r*2-20,e->r*2-20,0,360*64);
-				XDrawArc(d,w,white,ddx+mx-e->r,ddy-e->r+my,e->r*2,e->r*2,0,
-						 360*64);
+				XDrawArc(d,w,white,ddx+mx-e->r,ddy-e->r+my,e->r*2,e->r*2,0,360*64);
 			}
 		}
 		return;
 	}
 	for (iy=sy;iy<ey;iy++) {
-		struct teleport *tp;
-		int temp;
-		xc=mx+(sx-xx)*dx-(iy-yy)*dy;
-		yc=my+(sx-xx)*dy+(iy-yy)*dx;
+		xc=mx+(sx-xx)*dx-(iy-yy)*dy; yc=my+(sx-xx)*dy+(iy-yy)*dx;
 		for (ix=sx;ix<ex;ix++) {
 			if (rd(l,ix,iy)&MAP_SOLID) {
 				cx=xc+dx/2-dy/2;cy=yc+dy/2+dx/2;
@@ -110,21 +106,18 @@ static void draw_map(struct player *p,int l,int x,int y)
 				rc[4].x=rc[0].x;rc[4].y=rc[0].y;
 				switch (rd2(l,ix,iy)) {
 				case 'L':
-					XDrawLine(d,w,p->d.gc_dred,rc[0].x,rc[0].y,rc[2].x,
-							  rc[2].y);
-					XDrawLine(d,w,p->d.gc_dred,rc[1].x,rc[1].y,rc[3].x,
-							  rc[3].y);
+					XDrawLine(d,w,p->d.gc_dred,rc[0].x,rc[0].y,rc[2].x,rc[2].y);
+					XDrawLine(d,w,p->d.gc_dred,rc[1].x,rc[1].y,rc[3].x,rc[3].y);
 				case 'l':
-					XDrawLines(d,w,p->d.gc_dred,rc,5,CoordModeOrigin);
-					break;
+					XDrawLines(d,w,p->d.gc_dred,rc,5,CoordModeOrigin);break;
 				case 'H':
-					XDrawLines(d,w,blue,rc,5,CoordModeOrigin);
-					break;
+					XDrawLines(d,w,blue,rc,5,CoordModeOrigin);break;
 				case 'X':
 					XDrawLines(d,w,dgrey,rc,5,CoordModeOrigin);
-					tp=locate_teleport(l,ix,iy);
+					struct teleport *tp=locate_teleport(l,ix,iy);
 					XDrawArc(d,w,dgrey,cx-28,cy-28,56,56,0,360*64);
 					if (tp->clk) {
+						int temp;
 						if (tp->clk<0) {
 							temp=-28*tp->clk/5;
 							XDrawArc(d,w,yellow,cx-temp,cy-temp,temp*2,
@@ -134,26 +127,18 @@ static void draw_map(struct player *p,int l,int x,int y)
 							XDrawArc(d,w,red,cx-temp,cy-temp,temp*2,
 									 temp*2,0,360*64);
 						}
-					}
-					break;
+					} break;
 				case 'Z':
-					XDrawArc(d,w,blue,cx-28,cy-28,56,56,0,360*64);
-					break;
+					XDrawArc(d,w,blue,cx-28,cy-28,56,56,0,360*64); break;
 				case 'T':
-					XFillPolygon(d,w,p->d.gc_fdgrey,rc,5,Convex,
-								 CoordModeOrigin);
-					XDrawLines(d,w,white,rc,5,CoordModeOrigin);
-					break;
+					XFillPolygon(d,w,p->d.gc_fdgrey,rc,5,Convex,CoordModeOrigin);
+					XDrawLines(d,w,white,rc,5,CoordModeOrigin); break;
 				case 'S':
-					XFillPolygon(d,w,p->d.gc_fblue,rc,5,Convex,
-								 CoordModeOrigin);
-					XDrawLines(d,w,white,rc,5,CoordModeOrigin);
-					break;
+					XFillPolygon(d,w,p->d.gc_fblue,rc,5,Convex,CoordModeOrigin);
+					XDrawLines(d,w,white,rc,5,CoordModeOrigin); break;
 				case 'F':
-					XFillPolygon(d,w,p->d.gc_fred,rc,5,Convex,
-								 CoordModeOrigin);
-					XDrawLines(d,w,white,rc,5,CoordModeOrigin);
-					break;
+					XFillPolygon(d,w,p->d.gc_fred,rc,5,Convex,CoordModeOrigin);
+					XDrawLines(d,w,white,rc,5,CoordModeOrigin);break;
 				case 'C':
 					XDrawArc(d,w,red,cx-25,cy-25,50,50,0,60*64);
 					XDrawArc(d,w,red,cx-25,cy-25,50,50,120*64,60*64);
@@ -161,9 +146,9 @@ static void draw_map(struct player *p,int l,int x,int y)
 					break;
 				case 'O':
 					tur=find_turret(l,ix,iy);
-					if (tur->flags&TFLG_DESTROYED) {
+					if (tur->flags&TFLG_DESTROYED)
 						XDrawArc(d,w,dgrey,cx-25,cy-25,50,50,0,360*64);
-					} else {
+					else {
 						tco=cs[(360+tur->rot-a)%360];
 						tsi=sn[(360+tur->rot-a)%360];
 						XDrawArc(d,w,(p==tur->victim)?red:white,cx-25,
@@ -171,89 +156,65 @@ static void draw_map(struct player *p,int l,int x,int y)
 						XDrawLine(d,w,white,cx+25*tsi,cy-25*tco,
 								  cx+(40-5*tur->frame)*tsi,
 								  cy-(40-5*tur->frame)*tco);
-					}
-					break;
+					} break;
 				case '+':
 					XDrawLine(d,w,p->d.gc_ice,xc,yc,xc+dx-dy,yc+dx+dy);
 					XDrawLine(d,w,p->d.gc_ice,xc+dx,yc+dy,xc-dy,yc+dx);
 					break;
 				case '-':
-					XDrawLines(d,w,p->d.gc_ice,rc,5,CoordModeOrigin);
-					break;
+					XDrawLines(d,w,p->d.gc_ice,rc,5,CoordModeOrigin);break;
 				case '7':
-					XDrawLine(d,w,p->d.gc_ice,rc[0].x,rc[0].y,
-							  rc[1].x,rc[1].y);
-					XDrawLine(d,w,p->d.gc_ice,rc[0].x,rc[0].y,
-							  rc[3].x,rc[3].y);
+					XDrawLine(d,w,p->d.gc_ice,rc[0].x,rc[0].y,rc[1].x,rc[1].y);
+					XDrawLine(d,w,p->d.gc_ice,rc[0].x,rc[0].y,rc[3].x,rc[3].y);
 					break;
 				case '9':
-					XDrawLine(d,w,p->d.gc_ice,rc[0].x,rc[0].y,
-							  rc[1].x,rc[1].y);
-					XDrawLine(d,w,p->d.gc_ice,rc[1].x,rc[1].y,
-							  rc[2].x,rc[2].y);
+					XDrawLine(d,w,p->d.gc_ice,rc[0].x,rc[0].y,rc[1].x,rc[1].y);
+					XDrawLine(d,w,p->d.gc_ice,rc[1].x,rc[1].y,rc[2].x,rc[2].y);
 					break;
 				case '3':
-					XDrawLine(d,w,p->d.gc_ice,rc[2].x,rc[2].y,
-							  rc[3].x,rc[3].y);
-					XDrawLine(d,w,p->d.gc_ice,rc[1].x,rc[1].y,
-							  rc[2].x,rc[2].y);
+					XDrawLine(d,w,p->d.gc_ice,rc[2].x,rc[2].y,rc[3].x,rc[3].y);
+					XDrawLine(d,w,p->d.gc_ice,rc[1].x,rc[1].y,rc[2].x,rc[2].y);
 					break;
 				case '1':
-					XDrawLine(d,w,p->d.gc_ice,rc[2].x,rc[2].y,
-							  rc[3].x,rc[3].y);
-					XDrawLine(d,w,p->d.gc_ice,rc[0].x,rc[0].y,
-							  rc[3].x,rc[3].y);
+					XDrawLine(d,w,p->d.gc_ice,rc[2].x,rc[2].y,rc[3].x,rc[3].y);
+					XDrawLine(d,w,p->d.gc_ice,rc[0].x,rc[0].y,rc[3].x,rc[3].y);
 					break;
 				case '8':
-					XDrawLine(d,w,p->d.gc_ice,rc[0].x,rc[0].y,
-							  rc[1].x,rc[1].y);
+					XDrawLine(d,w,p->d.gc_ice,rc[0].x,rc[0].y,rc[1].x,rc[1].y);
 					break;
 				case '6':
-					XDrawLine(d,w,p->d.gc_ice,rc[2].x,rc[2].y,
-							  rc[1].x,rc[1].y);
+					XDrawLine(d,w,p->d.gc_ice,rc[2].x,rc[2].y,rc[1].x,rc[1].y);
 					break;
 				case '2':
-					XDrawLine(d,w,p->d.gc_ice,rc[2].x,rc[2].y,
-							  rc[3].x,rc[3].y);
+					XDrawLine(d,w,p->d.gc_ice,rc[2].x,rc[2].y,rc[3].x,rc[3].y);
 					break;
 				case '4':
-					XDrawLine(d,w,p->d.gc_ice,rc[0].x,rc[0].y,
-							  rc[3].x,rc[3].y);
+					XDrawLine(d,w,p->d.gc_ice,rc[0].x,rc[0].y,rc[3].x,rc[3].y);
 					break;
 				case '0':
-					XDrawLine(d,w,p->d.gc_ice,rc[0].x,rc[0].y,
-							  rc[2].x,rc[2].y);
-					XDrawLine(d,w,p->d.gc_ice,rc[1].x,rc[1].y,
-							  rc[3].x,rc[3].y);
+					XDrawLine(d,w,p->d.gc_ice,rc[0].x,rc[0].y,rc[2].x,rc[2].y);
+					XDrawLine(d,w,p->d.gc_ice,rc[1].x,rc[1].y,rc[3].x,rc[3].y);
 					break;
 				case '5':
-					XDrawLine(d,w,p->d.gc_ice,rc[0].x,rc[0].y,
-							  rc[1].x,rc[1].y);
-					XDrawLine(d,w,p->d.gc_ice,rc[2].x,rc[2].y,
-							  rc[3].x,rc[3].y);
+					XDrawLine(d,w,p->d.gc_ice,rc[0].x,rc[0].y,rc[1].x,rc[1].y);
+					XDrawLine(d,w,p->d.gc_ice,rc[2].x,rc[2].y,rc[3].x,rc[3].y);
 					break;
 				default:
-					XDrawLines(d,w,dgrey,rc,5,CoordModeOrigin);
-					break;
+					XDrawLines(d,w,dgrey,rc,5,CoordModeOrigin);break;
+				} // switch
+			} else if (rd(l,ix,iy)&MAP_OBSC) {
+				int a,b;
+				for (a=0;a<5;a++) for (b=0;b<5;b++) {
+					rc[a+5*b].x=xc+dx*a/4-dy*b/4;
+					rc[a+5*b].y=yc+dx*b/4+dy*a/4;
 				}
-			} else {
-				if (rd(l,ix,iy)&MAP_OBSC) {
-					int a,b;
-					for (a=0;a<5;a++)
-						for (b=0;b<5;b++) {
-							rc[a+5*b].x=xc+dx*a/4-dy*b/4;
-							rc[a+5*b].y=yc+dx*b/4+dy*a/4;
-						}
-					XDrawPoints(d,w,white,rc,25,CoordModeOrigin);
-				}
+				XDrawPoints(d,w,white,rc,25,CoordModeOrigin);
 			}
-			xc=xc+dx;
-			yc=yc+dy;
-		}
-	}
+			xc=xc+dx; yc=yc+dy;
+		} // ix for
+	} // iy for
 	for (iy=sy;iy<ey;iy++) {
-		xc=mx+(sx-xx)*dx-(iy-yy)*dy;
-		yc=my+(sx-xx)*dy+(iy-yy)*dx;
+		xc=mx+(sx-xx)*dx-(iy-yy)*dy; yc=my+(sx-xx)*dy+(iy-yy)*dx;
 		for (ix=sx;ix<ex;ix++) {
 			switch (rd(l,ix,iy)&MAP_LWALL) {
 			case MAP_LWALL:XDrawLine(d,w,white,xc,yc,xc-dy,yc+dx);break;
@@ -278,11 +239,9 @@ static void draw_map(struct player *p,int l,int x,int y)
 		mx=WINWID/2;my=WINHGT/2;
 		for (u=obj_first;u;u=u->next)
 			if (p->body.l==u->l) {
-				dx=(u->x)-x;
-				dy=(u->y)-y;
+				dx=(u->x)-x; dy=(u->y)-y;
 				if (!((dx>WINWID)||(dx<-WINWID)||(dy>WINHGT)||(dy<-WINHGT))) {
-					ddx=dx*co+dy*si;
-					ddy=dy*co-dx*si;
+					ddx=dx*co+dy*si; ddy=dy*co-dx*si;
 					switch(u->type) {
 					case OBJ_MINE_TRIG:
 					case OBJ_MINE_TIME:
@@ -290,43 +249,34 @@ static void draw_map(struct player *p,int l,int x,int y)
 					case OBJ_MINE_VELY:
 					case OBJ_MINE_SMART:
 						if (u->flags&OBJ_F_ARM) {
-							if ((!(u->flags&OBJ_F_FLASH))&&
-								(u->flags&OBJ_F_TRIG)) {
+							if ((!(u->flags&OBJ_F_FLASH))&&(u->flags&OBJ_F_TRIG)) {
 								mc=red;
 								u->flags|=OBJ_F_FLASH;
-							} else {
+							} else
 								mc=dgrey;
-							}
-							if (p->flags&FLG_MINESWEEP) {
-								XDrawArc(d,w,mc,mx+ddx-8,mx+ddy-8,16,16,0,
-										 360*64);
-							}
-						} else {
-							XDrawArc(d,w,blue,mx+ddx-8,mx+ddy-8,16,16,0,
-									 360*64);
-						}
+							if (p->flags&FLG_MINESWEEP)
+								XDrawArc(d,w,mc,mx+ddx-8,mx+ddy-8,16,16,0,360*64);
+						} else
+							XDrawArc(d,w,blue,mx+ddx-8,mx+ddy-8,16,16,0,360*64);
 						break;
 					case OBJ_BONUS:
 						XDrawArc(d,w,white,mx+ddx-8,mx+ddy-8,16,16,0,360*64);
 					default:
 						XDrawArc(d,w,yellow,mx+ddx-8,mx+ddy-8,16,16,0,360*64);
 						break;
-					}
+					} // switch
 				}
 			}
 	}
 	/* OK Now draw particles too */
 	{
 		struct particle *u;
-		int n;
 		mx=WINWID/2;my=WINHGT/2;
-		n=0;
+		int n=0;
 		for (u=parts[l];u;u=u->next) {
-			dx=(u->x)-x;
-			dy=(u->y)-y;
+			dx=(u->x)-x; dy=(u->y)-y;
 			if (!((dx>WINWID)||(dx<-WINWID)||(dy>WINHGT)||(dy<-WINHGT))) {
-				ddx=dx*co+dy*si;
-				ddy=dy*co-dx*si;
+				ddx=dx*co+dy*si; ddy=dy*co-dx*si;
 				if (u->life!=-1) {
 					pc[n].x=mx+ddx;
 					pc[n++].y=my+ddy;
@@ -341,8 +291,7 @@ static void draw_map(struct player *p,int l,int x,int y)
 						n=0;
 					}
 				} else {
-					int r;
-					r=random()%5+1;
+					int r=random()%5+1;
 					XDrawArc(d,w,yellow,mx+ddx-r,my+ddy-r,r*2,r*2,0,360*64);
 				}
 			}
@@ -353,28 +302,27 @@ static void draw_map(struct player *p,int l,int x,int y)
 	{
 		struct beam *b;
 		int sx,sy,ex,ey;
-		for(b=firstbeam;b;b=b->next)
-			if (p->body.l==b->l) {
-				dx=(b->x)-p->body.x;
-				dy=(b->y)-p->body.y;
-				sx=dx*co+dy*si+mx;
-				sy=dy*co-dx*si+my;
-				dx=(b->xx)-p->body.x;
-				dy=(b->yy)-p->body.y;
-				ex=dx*co+dy*si+mx;
-				ey=dy*co-dx*si+my;
-				switch(b->type) {
-				case BEAM_RED:
-					XDrawLine(d,w,red,sx,sy,ex,ey);
-					break;
-				case BEAM_BLUE:
-					XDrawLine(d,w,blue,sx,sy,ex,ey);
-					break;
-				default:
-					XDrawLine(d,w,dgrey,sx,sy,ex,ey);
-					break;
-				}
+		for(b=firstbeam;b;b=b->next) if (p->body.l==b->l) {
+			dx=(b->x)-p->body.x;
+			dy=(b->y)-p->body.y;
+			sx=dx*co+dy*si+mx;
+			sy=dy*co-dx*si+my;
+			dx=(b->xx)-p->body.x;
+			dy=(b->yy)-p->body.y;
+			ex=dx*co+dy*si+mx;
+			ey=dy*co-dx*si+my;
+			switch(b->type) {
+			case BEAM_RED:
+				XDrawLine(d,w,red,sx,sy,ex,ey);
+				break;
+			case BEAM_BLUE:
+				XDrawLine(d,w,blue,sx,sy,ex,ey);
+				break;
+			default:
+				XDrawLine(d,w,dgrey,sx,sy,ex,ey);
+				break;
 			}
+		}
 	}
 	/* Then draw explosions */
 	{
@@ -397,8 +345,7 @@ static void draw_map(struct player *p,int l,int x,int y)
 	}
 }
 
-extern void draw_all(struct player *p)
-{
+extern void draw_all(struct player *p) {
 	jumpable=-1;
 	switch (setjmp(jmpenv)) {
 	case 0:break;
@@ -410,46 +357,28 @@ extern void draw_all(struct player *p)
 	if (!p->body.on) {
 		if (p->flags&FLG_DEAD) {
 			if (p->delay==DEATH_SHOW) {
-				int a,b;
-				int l;
-				l=strlen(DEATH_MSG);
+				int l=strlen(DEATH_MSG);
 				XFillRectangle(p->d.disp,p->d.backing,p->d.gc_black,0,0,
 							   WINWID,WINHGT);
-				for (a=-1;a<2;a++)
-					for (b=-1;b<2;b++)
-						XDrawString(p->d.disp,p->d.backing,p->d.gc_yellow,
-									WINWID/2-p->d.bw*l/2+a,
-									WINHGT/2-p->d.bh+b,DEATH_MSG,l);
+				for (int a=-1;a<2;a++) for (int b=-1;b<2;b++)
+					XDrawString(p->d.disp,p->d.backing,p->d.gc_yellow,
+							WINWID/2-p->d.bw*l/2+a,WINHGT/2-p->d.bh+b,DEATH_MSG,l);
 				XDrawString(p->d.disp,p->d.backing,p->d.gc_black,WINWID/2-
 							p->d.bw*l/2,WINHGT/2-p->d.bh,DEATH_MSG,l);
 			} else {
 				if (p->delay>DEATH_SHOW) {
-					if (p->flags&FLG_FALLEN) {
-						if (p->body.l>=map.depth) {
-							draw_falling(p);
-						} else {
-							draw_map(p,p->body.l,p->body.x,p->body.y);
-							draw_others(p,p);
-							draw_msg(p);
-						}
-					} else {
-						draw_map(p,p->body.l,p->body.x,p->body.y);
-						draw_others(p,p);
-						draw_msg(p);
-					}
-				} else {
+					if (p->flags&FLG_FALLEN && p->body.l>=map.depth)
+						draw_falling(p);
+					else
+						draw_map(p);draw_others(p);draw_msg(p);
+				} else
 					XDrawArc(p->d.disp,p->d.backing,p->d.gc_red,20,20,
-							 WINWID-40,WINHGT-40,
-							 360*64*(p->delay-1)/DEATH_SHOW,
-							 360*128/DEATH_SHOW);
-				}
+							WINWID-40,WINHGT-40,360*64*(p->delay-1)/DEATH_SHOW,
+							360*128/DEATH_SHOW);
 			}
-		} else {
 		}
 	} else {
-		draw_map(p,p->body.l,p->body.x,p->body.y);
-		draw_others(p,p);
-		draw_me(p);
+		draw_map(p);draw_others(p);draw_me(p);
 	}
 	XCopyArea(p->d.disp,p->d.backing,p->d.gamewin,p->d.gc,
 			  0,0,WINWID,WINHGT,0,0);
@@ -458,240 +387,172 @@ extern void draw_all(struct player *p)
 	longjmp(jmpenv,1);
 }
 
-extern void draw_map_level(struct player *p,int l)
-{
-	Display *d;
-	Pixmap w;
+void draw_map_level(struct player *p,int l) {
 	char txt[64];
-	GC red,blue,white,grey,dgrey,yellow;
-	int mx,my;
-	int wx;
-	int wwx;
-	int x,y;
-	int a,b;
-	int px,py,pl;
+	int x,y,a,b;
 	struct turret *tur;
-	d=p->d.disp;
-	w=p->d.backing;
-	red=p->d.gc_dred;
-	blue=p->d.gc_blue;
-	white=p->d.gc_white;
-	grey=p->d.gc_grey;
-	dgrey=p->d.gc_dgrey;
-	yellow=p->d.gc_yellow;
+	Display *d=p->d.disp;
+	Pixmap w=p->d.backing;
+	GC red=p->d.gc_dred;
+	GC blue=p->d.gc_blue;
+	GC white=p->d.gc_white;
+	GC grey=p->d.gc_grey;
+	GC dgrey=p->d.gc_dgrey;
+	GC yellow=p->d.gc_yellow;
 	XFillRectangle(d,w,p->d.gc_black,0,0,WINWID,WINHGT);
 	sprintf(txt,"Map of level #%d",l);
 	if (p->mapmem[l]) strcat(txt," [Mem]");
 	XDrawString(d,w,p->d.gc_red,20,p->d.fh,txt,strlen(txt));
-	wx=WINWID/((map.wid>map.hgt)?map.wid:map.hgt);
-	mx=WINWID/2-wx*(map.wid)/2;
-	my=WINHGT/2-wx*(map.hgt)/2;
-	wwx=wx/2;
-	pl=p->body.l;
-	px=(int) p->body.x/128;
-	py=(int) p->body.y/128;
-	for (y=1;y<(map.hgt-1);y++)
-		for (x=1;x<(map.wid-1);x++) {
-			if ((l==pl)&&(x==px)&&(y==py)) {
-				XFillRectangle(d,w,yellow,mx+x*wx,my+y*wx,wx+1,wx+1);
-				continue;
-			}
-			switch(rd(l,x,y)&(MAP_SOLID|MAP_OBSC)) {
-			case MAP_SOLID:
-				switch(rd2(l,x,y)) {
-				case '-':
-					XDrawRectangle(d,w,p->d.gc_ice,mx+x*wx+wx/4,my+y*wx+wx/4,
-								   wwx+1,wwx+1);
-					break;
-				case '+':
-				case '0':
-				case '1':
-				case '2':
-				case '3':
-				case '4':
-				case '5':
-				case '6':
-				case '7':
-				case '8':
-				case '9':
-					XDrawLine(d,w,p->d.gc_ice,mx+x*wx,my+y*wx,mx+x*wx+wx,
-							  my+y*wx+wx);
-					XDrawLine(d,w,p->d.gc_ice,mx+x*wx+wx,my+y*wx,mx+x*wx,
-							  my+y*wx+wx);
-					break;
-				case 'L':
-					XDrawLine(d,w,red,mx+x*wx+wx/4,my+y*wx+wx/4,
-							  mx+x*wx+wx*3/4,my+y*wx+wx*3/4);
-					XDrawLine(d,w,red,mx+x*wx+wx/4,my+y*wx+wx*3/4,
-							  mx+x*wx+wx*3/4,my+y*wx+wx/4);
-				case 'l':
-					XDrawRectangle(d,w,red,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,
-								   wwx+1);
-					break;
-				case 'S':
-					XFillRectangle(d,w,p->d.gc_fblue,mx+x*wx+wx/4,
-								   my+y*wx+wx/4,wwx+1,wwx+1);
-					XDrawRectangle(d,w,white,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,
-								   wwx+1);
-					break;
-				case 'H':
-					XDrawRectangle(d,w,blue,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,
-								   wwx+1);
-					break;
-				case 'X':
-					XDrawRectangle(d,w,dgrey,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,
-								   wwx+1);
-					XDrawArc(d,w,dgrey,mx+x*wx+wx/3,my+y*wx+wx/3,wx/3,
-							 wx/3,0,360*64);
-					break;
-				case 'Z':
-					XDrawArc(d,w,blue,mx+x*wx+wx/3,my+y*wx+wx/3,wx/3,
-							 wx/3,0,360*64);
-					break;
-				case 'F':
-					XFillRectangle(d,w,p->d.gc_fred,mx+x*wx+wx/4,
-								   my+y*wx+wx/4,wwx+1,wwx+1);
-					XDrawRectangle(d,w,white,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,
-								   wwx+1);
-					break;
-				case 'T':
-					XFillRectangle(d,w,p->d.gc_fdgrey,mx+x*wx+wx/4,
-								   my+y*wx+wx/4,wwx+1,wwx+1);
-					XDrawRectangle(d,w,white,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,
-								   wwx+1);
-					break;
-				case 'C':
-					XDrawArc(d,w,red,mx+x*wx+wx/4,my+y*wx+wx/4,wx/2+1,
-							 wx/2+1,0,360*64);
-					break;
-				case 'O':
-					tur=find_turret(l,x,y);
-					if (!(tur->flags&TFLG_DESTROYED)) {
-						XDrawArc(d,w,white,mx+x*wx+wx/4,my+y*wx+wx/4,wx/2+1,
-								 wx/2+1,0,360*64);
-					} else {
-						XDrawArc(d,w,dgrey,mx+x*wx+wx/4,my+y*wx+wx/4,wx/2+1,
-								 wx/2+1,0,360*64);
-					}
-					break;
-				default:
-					XDrawRectangle(d,w,dgrey,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,
-								   wwx+1);
-					break;
-				}
-				break;
-			case MAP_OBSC:
-				for (a=0;a<5;a++)
-					for (b=0;b<5;b++)
-						XDrawPoint(d,w,grey,mx+x*wx+wx*a/4,my+y*wx+wx*b/4);
-				break;
-			default:
-				break;
-			}
+	int wx=WINWID/((map.wid>map.hgt)?map.wid:map.hgt);
+	int mx=WINWID/2-wx*(map.wid)/2, my=WINHGT/2-wx*(map.hgt)/2;
+	int wwx=wx/2;
+	int pl=p->body.l;
+	int px=(int) p->body.x/128, py=(int) p->body.y/128;
+	for (y=1;y<(map.hgt-1);y++) for (x=1;x<(map.wid-1);x++) {
+		if ((l==pl)&&(x==px)&&(y==py)) {
+			XFillRectangle(d,w,yellow,mx+x*wx,my+y*wx,wx+1,wx+1);continue;
 		}
-	for (y=0;y<map.hgt;y++)
-		for (x=0;x<map.wid;x++) {
-			switch (rd(l,x,y)&(MAP_LWALL)) {
-			case MAP_LWALL:
-				XDrawLine(d,w,white,mx+x*wx,my+y*wx,mx+x*wx,my+(y+1)*wx);
+		if (rd(l,x,y)&(MAP_SOLID) switch(rd2(l,x,y)) {
+			case '-':
+				XDrawRectangle(d,w,p->d.gc_ice,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
 				break;
-			case MAP_LWALL1:
-				XDrawLine(d,w,grey,mx+x*wx,my+y*wx,mx+x*wx,my+(y+1)*wx);
+			case '+':
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+				XDrawLine(d,w,p->d.gc_ice,mx+x*wx,my+y*wx,mx+x*wx+wx,my+y*wx+wx);
+				XDrawLine(d,w,p->d.gc_ice,mx+x*wx+wx,my+y*wx,mx+x*wx,my+y*wx+wx);
 				break;
-/*	    case MAP_LWALL0:
-				XDrawLine(d,w,dgrey,mx+x*wx,my+y*wx,mx+x*wx,my+(y+1)*wx);
-				break;*/
+			case 'L':
+				XDrawLine(d,w,red,mx+x*wx+wx/4,my+y*wx+wx/4,
+						  mx+x*wx+wx*3/4,my+y*wx+wx*3/4);
+				XDrawLine(d,w,red,mx+x*wx+wx/4,my+y*wx+wx*3/4,
+						  mx+x*wx+wx*3/4,my+y*wx+wx/4);
+			case 'l':
+				XDrawRectangle(d,w,red,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
+				break;
+			case 'S':
+				XFillRectangle(d,w,p->d.gc_fblue,mx+x*wx+wx/4,
+							   my+y*wx+wx/4,wwx+1,wwx+1);
+				XDrawRectangle(d,w,white,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
+				break;
+			case 'H':
+				XDrawRectangle(d,w,blue,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
+				break;
+			case 'X':
+				XDrawRectangle(d,w,dgrey,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
+				XDrawArc(d,w,dgrey,mx+x*wx+wx/3,my+y*wx+wx/3,wx/3,wx/3,0,360*64);
+				break;
+			case 'Z':
+				XDrawArc(d,w,blue,mx+x*wx+wx/3,my+y*wx+wx/3,wx/3,wx/3,0,360*64);
+				break;
+			case 'F':
+				XFillRectangle(d,w,p->d.gc_fred,mx+x*wx+wx/4,
+							   my+y*wx+wx/4,wwx+1,wwx+1);
+				XDrawRectangle(d,w,white,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
+				break;
+			case 'T':
+				XFillRectangle(d,w,p->d.gc_fdgrey,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
+				XDrawRectangle(d,w,white,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
+				break;
+			case 'C':
+				XDrawArc(d,w,red,mx+x*wx+wx/4,my+y*wx+wx/4,wx/2+1,wx/2+1,0,360*64);
+				break;
+			case 'O':
+				tur=find_turret(l,x,y);
+				if (!(tur->flags&TFLG_DESTROYED))
+					XDrawArc(d,w,white,mx+x*wx+wx/4,my+y*wx+wx/4,wx/2+1,wx/2+1,0,360*64);
+				else
+					XDrawArc(d,w,dgrey,mx+x*wx+wx/4,my+y*wx+wx/4,wx/2+1,wx/2+1,0,360*64);
+				break;
 			default:
+				XDrawRectangle(d,w,dgrey,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
 				break;
-			}
-			switch (rd(l,x,y)&(MAP_TWALL)) {
-			case MAP_TWALL:
-				XDrawLine(d,w,white,mx+x*wx,my+y*wx,mx+(x+1)*wx,my+y*wx);
-				break;
-			case MAP_TWALL1:
-				XDrawLine(d,w,grey,mx+x*wx,my+y*wx,mx+(x+1)*wx,my+y*wx);
-				break;
-/*	    case MAP_TWALL0:
-				XDrawLine(d,w,dgrey,mx+x*wx,my+y*wx,mx+(x+1)*wx,my+y*wx);
-				break;*/
-			default:
-				break;
-			}
+		} else if (rd(l,x,y)&MAP_OBSC)
+			for (a=0;a<5;a++) for (b=0;b<5;b++)
+				XDrawPoint(d,w,grey,mx+x*wx+wx*a/4,my+y*wx+wx*b/4);
+	} // for x (and y)
+	for (y=0;y<map.hgt;y++) for (x=0;x<map.wid;x++) {
+		switch (rd(l,x,y)&(MAP_LWALL)) {
+		case MAP_LWALL:
+			XDrawLine(d,w,white,mx+x*wx,my+y*wx,mx+x*wx,my+(y+1)*wx);
+			break;
+		case MAP_LWALL1:
+			XDrawLine(d,w,grey,mx+x*wx,my+y*wx,mx+x*wx,my+(y+1)*wx);
+			break;
+/*		case MAP_LWALL0:
+			XDrawLine(d,w,dgrey,mx+x*wx,my+y*wx,mx+x*wx,my+(y+1)*wx);
+			break;*/
+		default:
+			break;
 		}
-	XCopyArea(p->d.disp,p->d.backing,p->d.gamewin,p->d.gc,
-			  0,0,WINWID,WINHGT,0,0);
+		switch (rd(l,x,y)&(MAP_TWALL)) {
+		case MAP_TWALL:
+			XDrawLine(d,w,white,mx+x*wx,my+y*wx,mx+(x+1)*wx,my+y*wx);
+			break;
+		case MAP_TWALL1:
+			XDrawLine(d,w,grey,mx+x*wx,my+y*wx,mx+(x+1)*wx,my+y*wx);
+			break;
+/*		case MAP_TWALL0:
+			XDrawLine(d,w,dgrey,mx+x*wx,my+y*wx,mx+(x+1)*wx,my+y*wx);
+			break;*/
+		default:
+			break;
+		}
+	}
+	XCopyArea(p->d.disp,p->d.backing,p->d.gamewin,p->d.gc,0,0,WINWID,WINHGT,0,0);
 	XFlush(p->d.disp);
 }
 
 static void draw_me(struct player *p) {
-	Display *d;
-	Pixmap w;
-	int mx,my;
 	int rx,ry;
 	int dx,dy;
-	int rd;
-	double si,co;
-	GC red,blue,white,dgrey;
 	int i;
-	struct addon *radad;
-	struct addon *tarad;
-	struct addon *visad;
-	struct addon *aclad;
+	struct addon *radad, *tarad, *visad, *aclad;
 	int antilev;
 	int cansee=0;/* can see target?? (if have one)*/
 	struct player *o;
 	char txt[80];
-	d=p->d.disp;
-	w=p->d.backing;
-	red=p->d.gc_red;
-	blue=p->d.gc_blue;
-	white=p->d.gc_white;
-	dgrey=p->d.gc_dgrey;
-	mx=WINWID/2;my=WINHGT/2;
-	rd=p->body.radius+2*p->body.height;
-	if (p->fuel<p->fuelmin) {
-		XDrawRectangle(d,w,red,mx-100,my-100,200,200);
-	} else {
-		XDrawRectangle(d,w,blue,mx-100,my-100,200,200);
-	}
+	Display *d=p->d.disp;
+	Pixmap w=p->d.backing;
+	GC red=p->d.gc_red,blue=p->d.gc_blue,white=p->d.gc_white;
+    GC yellow=p->d.gc_yellow,dgrey=p->d.gc_dgrey;
+	int mx=WINWID/2,my=WINHGT/2;
+	int rd=p->body.radius+2*p->body.height;
+	XDrawRectangle(d,w,(p->fuel<p->fuelmin)?red:blue,mx-100,my-100,200,200);
 	XDrawArc(d,w,white,mx-rd/4,my-rd/4,rd/2,rd/2,0,360*64);
-	if (p->immune) {
-		XDrawArc(d,w,p->d.gc_yellow,mx-rd,my-rd,rd*2,rd*2,0,360*64);
-	} else {
-		XDrawArc(d,w,white,mx-rd,my-rd,rd*2,rd*2,0,360*64);
-	}
+	XDrawArc(d,w,p->immune?yellow:white,mx-rd,my-rd,rd*2,rd*2,0,360*64);
 	XDrawLine(d,w,white,mx,my-rd/4,mx,my-3*rd/4);
-	si=sn[360-(int) p->rot];
-	co=cs[360-(int) p->rot];
+	double si=sn[360-(int) p->rot], co=cs[360-(int) p->rot];
 	radad=find_addon(p->firstadd,ADD_RADAR);
 	tarad=find_addon(p->firstadd,ADD_TARGET);
 	visad=find_addon(p->firstadd,ADD_VISUAL);
 	aclad=find_addon(p->firstadd,ADD_ANTICLOAK);
-	if (aclad) {
-		antilev=aclad->level;
-	} else {
-		antilev=0;
-	}
+	if (aclad) antilev=aclad->level;
+	else antilev=0;
 	if (visad&&(visad->info[0])) {
 		int tx,ox,oy;
 		ox=(visad->info[2]-p->body.x)/visad->info[1];
 		oy=(visad->info[3]-p->body.y)/visad->info[1];
-		for(i=0;i<64;i++) {
-			if (p->lines[i][0]) {
-				dx=(p->lines[i][0]-128)*4;
-				dy=(p->lines[i][1]-128)*4;
-				rx=(p->lines[i][2]-128)*4;
-				ry=(p->lines[i][3]-128)*4;
-				switch(visad->info[0]) {
-				case 3:
-					dx+=ox;dy+=oy;rx+=ox;ry+=oy;
-				case 2:
-					tx=dx*co-dy*si;dy=dy*co+dx*si;dx=tx;
-					tx=rx*co-ry*si;ry=ry*co+rx*si;rx=tx;
+		for(i=0;i<64;i++) if (p->lines[i][0]) {
+			dx=(p->lines[i][0]-128)*4;
+			dy=(p->lines[i][1]-128)*4;
+			rx=(p->lines[i][2]-128)*4;
+			ry=(p->lines[i][3]-128)*4;
+			switch(visad->info[0]) {
+				case 3: dx+=ox;dy+=oy;rx+=ox;ry+=oy; // fallthrough
+				case 2: tx=dx*co-dy*si;dy=dy*co+dx*si;dx=tx;
+						tx=rx*co-ry*si;ry=ry*co+rx*si;rx=tx; // fallthrough
 				case 1:
 				default:
 					XDrawLine(d,w,p->d.gc_yellow,mx+dx,my+dy,mx+rx,my+ry);
-				}
 			}
 		}
 	}
@@ -701,14 +562,9 @@ static void draw_me(struct player *p) {
 		for (o=playone;o;o=o->next)
 			if ((!(o->flags&FLG_CLOAKING))&&(o->body.on)&&(o!=p)&&
 				((p->body.l+radad->info[1])==o->body.l)) {
-				int t;
-				dx=(o->body.x-p->body.x);
-				dy=(o->body.y-p->body.y);
-				t=dx*co-si*dy;
-				dy=dy*co+si*dx;
-				dx=t;
-				rx=dx/rng;
-				ry=dy/rng;
+				dx=(o->body.x-p->body.x); dy=(o->body.y-p->body.y);
+				int t=dx*co-si*dy;dy=dy*co+si*dx;dx=t;
+				rx=dx/rng;ry=dy/rng;
 				if ((rx<100)&&(rx>-100)&&(ry<100)&&(ry>-100)) {
 					if ((o==p->ptarg)&&(tarad)) {
 						XDrawPoint(d,w,red,mx+rx,my+ry);
@@ -736,26 +592,19 @@ static void draw_me(struct player *p) {
 					othclk=find_addon(p->ptarg->firstadd,ADD_CLOAKING);
 					cansee=(othclk->level<=antilev)?1:0;
 				}
-			} else {
+			} else
 				cansee=1;
-			}
 		}
 	}
 	if ((tarad)&&(radad)) {
 		if (cansee&&((p->body.l+radad->info[1])==p->ptarg->body.l)) {
-			double r;
-			int t;
-			dx=(p->ptarg->body.x-p->body.x);
-			dy=(p->ptarg->body.y-p->body.y);
+			double r; int t;
+			dx=(p->ptarg->body.x-p->body.x); dy=(p->ptarg->body.y-p->body.y);
 			t=100*(1<<radad->info[2]);
 			if ((p->body.l==p->ptarg->body.l)||((dx<t)&&(dx>-t)&&(dy<t)&&(dy>-t))) {
-				t=dx*co-si*dy;
-				dy=dy*co+si*dx;
-				dx=t;
-				r=(dx*dx+dy*dy);
-				r=sqrt(r);
-				dx=(90*dx)/r;
-				dy=(90*dy)/r;
+				t=dx*co-si*dy;dy=dy*co+si*dx;dx=t;
+				r=(dx*dx+dy*dy);r=sqrt(r);
+				dx=(90*dx)/r;dy=(90*dy)/r;
 				XDrawArc(d,w,red,mx+dx-5,my+dy-5,10,10,0,64*360);
 				if (tarad->level>=2) {
 					sprintf(txt,"%d",(int)(r/1.28));
@@ -775,8 +624,7 @@ static void draw_me(struct player *p) {
 			sprintf(txt,"Radar x%d",(1<<radad->info[0]));
 			XDrawString(d,w,red,mx-100,my+100+p->d.fh,txt,strlen(txt));
 		}
-		XDrawString(d,w,red,mx-100,my-104,weap_name[p->weap],
-					strlen(weap_name[p->weap]));
+		XDrawString(d,w,red,mx-100,my-104,weap_name[p->weap],strlen(weap_name[p->weap]));
 		if (p->weap) {
 			sprintf(txt,"%d",p->ammo[p->weap]);
 			XDrawString(d,w,red,mx-96,my-100+p->d.fh,txt,strlen(txt));
@@ -791,10 +639,10 @@ static void draw_me(struct player *p) {
 		}
 		if (radad) {
 			switch (radad->info[1]) {
-			case 0:strcpy(txt,"Scanning Level");break;
-			case 1:strcpy(txt,"Scanning Below");break;
-			case -1:strcpy(txt,"Scanning Above");break;
-			default:strcpy(txt,"Scanning Errrr... somewhere");break;
+				case 0:strcpy(txt,"Scanning Level");break;
+				case 1:strcpy(txt,"Scanning Below");break;
+				case -1:strcpy(txt,"Scanning Above");break;
+				default:strcpy(txt,"Scanning Errrr... somewhere");break;
 			}
 			XDrawString(d,w,red,mx-10,my+100+p->d.fh,txt,strlen(txt));
 		}
@@ -805,52 +653,33 @@ static void draw_me(struct player *p) {
 		sprintf(txt,"Rating:%d",(int) p->rating);
 		XDrawString(d,w,red,mx+25,my-102-p->d.fh*3,txt,strlen(txt));
 		if (tarad&&(p->ptarg)) {
-			if (!cansee) {
+			if (!cansee)
 				sprintf(txt,"Target: No Signal");
-			} else {
-				if (p->body.l==p->ptarg->body.l) {
-					sprintf(txt,"Target: At %d,%d -> %s",
-							(int) p->ptarg->body.x/128,
-							(int) p->ptarg->body.y/128,
-							(p->ptarg->flags&FLG_IDENT)?p->ptarg->name:
-							"NO ID");
-				} else {
-					if (radad&&((p->body.l+radad->info[1])==p->ptarg->body.l)) {
-						sprintf(txt,"Target: Located %s -> %s",
-								(radad->info[1]>0)?"Below":"Above",
-								(p->ptarg->flags&FLG_IDENT)?p->ptarg->name:
-								"NO ID");
-					} else {
-						sprintf(txt,"Target: Scanning -> %s",
-								(p->ptarg->flags&FLG_IDENT)?p->ptarg->name:
-								"NO ID");
-					}
-				}
-			}
+			else if (p->body.l==p->ptarg->body.l)
+				sprintf(txt,"Target: At %d,%d -> %s",
+						(int)p->ptarg->body.x/128,(int)p->ptarg->body.y/128,
+						(p->ptarg->flags&FLG_IDENT)?p->ptarg->name:"NO ID");
+			else if (radad&&((p->body.l+radad->info[1])==p->ptarg->body.l))
+				sprintf(txt,"Target: Located %s -> %s",
+						(radad->info[1]>0)?"Below":"Above",
+						(p->ptarg->flags&FLG_IDENT)?p->ptarg->name:"NO ID");
+			else
+				sprintf(txt,"Target: Scanning -> %s",
+						(p->ptarg->flags&FLG_IDENT)?p->ptarg->name:"NO ID");
 			XDrawString(d,w,red,mx-100,my+100+p->d.fh*2,txt,strlen(txt));
 		}
 	}
 	if (p->flags&FLG_STATUS) {
-		int n;
-		char ontop;
-		ontop=rd2(p->body.l,(int)p->body.x/128,(int)p->body.y/128);
-		n=10;
-		if (p->flags&FLG_IDENT)
-			XDrawString(d,w,red,32,p->d.fh*n++,"Identifier",10);
-		if (p->flags&FLG_NOMSG)
-			XDrawString(d,w,red,32,p->d.fh*n++,"No Messages",11);
-		if (p->flags&FLG_NOWEP)
-			XDrawString(d,w,red,32,p->d.fh*n++,"No Slotlist",11);
-		if (p->flags&FLG_CLOAKING)
-			XDrawString(d,w,red,32,p->d.fh*n++,"Cloaking",8);
-		if (p->flags&FLG_ANTICLOAK)
-			XDrawString(d,w,red,32,p->d.fh*n++,"Anti-Cloaking",13);
-		if (p->flags&FLG_INVIS)
-			XDrawString(d,w,red,32,p->d.fh*n++,"Invisible",9);
-		if (p->flags&FLG_MINESWEEP)
-			XDrawString(d,w,red,32,p->d.fh*n++,"Mine Sweeping",13);
-		if ((p->ptarg)&&(tarad))
-			XDrawString(d,w,red,32,p->d.fh*n++,"Tracking",8);
+		char ontop=rd2(p->body.l,(int)p->body.x/128,(int)p->body.y/128);
+		int n=10;
+		if (p->flags&FLG_IDENT) XDrawString(d,w,red,32,p->d.fh*n++,"Identifier",10);
+		if (p->flags&FLG_NOMSG) XDrawString(d,w,red,32,p->d.fh*n++,"No Messages",11);
+		if (p->flags&FLG_NOWEP) XDrawString(d,w,red,32,p->d.fh*n++,"No Slotlist",11);
+		if (p->flags&FLG_CLOAKING) XDrawString(d,w,red,32,p->d.fh*n++,"Cloaking",8);
+		if (p->flags&FLG_ANTICLOAK) XDrawString(d,w,red,32,p->d.fh*n++,"Anti-Cloaking",13);
+		if (p->flags&FLG_INVIS) XDrawString(d,w,red,32,p->d.fh*n++,"Invisible",9);
+		if (p->flags&FLG_MINESWEEP) XDrawString(d,w,red,32,p->d.fh*n++,"Mine Sweeping",13);
+		if ((p->ptarg)&&(tarad)) XDrawString(d,w,red,32,p->d.fh*n++,"Tracking",8);
 		if ((ontop=='L')||(ontop=='l')) {
 			struct lift *l;
 			if ((l=find_lift((int) p->body.x/128,(int) p->body.y/128))) {
@@ -860,8 +689,7 @@ static void draw_me(struct player *p) {
 		}
 		if ((ontop=='X')) {
 			struct teleport *t;
-			if ((t=locate_teleport(p->body.l,(int) p->body.x/128,
-								  (int) p->body.y/128))) {
+			if ((t=locate_teleport(p->body.l,(int)p->body.x/128,(int)p->body.y/128))) {
 				sprintf(txt,"Teleport #%d->%d",t->num,t->dest->num);
 				XDrawString(d,w,red,32,p->d.fh*n++,txt,strlen(txt));
 			}
@@ -870,44 +698,34 @@ static void draw_me(struct player *p) {
 		XDrawString(d,w,red,50,p->d.fh*2,"Thrust",6);
 		XDrawString(d,w,red,50,p->d.fh*3,"Spin",4);
 		XDrawString(d,w,red,50,p->d.fh*5,"Shield",6);
-		DrawMeter(p,50+p->d.fw*7,p->d.fh,WINWID/2,4,p->maxfuel/200,
-				  p->fuel/200);
+		DrawMeter(p,50+p->d.fw*7,p->d.fh,WINWID/2,4,p->maxfuel/200,p->fuel/200);
 		DrawMeter(p,50+p->d.fw*7,p->d.fh*2,WINWID/2,4,100,p->thrust);
 		DrawMeter(p,50+p->d.fw*7,p->d.fh*3,WINWID/2,4,100,p->spin);
-		DrawMeter(p,50+p->d.fw*7,p->d.fh*5,WINWID/2,4,p->maxshield/10,
-				  p->shield/10);
+		DrawMeter(p,50+p->d.fw*7,p->d.fh*5,WINWID/2,4,p->maxshield/10,p->shield/10);
 	}
-	if (!(p->flags&FLG_NOMSG)) {
-		int i;
-		for (i=0;i<4;i++)
-			XDrawString(d,w,blue,16,WINHGT-p->d.fh*(i+1),p->msg[i],
-						strlen(p->msg[i]));
-	}
+	if (!(p->flags&FLG_NOMSG)) for (int i=0;i<4;i++)
+		XDrawString(d,w,blue,16,WINHGT-p->d.fh*(i+1),p->msg[i],strlen(p->msg[i]));
 	{
-		int i;
-		GC sl;
 		if (!(p->flags&FLG_NOWEP)) {
 			XDrawString(d,w,dgrey,mx+110,p->d.fh*(10),"#",1);
 			XDrawString(d,w,dgrey,mx+140,p->d.fh*(10),"Contains",8);
-			for (i=0;i<9;i++)
-				{
-					sl=(p->slot==(i+1))?p->d.gc_fred:dgrey;
-					txt[0]='1'+i;
-					XDrawString(d,w,sl,mx+110,p->d.fh*(i+12),txt,1);
-					if (p->slotobj[i])
-						XDrawString(d,w,sl,mx+123,p->d.fh*(i+12),
-									(p->slotobj[i]->flags&OBJ_F_ARM)?"A":"D",
-									1);
-					switch(p->slots[i]) {
+			for (int i=0;i<9;i++) {
+				GC sl=(p->slot==(i+1))?p->d.gc_fred:dgrey;
+				txt[0]='1'+i;
+				XDrawString(d,w,sl,mx+110,p->d.fh*(i+12),txt,1);
+				if (p->slotobj[i])
+					XDrawString(d,w,sl,mx+123,p->d.fh*(i+12),
+							(p->slotobj[i]->flags&OBJ_F_ARM)?"A":"D",1);
+				switch(p->slots[i]) {
 					case OBJ_EMPTY:strcpy(txt,"Slot Empty");break;
 					case OBJ_MINE_TRIG:strcpy(txt,"Mine (Trig)");break;
 					case OBJ_MINE_TIME:strcpy(txt,"Mine (Time)");break;
 					case OBJ_MINE_PROX:strcpy(txt,"Mine (Prox)");break;
 					case OBJ_MINE_VELY:strcpy(txt,"Mine (Vely)");break;
 					case OBJ_MINE_SMART:strcpy(txt,"Mine (Smart)");break;
-					}
-					XDrawString(d,w,sl,mx+140,p->d.fh*(i+12),txt,strlen(txt));
 				}
+				XDrawString(d,w,sl,mx+140,p->d.fh*(i+12),txt,strlen(txt));
+			}
 		}
 		if ((p->slot)&&(p->slots[p->slot-1]!=OBJ_EMPTY)) {
 			switch(p->slots[p->slot-1]) {
@@ -924,13 +742,10 @@ static void draw_me(struct player *p) {
 			case 4:strcat(txt," <Extra>");break;
 			}
 			if (p->slotobj[p->slot-1]) {
-				if (p->slotobj[p->slot-1]->flags&OBJ_F_ARM) {
+				if (p->slotobj[p->slot-1]->flags&OBJ_F_ARM)
 					strcat(txt," (Armed)");
-				} else {
-					if (p->slotobj[p->slot-1]->flags&OBJ_F_ARMING) {
-						strcat(txt," (Arming)");
-					}
-				}
+				else if (p->slotobj[p->slot-1]->flags&OBJ_F_ARMING)
+					strcat(txt," (Arming)");
 				XDrawString(d,w,red,mx-100,my+100+p->d.fh*3,txt,strlen(txt));
 			} else {
 				if (p->mode[p->slot-1])
@@ -941,26 +756,17 @@ static void draw_me(struct player *p) {
 		}
 	}
 	if (find_addon(p->firstadd,ADD_COMPASS)) {
-		int dx,dy;
-		dx=-25*si;
-		dy=-25*co;
+		int dx=-25*si, dy=-25*co;
 		XDrawLine(d,w,red,25+dx,25+dy,25,25);
-		XDrawArc(d,w,blue,0,0,51,51,(int) ((p->rot+180)*64)%(360*64),
-				 (int) 180*64);
+		XDrawArc(d,w,blue,0,0,51,51,(int) ((p->rot+180)*64)%(360*64),(int)180*64);
 	}
 }
 
-extern void DrawMeter(struct player *p,int x,int y,int l,int h,int max,int val)
-{
-	Display *d;
-	Pixmap w;
-	GC red, white, grey;
+extern void DrawMeter(struct player *p,int x,int y,int l,int h,int max,int val) {
 	char v[32];
-	d=p->d.disp;
-	w=p->d.backing;
-	red=p->d.gc_red;
-	white=p->d.gc_white;
-	grey=p->d.gc_grey;
+	Display *d=p->d.disp;
+	Pixmap w=p->d.backing;
+	GC red=p->d.gc_red,white=p->d.gc_white,grey=p->d.gc_grey;
 	sprintf(v,"%d",val);
 	XDrawString(d,w,red,x+l+10,y,v,strlen(v));
 	y=y-p->d.fh/2+2;
@@ -973,70 +779,53 @@ extern void DrawMeter(struct player *p,int x,int y,int l,int h,int max,int val)
 	XDrawLine(d,w,white,x+l,y+h,x+l,y-h);
 }
 
-static void draw_others(struct player *p,struct player *me)
-{
-	Display *d;
-	Pixmap w;
+static void draw_others(struct player *p) {
 	int mx,my;
 	int cx,cy;
-	GC red,blue,white;
-	double ms,mc;
 	int rx,ry,dr,rd;
 	struct player *o;
 	struct trolley *tr;
 	char txt[256];
-	d=p->d.disp;
-	w=p->d.backing;
-	red=p->d.gc_red;
-	blue=p->d.gc_blue;
-	white=p->d.gc_white;
-	ms=-sn[(int) p->rot];
-	mc=cs[(int) p->rot];
-	for (o=playone;o;o=o->next)
-		if (!(o->flags&FLG_INVIS)&&(o->body.on)&&
-			(o!=me)&&(o->body.l==p->body.l)) {
-			int n;
-			n=1;
-			mx=(o->body.x-p->body.x);
-			my=(o->body.y-p->body.y);
-			if (n) {
-				int l;
-				dr=(int) (o->rot-p->rot+720)%360;
-				cx=WINWID/2+mx*mc-my*ms;
-				cy=WINHGT/2+my*mc+mx*ms;
-				rd=o->body.radius+2*o->body.height;
-				rx=rd*3*sn[dr]/4;
-				ry=-rd*3*cs[dr]/4;
-				XDrawArc(d,w,white,cx-rd,cy-rd,rd*2,rd*2,0,360*64);
-				XDrawArc(d,w,white,cx-rd/4,cy-rd/4,rd/2,rd/2,0,360*64);
-				XDrawLine(d,w,white,cx+rx/3,cy+ry/3,cx+rx,cy+ry);
-				if (o->flags&FLG_IDENT) {
-					l=strlen(o->name);
-					XDrawString(d,w,white,cx-p->d.tfont->max_bounds.width*l/2,
-								cy+rd+8+p->d.tfont->max_bounds.ascent,
-								o->name,l);
-				}
-				sprintf(txt,"%d",o->rating);
-				l=strlen(txt);
-				if (p->rating<=(o->rating*2)) {
-					XDrawString(d,w,white,cx-p->d.tfont->max_bounds.width*l/2,
-								cy-rd-8-p->d.tfont->max_bounds.descent,
-								txt,l);
-				} else {
-					XDrawString(d,w,p->d.gc_fred,
-								cx-p->d.tfont->max_bounds.width*l/2,
-								cy-rd-8-p->d.tfont->max_bounds.descent,
-								txt,l);
-				}
+	Display *d=p->d.disp;
+	Pixmap w=p->d.backing;
+	GC red=p->d.gc_red,blue=p->d.gc_blue,white=p->d.gc_white;
+	double ms=-sn[(int) p->rot], mc=cs[(int) p->rot];
+	for (o=playone;o;o=o->next) if (!(o->flags&FLG_INVIS)&&(o->body.on)&&
+				(o!=me)&&(o->body.l==p->body.l)) {
+		int n;
+		n=1;
+		mx=(o->body.x-p->body.x); my=(o->body.y-p->body.y);
+		if (n) {
+			int l;
+			dr=(int) (o->rot-p->rot+720)%360;
+			cx=WINWID/2+mx*mc-my*ms; cy=WINHGT/2+my*mc+mx*ms;
+			rd=o->body.radius+2*o->body.height;
+			rx=rd*3*sn[dr]/4; ry=-rd*3*cs[dr]/4;
+			XDrawArc(d,w,white,cx-rd,cy-rd,rd*2,rd*2,0,360*64);
+			XDrawArc(d,w,white,cx-rd/4,cy-rd/4,rd/2,rd/2,0,360*64);
+			XDrawLine(d,w,white,cx+rx/3,cy+ry/3,cx+rx,cy+ry);
+			if (o->flags&FLG_IDENT) {
+				l=strlen(o->name);
+				XDrawString(d,w,white,cx-p->d.tfont->max_bounds.width*l/2,
+							cy+rd+8+p->d.tfont->max_bounds.ascent,
+							o->name,l);
 			}
+			sprintf(txt,"%d",o->rating);
+			l=strlen(txt);
+			if (p->rating<=(o->rating*2))
+				XDrawString(d,w,white,cx-p->d.tfont->max_bounds.width*l/2,
+							cy-rd-8-p->d.tfont->max_bounds.descent,txt,l);
+			else
+				XDrawString(d,w,p->d.gc_fred,
+							cx-p->d.tfont->max_bounds.width*l/2,
+							cy-rd-8-p->d.tfont->max_bounds.descent,txt,l);
 		}
+	}
 	for (tr=firsttrol;tr;tr=tr->next) {
 		if (tr->body.l==p->body.l) {
 			int px,py,rd;
-			mx=(tr->body.x-p->body.x);
-			my=(tr->body.y-p->body.y);
-			cx=WINWID/2+mx*mc-my*ms;
-			cy=WINHGT/2+my*mc+mx*ms;
+			mx=(tr->body.x-p->body.x); my=(tr->body.y-p->body.y);
+			cx=WINWID/2+mx*mc-my*ms; cy=WINHGT/2+my*mc+mx*ms;
 			rd=tr->body.radius;
 			XDrawArc(d,w,white,cx-rd,cy-rd,rd*2,rd*2,tr->ang*64,120*64);
 			XDrawArc(d,w,red,cx-rd,cy-rd,rd*2,rd*2,((tr->ang+120)%360)*64,120*64);
@@ -1053,35 +842,23 @@ static void draw_others(struct player *p,struct player *me)
 }
 
 static void draw_falling(struct player *p) {
-	Display *d;
-	Pixmap w;
-	int mx,my;
-	int rd;
-	GC white;
-	d=p->d.disp;
-	w=p->d.backing;
-	white=p->d.gc_white;
-	mx=WINWID/2;my=WINHGT/2;
-	rd=800/((p->body.fallen++)+20);
+	Display *d=p->d.disp;
+	Pixmap w=p->d.backing;
+	GC white=p->d.gc_white;
+	int mx=WINWID/2,my=WINHGT/2;
+	int rd=800/((p->body.fallen++)+20);
 	XFillRectangle(d,w,p->d.gc_black,0,0,WINWID,WINHGT);
 	XDrawRectangle(d,w,p->d.gc_blue,mx-100,my-100,200,200);
 	XDrawArc(d,w,white,mx-rd/8,my-rd/8,rd/4,rd/4,0,360*64);
 	XDrawArc(d,w,white,mx-rd/2,my-rd/2,rd,rd,0,360*64);
 	XDrawLine(d,w,white,mx,my-rd/16,mx,my-3*rd/8);
-	if (!(p->flags&FLG_NOMSG)) {
-		int i;
-		for (i=0;i<4;i++)
-			XDrawString(d,w,p->d.gc_blue,16,WINHGT-p->d.fh*(i+1),p->msg[i],
-						strlen(p->msg[i]));
-	}
+	if (!(p->flags&FLG_NOMSG)) for (int i=0;i<4;i++)
+		XDrawString(d,w,p->d.gc_blue,16,WINHGT-p->d.fh*(i+1),p->msg[i],strlen(p->msg[i]));
 }
 
 
 static void draw_msg(struct player *p) {
-	if (!(p->flags&FLG_NOMSG)) {
-		int i;
-		for (i=0;i<4;i++)
-			XDrawString(p->d.disp,p->d.backing,p->d.gc_blue,16,
-						WINHGT-p->d.fh*(i+1),p->msg[i],strlen(p->msg[i]));
-	}
+	if (!(p->flags&FLG_NOMSG)) for (int i=0;i<4;i++)
+		XDrawString(p->d.disp,p->d.backing,p->d.gc_blue,16,
+					WINHGT-p->d.fh*(i+1),p->msg[i],strlen(p->msg[i]));
 }
