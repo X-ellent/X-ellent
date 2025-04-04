@@ -530,7 +530,7 @@ static void draw_me(struct player *p) {
 	Display *d=p->d.disp;
 	Pixmap w=p->d.backing;
 	GC red=p->d.gc_red,blue=p->d.gc_blue,white=p->d.gc_white;
-    GC yellow=p->d.gc_yellow,dgrey=p->d.gc_dgrey;
+	GC yellow=p->d.gc_yellow,dgrey=p->d.gc_dgrey;
 	int mx=WINWID/2,my=WINHGT/2;
 	int rd=p->body.radius+2*p->body.height;
 	XDrawRectangle(d,w,(p->fuel<p->fuelmin)?red:blue,mx-100,my-100,200,200);

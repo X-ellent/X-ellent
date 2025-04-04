@@ -174,7 +174,7 @@ static void get_mega_bonus(struct player *p) {
 		get_mega_bogus(p);
 		return;
 	}
-		get_bonus(p);
+	get_bonus(p);
 }
 
 static void get_mega_bogus(struct player *p) {
