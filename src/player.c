@@ -139,34 +139,23 @@ int setup_player() {
 				break;
 			}
 	}
-	p->rot=0;p->rv=0;p->rt=0;
+	p->rot=0;
 	p->body.mass=500;
 	if ((p->homefuel+p->fuel)<MIN_FUEL) p->homefuel=MIN_FUEL;
 	p->home->owner=p;
-	p->body.x=p->home->x*128+64;
-	p->body.y=p->home->y*128+64;
-	p->body.l=p->home->l;
-	p->body.xv=0;p->body.yv=0;p->body.xf=0;p->body.yf=0;
+	p->body.x=p->home->x*128+64; p->body.y=p->home->y*128+64; p->body.l=p->home->l;
 /*	p->range=p->maxrng;*/
 	p->qflags=0;
-	p->playing=-1;
+	p->playing=1;
 	remove_body(&p->body);
 	p->flags=FLG_HOME;
-	p->slot=0;
+	p->slot=p->ptarg=p->scount=p->delay=p->onground=0;
 	p->immune=DEATH_IMMUNE;
-	p->ptarg=0;
-	p->scount=0;
-	p->delay=0;
-	p->onground=0;
-	p->msg[0][0]=0;
-	p->msg[1][0]=0;
-	p->msg[2][0]=0;
-	p->msg[3][0]=0;
+	p->msg[0][0]=p->msg[1][0]=p->msg[2][0]=p->msg[3][0]=0;
 	for (int i=0;i<map.depth;i++) p->mapmem[i]=0;
 	players++;
 
 	/* Set configurable things */
-
 	p->flags|=Setup_flag(p,"ident",FLG_IDENT,0,1);
 	p->flags|=Setup_flag(p,"status",FLG_STATUS,0,1);
 	p->flags|=Setup_flag(p,"message",0,FLG_NOMSG,1);
