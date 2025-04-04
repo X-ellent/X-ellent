@@ -787,35 +787,31 @@ extern void DrawMeter(struct player *p,int x,int y,int l,int h,int max,int val) 
 }
 
 static void draw_others(struct player *p) {
-	int mx,my;
-	int cx,cy;
-	int rx,ry,dr,rd;
+	int cx,cy,rx,ry,dr,rd;
 	struct player *o;
 	struct trolley *tr;
 	char txt[256];
 	Display *d=p->d.disp;
 	Pixmap w=p->d.backing;
-	GC red=p->d.gc_red,blue=p->d.gc_blue,white=p->d.gc_white;
+	GC red=p->d.gc_red,blue=p->d.gc_blue,white=p->d.gc_white,yellow=p->d.gc_yellow;
 	double ms=-sn[(int) p->rot], mc=cs[(int) p->rot];
 	for (o=playone;o;o=o->next) if (!(o->flags&FLG_INVIS)&&(o->body.on)&&
 				(o!=p)&&(o->body.l==p->body.l)) {
-		int n;
-		n=1;
-		mx=(o->body.x-p->body.x); my=(o->body.y-p->body.y);
+		int n=1;
+		int mx=(o->body.x-p->body.x), my=(o->body.y-p->body.y);
 		if (n) {
 			int l;
-			dr=(int) (o->rot-p->rot+720)%360;
+			dr=(int)(o->rot-p->rot+720)%360;
 			cx=WINWID/2+mx*mc-my*ms; cy=WINHGT/2+my*mc+mx*ms;
 			rd=o->body.radius+2*o->body.height;
 			rx=rd*3*sn[dr]/4; ry=-rd*3*cs[dr]/4;
-			XDrawArc(d,w,white,cx-rd,cy-rd,rd*2,rd*2,0,360*64);
 			XDrawArc(d,w,white,cx-rd/4,cy-rd/4,rd/2,rd/2,0,360*64);
+			XDrawArc(d,w,o->immune?yellow:white,cx-rd,cy-rd,rd*2,rd*2,0,360*64);
 			XDrawLine(d,w,white,cx+rx/3,cy+ry/3,cx+rx,cy+ry);
 			if (o->flags&FLG_IDENT) {
 				l=strlen(o->name);
 				XDrawString(d,w,white,cx-p->d.tfont->max_bounds.width*l/2,
-							cy+rd+8+p->d.tfont->max_bounds.ascent,
-							o->name,l);
+							cy+rd+8+p->d.tfont->max_bounds.ascent,o->name,l);
 			}
 			sprintf(txt,"%d",o->rating);
 			l=strlen(txt);
@@ -828,22 +824,18 @@ static void draw_others(struct player *p) {
 							cy-rd-8-p->d.tfont->max_bounds.descent,txt,l);
 		}
 	}
-	for (tr=firsttrol;tr;tr=tr->next) {
-		if (tr->body.l==p->body.l) {
-			int px,py,rd;
-			mx=(tr->body.x-p->body.x); my=(tr->body.y-p->body.y);
-			cx=WINWID/2+mx*mc-my*ms; cy=WINHGT/2+my*mc+mx*ms;
-			rd=tr->body.radius;
-			XDrawArc(d,w,white,cx-rd,cy-rd,rd*2,rd*2,tr->ang*64,120*64);
-			XDrawArc(d,w,red,cx-rd,cy-rd,rd*2,rd*2,((tr->ang+120)%360)*64,120*64);
-			XDrawArc(d,w,blue,cx-rd,cy-rd,rd*2,rd*2,((tr->ang+240)%360)*64,120*64);
-			for (o=tr->holder;o;o=o->nexthold) {
-				mx=(o->body.x-p->body.x);
-				my=(o->body.y-p->body.y);
-				px=WINWID/2+mx*mc-my*ms;
-				py=WINHGT/2+my*mc+mx*ms;
-				XDrawLine(d,w,p->d.gc_yellow,cx,cy,px,py);
-			}
+	for (tr=firsttrol;tr;tr=tr->next) if (tr->body.l==p->body.l) {
+		int mx=(tr->body.x-p->body.x), my=(tr->body.y-p->body.y);
+		cx=WINWID/2+mx*mc-my*ms; cy=WINHGT/2+my*mc+mx*ms;
+		int rd=tr->body.radius;
+		XDrawArc(d,w,white,cx-rd,cy-rd,rd*2,rd*2,tr->ang*64,120*64);
+		XDrawArc(d,w,red,cx-rd,cy-rd,rd*2,rd*2,((tr->ang+120)%360)*64,120*64);
+		XDrawArc(d,w,blue,cx-rd,cy-rd,rd*2,rd*2,((tr->ang+240)%360)*64,120*64);
+		for (o=tr->holder;o;o=o->nexthold) {
+			mx=(o->body.x-p->body.x);
+			my=(o->body.y-p->body.y);
+			int px=WINWID/2+mx*mc-my*ms, py=WINHGT/2+my*mc+mx*ms;
+			XDrawLine(d,w,p->d.gc_yellow,cx,cy,px,py);
 		}
 	}
 }
