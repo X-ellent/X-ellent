@@ -31,12 +31,6 @@ char *own_name[MAX_OTHERS];
 char own_dam[MAX_OTHERS];
 int frame = 0, players = 0;
 
-/* From terminal.h */
-struct label *firstlabel = NULL;
-int startpc = 0;
-struct login tty[TERM_NUMBER];
-char rom[TERM_ROMSIZE];
-
 /* From mymath.h */
 double sintable[720];
 double *sn = NULL, *cs = NULL;

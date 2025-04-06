@@ -36,7 +36,6 @@ static int my_error_handler(Display *d) {
 	return 0;
 }
 
-
 static int my_other_error_handler(Display *d,XErrorEvent *e) {
 	DL("XErrorHandler called!!!! Something very nasty happened");
 	fprintf(stderr,"Serial %d Error %d Request %d Minor %d",(int) e->serial,
@@ -48,7 +47,7 @@ static int my_other_error_handler(Display *d,XErrorEvent *e) {
 	return 0;
 }
 
-extern void bloody_errors(struct player *p) {
+void bloody_errors(struct player *p) {
 	char txt[1024];
 	DL("Emergency code called to chuck off offending player");
 	XAutoRepeatOn(p->d.disp);
@@ -56,14 +55,10 @@ extern void bloody_errors(struct player *p) {
 	p->connected=0;
 	players--;
 	if (!p->body.on) {
-		if (p->flags&FLG_SHOPPING) {
-			add_body(&p->body);
-		}
+		if (p->flags&FLG_SHOPPING) add_pbody(p);
 		if (p->flags&FLG_TERMINAL) {
-			add_body(&p->body);
-			p->term->p=0;
-			p->term=0;
-			return;
+			exit_term(p);
+			//return; // - still should global message
 		}
 	}
 	p->flags&=~FLG_DEADCLR;
@@ -71,15 +66,14 @@ extern void bloody_errors(struct player *p) {
 	global_message(txt);
 }
 
-extern void setup_error_handler() {
+void setup_error_handler() {
 	DL("Setting up error handler for X things");
 	jumpable=0;
 	XSetIOErrorHandler(my_error_handler);
 	XSetErrorHandler(my_other_error_handler);
 }
 
-extern int init_player_display(struct player *p,char *d)
-{
+int init_player_display(struct player *p,char *d) {
 	unsigned long vm;
 	int fail;
 	/*    DL("Initialising player display");*/
@@ -241,7 +235,7 @@ extern int init_player_display(struct player *p,char *d)
 	return 0;
 }
 
-extern void shutdown_display(struct player *p) {
+void shutdown_display(struct player *p) {
 	int y;
 	DL("Shutting down display");
 	y=jumpable;
@@ -277,7 +271,7 @@ extern void shutdown_display(struct player *p) {
 	return;
 }
 
-extern void Setup_color(struct player *p,char *dname,char *dcol) {
+void Setup_color(struct player *p,char *dname,char *dcol) {
 	char *str;
 	char err[1024];
 	if ((str=(char *) ctquery(dname))) {
@@ -290,11 +284,10 @@ extern void Setup_color(struct player *p,char *dname,char *dcol) {
 					 &ex,&xc);
 }
 
-extern int Setup_value(struct player *p,char *dname,int val,int min,int max) {
+int Setup_value(struct player *p,char *dname,int val,int min,int max) {
 	char *str;
-	int v;
 	if ((str=(char *) ctquery(dname))) {
-		v=atoi(str);
+		int v=atoi(str);
 		if (v<min) v=min;
 		if (v>max) v=max;
 		return v;
@@ -302,11 +295,10 @@ extern int Setup_value(struct player *p,char *dname,int val,int min,int max) {
 	return val;
 }
 
-extern int Setup_flag(struct player *p,char *dname,int on,int off,int def) {
+int Setup_flag(struct player *p,char *dname,int on,int off,int def) {
 	char *str;
-	int v;
-	v=def?on:off;
-	if ((str=(char *) ctquery(dname))) {
+	int v=def?on:off;
+	if ((str=(char*) ctquery(dname))) {
 		if (strcmp(str,"on")==0) v=on;
 		if (strcmp(str,"yes")==0) v=on;
 		if (strcmp(str,"off")==0) v=off;
@@ -315,9 +307,8 @@ extern int Setup_flag(struct player *p,char *dname,int on,int off,int def) {
 	return v;
 }
 
-extern void Setup_string(struct player *p,char *dname,char *s,int l) {
+void Setup_string(struct player *p,char *dname,char *s,int l) {
 	char *str;
-	if ((str=(char *) ctquery(dname)))
-		strncpy(s,str,l);
+	if ((str=(char*) ctquery(dname))) strncpy(s,str,l);
 }
 
