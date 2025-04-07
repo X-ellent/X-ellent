@@ -222,14 +222,11 @@ int main(int argc,char *argv[]) {
 	}
 	for (i=0;i<64;i++) map.tinymap[i]=&unknown;
 	load_map();
-	for (i=0;i<6;i++) { levs[i]=i; change=-1; }
+	for (i=0;i<6;i++) { levs[i]=i;change=1; }
 	connect_to_socket(serv,8766);
 	tsend((sprintf(str,"%s\n",name),str));
 	if (argc>2) tsend((sprintf(str,"%s\n",argv[2]),str));
-	else {
-		fprintf(stderr,"I require a password\n");
-		exit(1);
-	}
+	else tsend("\n");
 	tsend("*SYSSTATUS\n");
 	tsend("*SYSLOCATE ON\n");
 	tsend("*SYSHOME\n");
@@ -239,8 +236,7 @@ int main(int argc,char *argv[]) {
 	exit(0);
 }
 
-static void connect_to_socket(char*serv,int p)
-{
+static void connect_to_socket(char*serv,int p) {
 	struct sockaddr_in name;
 	struct hostent *h;
 	if (!(h=gethostbyname(serv))) {
@@ -262,8 +258,7 @@ static void connect_to_socket(char*serv,int p)
 }
 
 static void tsend(char *s) {
-	int l,n=0;
-	l=strlen(s);
+	int l=strlen(s),n=0;
 	while(n<l) n+=write(fd,&s[n],l-n);
 }
 
@@ -448,14 +443,12 @@ static void process_server_input() {
 }
 
 void data_input(char *s) {
-	char *ss,*sss;
-	char tempname[32];
-	double x,y; int n;
+	char *ss,*sss,tempname[32];
+	double x,y;
 	if (strncmp(s,"TARGET ",7)==0) {
 		ss=strchr(&s[7],' ');
 		if (!ss) return;
-		*ss=0;
-		ss++;
+		*ss=0;ss++;
 		get_location(&targ,ss);
 		return;
 	}
@@ -467,7 +460,7 @@ void data_input(char *s) {
 		myrot=atoi(&s[7]);
 		get_location(&me,ss);
 		draw_map(me.l);
-		int lm,ln;
+		int n,lm,ln;
 		if ((lm=strlen(myname))!=(ln=strlen(newname))) {
 			if (lm>ln) {
 				n=random()%lm;
@@ -500,7 +493,7 @@ void data_input(char *s) {
 		*sss=0;
 		sss++;
 		get_location(&me,ss);
-		n=atoi(sss);
+		int n=atoi(sss);
 		x=me.x+n*128*sn[myrot]/100;
 		y=me.y-n*128*cs[myrot]/100;
 		spot.x=x;spot.y=y;
@@ -760,12 +753,8 @@ void draw_map(int n) {
 		scribble_map(n,&back);
 		change=1;
 		displev=n;
-		if (n>0) {
-			levs[0]=n-1;change=1;
-		}
-		if (n<(map.dep-1)) {
-			levs[2]=n+1;change=1;
-		}
+		if (n>0) {levs[0]=n-1;change=1;}
+		if (n<(map.dep-1)) {levs[2]=n+1;change=1;}
 	}
 	if (levs[1]==displev) {
 		for(levs[1]=(levs[1]+1)&63;!map.data[levs[1]];levs[1]=(levs[1]+1)&63);
@@ -851,7 +840,6 @@ void draw_map(int n) {
 	change=0;
 	while (XPending(disp)) {
 		struct lift *l;
-		struct teleport *t;
 		int lvl=-1; XEvent xev;
 		XNextEvent(disp,&xev);
 		switch(xev.xany.type) {
@@ -975,10 +963,7 @@ void load_map() {
 	oc=cc;cc=strchr(cc,' ');*cc++=0;map.hgt=atoi(oc);
 	oc=cc;cc=strchr(cc,' ');*cc++=0;map.dep=atoi(oc);
 	int n,x,y;
-	while(1) {
-		*inp=0;
-		if(!fgets(inp,1023,mf)||!strcmp(inp,"END\n")) break;
-		cc=inp;
+	while(*inp=0,fgets(inp,1023,mf),cc=inp,(*inp)&&(strcmp(inp,"END\n"))) {
 		n=atoi(inp);
 		int sx=MAPWID/map.wid,sy=MAPWID/map.wid;
 		map.sqr=(sx<sy)?sx:sy;
@@ -1050,8 +1035,7 @@ void scribble_map(int n,struct mypixmap *p) {
 			if (rd(n+1,x,y)!=' ') {
 				XFillRectangle(disp,p->pix,grey,cx,cy,w,w);
 				if ((rd(n+1,x,y)=='l')||(rd(n+1,x,y)=='L'))
-					XFillRectangle(disp,p->pix,red,cx+lw,cy+lw,
-								   hw-lw,hw-lw);
+					XFillRectangle(disp,p->pix,red,cx+lw,cy+lw,hw-lw,hw-lw);
 			}
 			break;
 		case 'H':

@@ -31,11 +31,6 @@ double *sn = NULL, *cs = NULL;
 /* From xbits.h */
 XPoint pc[PCACHE];
 
-/* From object.h */
-int obj_free = 0, obj_used = 0;
-struct object *obj_first = NULL, *obj_freepool = NULL;
-struct trolley *firsttrol = NULL;
-
 /* From particle.h */
 int part_count = 0;
 struct particle *parts[MAXDEPTH], *part_free = NULL;
@@ -44,9 +39,6 @@ struct explosion *bang_first = NULL, *bang_free = NULL;
 /* From xsetup.h */
 int jumpable = 0;
 jmp_buf jmpenv;
-
-/* From newton.h */
-struct body *firstbody = NULL;
 
 /* From turret.h */
 struct turret *firstturret = NULL;

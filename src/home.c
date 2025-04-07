@@ -118,11 +118,13 @@ void do_home(struct player *p) {
 	int f,c=0;
 	if (p->flags&FLG_FUELLING) {
 		if (p->flags&FLG_CTRL) {
-			c=1; f=p->fuel;
-			if (f>p->maxfuel/100) f=p->maxfuel/100;
-			p->fuel-=f; p->homefuel+=f;
-			if (p->homefuel>p->maxfuel*4) p->homefuel=p->maxfuel*4;
-		} else {
+			if (p->homefuel<p->maxfuel*4) {
+				c=1; f=p->fuel;
+				if (f>p->maxfuel/100) f=p->maxfuel/100;
+				p->fuel-=f; p->homefuel+=f;
+				if (p->homefuel>p->maxfuel*4) p->homefuel=p->maxfuel*4;
+			}
+		} else if (p->fuel<p->maxfuel) {
 			c=1; f=p->homefuel;
 			if (f>2000) f=2000;
 			p->fuel+=f; p->homefuel-=f;

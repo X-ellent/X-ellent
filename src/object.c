@@ -29,6 +29,9 @@ static int mygets(FILE *pd);
 
 static char inbuf[1024];
 static struct trolley *spottrol;
+struct trolley *firsttrol = NULL;
+struct object* obj_first = obj_freepool = NULL;
+int obj_free = obj_used = 0;
 
 struct object *alloc_object() {
 	struct object *p;

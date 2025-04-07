@@ -25,6 +25,8 @@
 #include "player.h"
 #include "turret.h"
 
+struct body *firstbody = NULL;
+
 void add_body(struct body *b) {
 	if (b->on) return;
 	b->next=firstbody;
@@ -45,9 +47,7 @@ void remove_body(struct body *b) {
 	if (b->last) b->last->next=b->next;
 	else firstbody=b->next;
 	if (b->next) b->next->last=b->last;
-	b->last=0;
-	b->next=0;
-	b->on=0;
+	b->last=b->next=b->on=0;
 }
 
 int is_stopped(struct body *b) {

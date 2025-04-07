@@ -119,9 +119,7 @@ void explode_mine(struct object *o) {
 			obj_freepool=o;
 		}
 	}
-	if (o->type==OBJ_BONUS) {
-		vape_bonus(o);return;
-	}
+	if (o->type==OBJ_BONUS) {vape_bonus(o);return;}
 	if (o->l>=map.depth) return;
 	explode(o->l,(int)o->x,(int)o->y,5+o->charge,400*o->charge,20*o->charge,o->has.owner);
 }
