@@ -43,7 +43,7 @@ int termi;
 char currentcommand[64];
 int  commandline;
 
-extern int main(int argc,char *argv[]) {
+int main(int argc,char *argv[]) {
 	char *name;
 	char *serv;
 	serv="shuffle";
@@ -52,9 +52,8 @@ extern int main(int argc,char *argv[]) {
 	if (!name) name="???";
 	connect_to_socket(serv,8766);
 	tsend((sprintf(str,"%s\n",name),str));
-	if (argc>2) {
-		tsend(sprintf(str,"%s\n",argv[2]));
-	} else {
+	if (argc>2) tsend(sprintf(str,"%s\n",argv[2]));
+	else {
 		fprintf(stderr,"I require a password\n");
 		exit(1);
 	}
@@ -71,7 +70,7 @@ static void connect_to_socket(char*serv,int p)
 		fprintf(stderr,"Cannot find host '%s'\n",serv);
 		exit(1);
 	}
-	bzero((char *) &name, sizeof(struct sockaddr_in));
+	bzero((char*) &name, sizeof(struct sockaddr_in));
 	name.sin_family=AF_INET;
 	name.sin_port=p;
 	name.sin_addr.S_un.S_un_b.s_b1=h->h_addr_list[0][0];
@@ -82,35 +81,29 @@ static void connect_to_socket(char*serv,int p)
 		fprintf(stderr,"Could not create a socket!\n");
 		exit(1);
 	}
-	if (connect(fd,&name,sizeof(struct sockaddr_in))) {
+	if (connect(fd,(struct sockaddr *)&name,sizeof(struct sockaddr_in))) {
 		fprintf(stderr,"Could not connect to server on '%s'\n",serv);
 		exit(1);
 	}
 }
 
 static void tsend(char *s) {
-	int l,n;
+	int l,n=0;
 	l=strlen(s);
-	n=0;
-	while(n<l)
-		n+=write(fd,&s[n],l-n);
+	while(n<l) n+=write(fd,&s[n],l-n);
 }
 
 static void do_cool_thing() {
-	int fmask;
-	int tmask;
+	fd_set fmask, tmask;
 	int j;
-	servi=0;
-	termi=0;
-	servin[0]=0;
-	termin[0]=0;
+	servi=termi=servin[0]=termin[0]=0;
 	fmask=1|(1<<fd);
 	while(1) {
 		tmask=fmask;
 		j=select(32,&tmask,0,0,0);
 		if (j>0) {
-			if (tmask&1) do_terminal_input();
-			if (tmask&(1<<fd)) do_server_input();
+			if (FD_ISSET(0, &tmask)) do_terminal_input();
+			if (FD_ISSET(fd, &tmask)) do_server_input();
 		}
 	}
 }
@@ -158,18 +151,14 @@ static void draw_line(int x1,int y1,int x2,int y2) {
 	if (y1>120) return;
 	if (y2<-120) return;
 	if (y2>120) return;
-	x1+=132;
-	y1+=132;
-	x2+=132;
-	y2+=132;
+	x1+=132;y1+=132;x2+=132;y2+=132;
 	drawbuf[bp++]=drawm+64;
 	drawbuf[bp++]=x1;
 	drawbuf[bp++]=y1;
 	drawbuf[bp++]=x2;
 	drawbuf[bp++]=y2;
 	drawm=(drawm+1)%64;
-	drawn++;
-	if (drawn>19) {
+	if (++drawn>19) {
 		drawbuf[bp]='\n';
 		drawbuf[bp+1]=0;
 		tsend(drawbuf);
@@ -212,7 +201,7 @@ static void process_server_input() {
 	}
 }
 
-static void data_input(char *s) {
+void data_input(char *s) {
 	fprintf(stderr,"  Exception -> %s\n",s);
 }
 

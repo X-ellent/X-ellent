@@ -211,9 +211,7 @@ int main(int argc,char *argv[]) {
 	if (argc>1) serv=argv[1];
 	name=getpwuid(getuid())->pw_name;
 	if (!name) name="???";
-	if (argc>3) {
-		name=argv[3];
-	}
+	if (argc>3) name=argv[3];
 	build_sintable();
 	home=getenv("HOME");
 	if (home && chdir(home) != 0)
@@ -224,14 +222,10 @@ int main(int argc,char *argv[]) {
 	}
 	for (i=0;i<64;i++) map.tinymap[i]=&unknown;
 	load_map();
-	for (i=0;i<6;i++) {
-		levs[i]=i;
-		change=-1;
-	}
+	for (i=0;i<6;i++) { levs[i]=i; change=-1; }
 	connect_to_socket(serv,8766);
 	tsend((sprintf(str,"%s\n",name),str));
-	if (argc>2)
-		tsend((sprintf(str,"%s\n",argv[2]),str));
+	if (argc>2) tsend((sprintf(str,"%s\n",argv[2]),str));
 	else {
 		fprintf(stderr,"I require a password\n");
 		exit(1);
@@ -277,16 +271,10 @@ static void do_cool_thing() {
 	fd_set fmask, tmask;
 	struct timeval tv;
 	int j;
-	servi=0;
-	termi=0;
-	servin[0]=0;
-	termin[0]=0;
-	FD_ZERO(&fmask);
-	FD_SET(0, &fmask);
-	FD_SET(fd, &fmask);
+	servi=termi=servin[0]=termin[0]=0;
+	FD_ZERO(&fmask);FD_SET(0, &fmask);FD_SET(fd, &fmask);
 	while(1) {
-		tv.tv_usec=500000;
-		tv.tv_sec=0;
+		tv.tv_usec=500000;tv.tv_sec=0;
 		FD_ZERO(&tmask);
 		if (FD_ISSET(0, &fmask)) FD_SET(0, &tmask);
 		if (FD_ISSET(fd, &fmask)) FD_SET(fd, &tmask);
@@ -294,8 +282,7 @@ static void do_cool_thing() {
 		if (j>0) {
 			if (FD_ISSET(0, &tmask)) do_terminal_input();
 			if (FD_ISSET(fd, &tmask)) do_server_input();
-		} else
-			draw_map(me.l);
+		} else draw_map(me.l);
 	}
 }
 
@@ -342,18 +329,14 @@ static void draw_line(int x1,int y1,int x2,int y2) {
 	if (y1>120) return;
 	if (y2<-120) return;
 	if (y2>120) return;
-	x1+=132;
-	y1+=132;
-	x2+=132;
-	y2+=132;
+	x1+=132;y1+=132;x2+=132;y2+=132;
 	drawbuf[bp++]=drawm+64;
 	drawbuf[bp++]=x1;
 	drawbuf[bp++]=y1;
 	drawbuf[bp++]=x2;
 	drawbuf[bp++]=y2;
 	drawm=(drawm+1)%64;
-	drawn++;
-	if (drawn>19) {
+	if (++drawn>19) {
 		drawbuf[bp]='\n';
 		drawbuf[bp+1]=0;
 		tsend(drawbuf);
