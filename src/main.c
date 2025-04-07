@@ -35,26 +35,15 @@
 #include "lift.h"
 #include "addon.h"
 
-static int lastsave=0;
-static int sleepsave=0;
-static int saveall;
+static int players=frame=lastsave=sleepsave=saveall=0;
 
-static void setsave(int sig) {
-	saveall=-2;
-	return;
-}
-
-static void setquit(int sig) {
-	saveall=-1;
-	return;
-}
+static void setsave(int sig) { saveall=-2; return; }
+static void setquit(int sig) { saveall=-1; return; }
 
 int main(int argc,char *argv[]) {
 	struct timeval start_time, end_time;  // For frame timing
 	long frame_time_us;  // Frame time in microseconds
 	const long target_frame_time_us = 59000;  // Target ~17fps (59ms per frame)
-
-	saveall=0;
 
 	struct player *p;
 
