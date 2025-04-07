@@ -35,7 +35,7 @@ CFLAGS=		-g -Wall -O0 -fno-omit-frame-pointer -fstack-protector-all -Wno-incompa
 
 COMP=		$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE)
 
-RUNSRC=		init.c main.c mymath.c debug.c xsetup.c draw.c player.c \
+RUNSRC=		main.c mymath.c debug.c xsetup.c draw.c player.c \
 			object.c map.c events.c particle.c message.c mines.c shop.c \
 			telnet.c terminal.c turret.c bonus.c home.c lift.c addon.c \
 			newton.c targetter.c beam.c starburst.c globals.c

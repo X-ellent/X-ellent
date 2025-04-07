@@ -40,6 +40,19 @@ static int lastsave, sleepsave, saveall;
 static void setsave(int sig) { saveall=-2; return; }
 static void setquit(int sig) { saveall=-1; return; }
 
+void build_sintable() {
+	int i;
+	DL("Building sin table");
+	for (i=1;i<90;i++) {
+		sintable[i]=sin(((double) i)/180.0*PI);
+		sintable[180-i]=sintable[i];
+	}
+	sintable[0]=0; sintable[90]=1;
+	for (i=0;i<180;i++) sintable[i+180]=-sintable[i];
+	for (i=0;i<360;i++) sintable[i+360]=sintable[i];
+	sn=sintable; cs=&sintable[90];
+}
+
 int main(int argc,char *argv[]) {
 	struct timeval start_time, end_time;  // For frame timing
 	long frame_time_us;  // Frame time in microseconds
