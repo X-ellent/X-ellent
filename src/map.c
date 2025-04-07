@@ -27,6 +27,13 @@
 #include "starburst.h"
 #include "message.h"
 
+int cpcount; // Count of checkpoints
+int tpcount; // Count of teleports
+int sbcount; // Count of starburts
+struct checkpoint *firstcheck;
+struct teleport *firsttel;
+struct starburst *firststar;
+struct map map;
 static FILE *mdata;
 static char buf[1024];
 

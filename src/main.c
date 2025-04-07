@@ -35,7 +35,7 @@
 #include "lift.h"
 #include "addon.h"
 
-static int players=frame=lastsave=sleepsave=saveall=0;
+static int lastsave, sleepsave, saveall;
 
 static void setsave(int sig) { saveall=-2; return; }
 static void setquit(int sig) { saveall=-1; return; }

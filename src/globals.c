@@ -24,26 +24,12 @@
 #include "message.h"
 #include "xsetup.h"
 
-/* From player.h */
-struct player *playone = NULL, *freeplay = NULL;
-char *weap_name[MAX_WEAPS];
-char *own_name[MAX_OTHERS];
-char own_dam[MAX_OTHERS];
-int frame = 0, players = 0;
-
 /* From mymath.h */
 double sintable[720];
 double *sn = NULL, *cs = NULL;
 
 /* From xbits.h */
 XPoint pc[PCACHE];
-
-/* From map.h */
-struct map map;
-struct teleport *firsttel = NULL;
-struct checkpoint *firstcheck = NULL;
-int tpcount = 0, cpcount = 0, sbcount = 0;
-struct starburst *firststar = NULL;
 
 /* From object.h */
 int obj_free = 0, obj_used = 0;

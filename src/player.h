@@ -23,23 +23,23 @@
 #include "damages.h"
 
 struct player {
-	char name[32];                     /* What name do I want to go by? */
-	char user[16];                     /* Whats my usercode */
-	char pass[9];                      /* Whats the password */
-	struct player_display d;           /* What display am I on? Its a struct */
-	double rot;                        /* How far am i rotated? */
-	struct body body;                  /* Details of me */
-	double ox,oy;                      /* Next to last place on ground */
-	double oox,ooy;                    /* Last place on ground */
-	int olvl;                          /* Next to last level on ground on */
-	int oolvl;                         /* Last level on ground on */
-	int onground;                      /* How long until classed as on ground*/
-	double rv;                         /* Rotational velocity */
-	double rt;                         /* Target rotational velocity */
-	int rating;                        /* What is my rating?? */
-	int score;                         /* What is my score? */
-	int cash;                          /* How much cash do i have */
-	int step;                          /* What step do i alter things in */
+	char name[32];			// What name do I want to go by?
+	char user[16];			// Whats my usercode
+	char pass[9];			// Whats the password
+	struct player_display d;// What display am I on?
+	double rot;				// How far am i rotated?
+	struct body body;		// Details of me
+	double ox,oy;			// Next to last place on ground
+	double oox,ooy;			// Last place on ground
+	int olvl;				// Next to last level on ground
+	int oolvl;				// Last level on ground on
+	int onground;			// How long since last on ground
+	double rv;				// Rotational velocity
+	double rt;				// Target rotational velocity
+	int rating;				// What is my rating??
+	int score;				// What is my score?
+	int cash;				// How much cash do i have
+	int step;				// What step do i alter things in
 	int thrust,spin,ethrust,espin;     /* What are my settings */
 	int fuel,maxfuel;                  /* How much fuel do i have from what */
 	int flags;                         /* What flags do i have set */

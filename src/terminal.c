@@ -164,7 +164,50 @@ static struct player *tuser[256];
 #define POP ((ptr_int_t)t->num[--t->nsp])
 #define PUSH(x) (t->num[t->nsp++] = (ptr_int_t)(x))
 
-extern void init_term(struct player *p) {
+
+
+
+
+
+
+
+static void get_playerinfo(struct login *t,struct player *p,int a) {
+	char *rc;
+	int *ri;
+	a&=~3;
+	if (!p) return;
+	rc=&t->ram[a];
+	ri=(int *) rc;
+	strcpy(&rc[0],p->user);
+	strcpy(&rc[16],p->name);
+	ri[12]=p->rating;
+	ri[13]=p->score;
+	ri[14]=p->cash;
+	ri[15]=p->body.l;
+	ri[16]=p->body.x/128;
+	ri[17]=p->body.y/128;
+	ri[18]=p->fuel/200;
+	ri[19]=p->shield/10;
+	if (p->home) {
+		ri[20]=p->home->l;
+		ri[21]=p->home->x;
+		ri[22]=p->home->y;
+	} else {
+		ri[20]=-1;
+		ri[21]=0;
+		ri[22]=0;
+	}
+	ri[23]=p->deaths;
+	ri[24]=p->kills;
+	ri[25]=p->tkills;
+}
+
+static void cts(struct player *p) {
+	XFillRectangle(p->d.disp,p->d.backing,p->d.gc_black,0,0,WINWID,WINHGT);
+	p->term->x=0;
+}
+
+void init_term(struct player *p) {
 	int i;
 	struct login *t;
 	for (i=0;(i<TERM_NUMBER)&&(tty[i].p);i++);
@@ -190,89 +233,6 @@ extern void init_term(struct player *p) {
 	}
 }
 
-static void cts(struct player *p) {
-	XFillRectangle(p->d.disp,p->d.backing,p->d.gc_black,0,0,WINWID,WINHGT);
-	p->term->x=0;
-}
-
-extern void init_all_term() {
-	FILE *td;
-	char c;
-	int pc;
-	int pass;
-
-	DL("Assembling terminal code");
-
-	for (pass=0;pass<2;pass++) {
-		if (pass==1) DL("Second pass");
-
-		if (!(td=fopen("term.asm","rb"))) {
-			fprintf(stderr,"Cannot open terminal code file for reading\n");
-			exit(1);
-		}
-
-		pc=0;
-		comperr=pass?0:2;
-		c=getc(td);
-		while (c!=EOF) {
-			switch(c) {
-			case '.':
-				get_label(td,pc+ROMBASE);
-				break;
-			case '\"':
-				pc=get_string(td,pc);
-				break;
-			case '+':
-			case '-':
-			case '0':
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
-				pc=get_number(c,td,pc);
-				break;
-			default:
-				pc=get_thing(c,td,pc);
-				break;
-			}
-			while (isspace(c=getc(td)));
-		}
-
-		fclose(td);
-	}
-
-	if (comperr) exit(1);
-}
-
-static void get_label(FILE *td,int pc) {
-	char str[16];
-	struct label *l;
-	int n;
-	char c;
-	for (n=0;n<15;n++) {
-		c=getc(td);
-		if (isspace(c)) {
-			str[n]=0;
-			n=16;
-		} else {
-			str[n]=c;
-		}
-	}
-	if (find_label(str)) return;
-	l=(struct label *) calloc(1,sizeof(struct label));
-	l->next=firstlabel;
-	firstlabel=l;
-	l->adr=pc;
-	strcpy(l->name,str);
-	if (n==15) while(!isspace(getc(td)));
-	if (strcmp(l->name,"start")==0) startpc=pc;
-}
-
 static int get_string(FILE *td,int pc) {
 	char c;
 
@@ -284,39 +244,34 @@ static int get_string(FILE *td,int pc) {
 }
 
 static int get_number(char c,FILE *td,int pc) {
-	char *nc;
 	char d;
 	ptr_int_t n;  /* Changed to ptr_int_t for 64-bit compatibility */
 	n=c-'0';
 	if ((c=='-')||(c=='+')) n=0;
 	while (isdigit(d=getc(td))) n=n*10+d-'0';
 	if (c=='-') n=-n;
-	nc=(char *) &n;
+	char *nc=(char *) &n;
 	rom[pc++]=OP_PSH;
 	rom[pc++]=nc[0];
 	rom[pc++]=nc[1];
 	rom[pc++]=nc[2];
 	rom[pc++]=nc[3];
-	#if defined(__LP64__) || defined(_LP64) || defined(__amd64) || defined(__x86_64__) || defined(__aarch64__)
-	/* For 64-bit systems, store the upper 32 bits */
-	rom[pc++]=nc[4];
-	rom[pc++]=nc[5];
-	rom[pc++]=nc[6];
-	rom[pc++]=nc[7];
-	#endif
 	return pc;
 }
 
+static int find_label(char *s) {
+	struct label *l;
+	for(l=firstlabel;l;l=l->next)
+		if (strcmp(l->name,s)==0) return l->adr;
+	return 0;
+}
+
 static int get_thing(char c,FILE *td,int pc) {
-	char str[16];
-	char *nc;
+	char str[16];str[0]=c;
 	int n;
-	str[0]=c;
-	for (n=1;n<15;n++)
-		if (isspace(str[n]=getc(td))) {
-			str[n]=0;
-			n=16;
-		}
+	for (n=1;n<15;n++) if (isspace(str[n]=getc(td))) {
+		str[n]=0; n=16;
+	}
 	if (n==15) while(!isspace(getc(td)));
 
 /* DO NOT REMOVE OR ALTER THIS LINE **START**/
@@ -383,20 +338,111 @@ static int get_thing(char c,FILE *td,int pc) {
 			comperr=-1;
 		}
 	}
-	nc=(char *) &n;
+
+	char *nc=(char *) &n;
 	rom[pc++]=OP_PSH;
-	rom[pc++]=nc[0];
-	rom[pc++]=nc[1];
-	rom[pc++]=nc[2];
-	rom[pc++]=nc[3];
+	rom[pc++]=nc[0];rom[pc++]=nc[1];rom[pc++]=nc[2];rom[pc++]=nc[3];
 	return pc;
 }
 
-static int find_label(char *s) {
+void init_all_term() {
+	FILE *td;
+	int c; // Was char (which is unsigned on some platforms so fails for EOF)
+	int pc, pass;
+
+	DL("Assembling terminal code");
+
+	for (pass=0;pass<2;pass++) {
+		if (pass==1) DL("Second pass");
+
+		if (!(td=fopen("term.asm","rb"))) {
+			fprintf(stderr,"Cannot open terminal code file for reading\n");
+			exit(1);
+		}
+
+		pc=0;
+		comperr=pass?0:2;
+		c=getc(td);
+		while (c!=EOF) {
+			switch(c) {
+			case '.':
+				get_label(td,pc+ROMBASE);
+				break;
+			case '\"':
+				pc=get_string(td,pc);
+				break;
+			case '+':
+			case '-':
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+				pc=get_number(c,td,pc);
+				break;
+			default:
+				pc=get_thing(c,td,pc);
+				break;
+			}
+			while (isspace(c=getc(td)));
+		}
+
+		fclose(td);
+	}
+
+	if (comperr) exit(1);
+}
+
+static void get_label(FILE *td,int pc) {
+	char str[16];
 	struct label *l;
-	for(l=firstlabel;l;l=l->next)
-		if (strcmp(l->name,s)==0) return l->adr;
-	return 0;
+	int n;
+	for (n=0;n<15;n++) {
+		int c=getc(td); // int NOT char!
+		if (isspace(c)) {
+			str[n]=0;
+			n=16;
+		} else str[n]=c;
+	}
+	if (find_label(str)) return;
+	l=(struct label *) calloc(1,sizeof(struct label));
+	l->next=firstlabel;
+	firstlabel=l;
+	l->adr=pc;
+	strcpy(l->name,str);
+	if (n==15) while(!isspace(getc(td)));
+	if (strcmp(l->name,"start")==0) startpc=pc;
+}
+
+static void term_newline(struct player *p) {
+	p->term->x=0;
+	XCopyArea(p->d.disp,p->d.backing,p->d.backing,p->d.gc,0,p->d.th,WINWID,
+			  WINHGT-p->d.th,0,0);
+}
+
+static int term_hprint(struct player *p,char *c,int l) {
+	int wid;
+	wid=WINWID/p->d.tw-2;
+	XDrawString(p->d.disp,p->d.backing,p->d.gc_termhi,10+p->d.tw*p->term->x,
+				WINHGT-p->d.th*2,c,l);
+	p->term->x+=l;
+	if (p->term->x>=wid) term_newline(p);
+	return l;
+}
+
+static int term_print(struct player *p,char *c,int l) {
+	int wid;
+	wid=WINWID/p->d.tw-2;
+	XDrawString(p->d.disp,p->d.backing,p->d.gc_termlo,10+p->d.tw*p->term->x,
+				WINHGT-p->d.th*2,c,l);
+	p->term->x+=l;
+	if (p->term->x>=wid) term_newline(p);
+	return l;
 }
 
 void exit_term(struct player *p) {
@@ -706,32 +752,6 @@ void run_program(struct player *p) {
 	}
 }
 
-static void term_newline(struct player *p) {
-	p->term->x=0;
-	XCopyArea(p->d.disp,p->d.backing,p->d.backing,p->d.gc,0,p->d.th,WINWID,
-			  WINHGT-p->d.th,0,0);
-}
-
-static int term_hprint(struct player *p,char *c,int l) {
-	int wid;
-	wid=WINWID/p->d.tw-2;
-	XDrawString(p->d.disp,p->d.backing,p->d.gc_termhi,10+p->d.tw*p->term->x,
-				WINHGT-p->d.th*2,c,l);
-	p->term->x+=l;
-	if (p->term->x>=wid) term_newline(p);
-	return l;
-}
-
-static int term_print(struct player *p,char *c,int l) {
-	int wid;
-	wid=WINWID/p->d.tw-2;
-	XDrawString(p->d.disp,p->d.backing,p->d.gc_termlo,10+p->d.tw*p->term->x,
-				WINHGT-p->d.th*2,c,l);
-	p->term->x+=l;
-	if (p->term->x>=wid) term_newline(p);
-	return l;
-}
-
 extern void term_option(struct player *p,int n) {
 	char b;
 	if (p->term->state==PSTAT_INN) {
@@ -773,37 +793,6 @@ extern void term_option(struct player *p,int n) {
 			}
 		}
 	}
-}
-
-static void get_playerinfo(struct login *t,struct player *p,int a) {
-	char *rc;
-	int *ri;
-	a&=~3;
-	if (!p) return;
-	rc=&t->ram[a];
-	ri=(int *) rc;
-	strcpy(&rc[0],p->user);
-	strcpy(&rc[16],p->name);
-	ri[12]=p->rating;
-	ri[13]=p->score;
-	ri[14]=p->cash;
-	ri[15]=p->body.l;
-	ri[16]=p->body.x/128;
-	ri[17]=p->body.y/128;
-	ri[18]=p->fuel/200;
-	ri[19]=p->shield/10;
-	if (p->home) {
-		ri[20]=p->home->l;
-		ri[21]=p->home->x;
-		ri[22]=p->home->y;
-	} else {
-		ri[20]=-1;
-		ri[21]=0;
-		ri[22]=0;
-	}
-	ri[23]=p->deaths;
-	ri[24]=p->kills;
-	ri[25]=p->tkills;
 }
 
 static ptr_int_t getnextplayer(struct player *p) {
