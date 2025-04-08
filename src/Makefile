@@ -27,11 +27,12 @@ else
 endif
 
 DEFINES=	-DLIB=$(LIBDIR) -DEBUG -DSHOW_THIRD_LEVEL
-CFLAGS=		-g -Wall -O2 -fno-common -fcommon
-#CFLAGS=		-g -Wall -O0 -fno-omit-frame-pointer -fstack-protector-all -Wno-incompatible-pointer-types -Wextra -Wconversion
 
-# Clean up dependency tracking
-.PHONY: clean all again
+# Base CFLAGS
+CFLAGS=		-g -Wall -O2 -fno-common -fstack-protector-all -Wextra -MMD
+
+# Debug CFLAGS (uncomment for debugging)
+# CFLAGS=	-g -Wall -O0 -fno-omit-frame-pointer -fstack-protector-all -Wextra -Wconversion -MMD
 
 COMP=		$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE)
 
@@ -55,11 +56,13 @@ CLIOBJ=		$(CLISRC:%.c=%.o)
 FRONTOBJ=	$(FRONTSRC:%.c=%.o)
 OBJ=		$(SRC:%.c=%.o)
 
+# Clean up dependency tracking
+.PHONY: clean all again
+
 all:	runme myclient frontend
 
 again:	clean all
 
-#runme:	terminal.temp $(RUNOBJ)
 runme:	$(RUNOBJ)
 	$(COMP) -o runme $(RUNOBJ) $(LIBS)
 
@@ -71,14 +74,8 @@ frontend:	$(FRONTOBJ)
 	chmod o-rx frontend
 	chmod g+x  frontend
 
-terminal.temp:	terminal.h
-	sed -n -e '1,/\*\*START\*\*/p' terminal.c > terminal.temp
-	sed -n -e 's/#define.*OP_\([A-Z][A-Z]*\).*/	if (strcmp(str,"\1")==0) {rom[pc++]=OP_\1;return pc;};/p' terminal.h >> terminal.temp
-	sed -n -e '/\*\*END\*\*/,$$p' terminal.c >> terminal.temp
-	cat terminal.temp > terminal.c
-	rm terminal.temp
-
-%.o:	%.c
+# Pattern rule for object files with header dependencies
+%.o: %.c $(HEADERS)
 	$(COMP) -c $<
 
 install:	myclient frontend
@@ -91,6 +88,7 @@ install:	myclient frontend
 	cp -f frontend /dcs/90/cheesey/bin/frontend
 
 clean:
-	-rm -f $(OBJ) runme myclient frontend terminal.temp
+	-rm -f $(OBJ) runme myclient frontend *.d
 
-# Remove old dependency information
+# Include auto-generated dependencies
+-include $(OBJ:.o=.d)
