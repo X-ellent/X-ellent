@@ -16,13 +16,13 @@
 #include <stdlib.h>
 #include <time.h>
 #include <sys/time.h>  // For gettimeofday
+#include <math.h> // For PI
 
 #include "fix.h"
 #include "message.h"
 #include "debug.h"
 #include "player.h"
 #include "particle.h"
-#include "init.h"
 #include "constants.h"
 #include "telnet.h"
 #include "xsetup.h"
