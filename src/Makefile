@@ -27,8 +27,8 @@ else
 endif
 
 DEFINES=	-DLIB=$(LIBDIR) -DEBUG -DSHOW_THIRD_LEVEL
-#CFLAGS=		-g -Wall -O2 -fno-common -fcommon
-CFLAGS=		-g -Wall -O0 -fno-omit-frame-pointer -fstack-protector-all -Wno-incompatible-pointer-types -Wextra -Wconversion
+CFLAGS=		-g -Wall -O2 -fno-common -fcommon
+#CFLAGS=		-g -Wall -O0 -fno-omit-frame-pointer -fstack-protector-all -Wno-incompatible-pointer-types -Wextra -Wconversion
 
 # Clean up dependency tracking
 .PHONY: clean all again
