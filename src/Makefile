@@ -29,10 +29,9 @@ endif
 DEFINES=	-DLIB=$(LIBDIR) -DEBUG -DSHOW_THIRD_LEVEL
 
 # Base CFLAGS
-CFLAGS=		-g -Wall -O2 -fno-common -fstack-protector-all -Wextra -MMD
-
-# Debug CFLAGS (uncomment for debugging)
-# CFLAGS=	-g -Wall -O0 -fno-omit-frame-pointer -fstack-protector-all -Wextra -Wconversion -MMD
+CFLAGS=		-g -Wall -O2 -MMD
+#CFLAGS=	-g -Wall -O2 -fno-common -fstack-protector-all -Wextra -MMD
+#CFLAGS=	-g -Wall -O0 -fno-omit-frame-pointer -fstack-protector-all -Wextra -Wconversion -MMD
 
 COMP=		$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE)
 
