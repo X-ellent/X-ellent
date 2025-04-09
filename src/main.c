@@ -16,7 +16,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include <sys/time.h>  // For gettimeofday
-#include <math.h> // For PI
 
 #include "fix.h"
 #include "message.h"
@@ -34,26 +33,41 @@
 #include "draw.h"
 #include "lift.h"
 #include "addon.h"
+#include "mines.h"	   // For load_mines, save_mines
+#include "beam.h"      // For free_beams
+#include "starburst.h" // For fire_starbursts
+#include "map.h"	   // For update_teleports
+#include "mymath.h"	   // For sintable
 
+// Global variables
 static int lastsave, sleepsave, saveall;
+extern int players;  // Defined in player.h
+extern int frame;    // Defined in player.h
 
-static void setsave(int sig) { saveall=-2; return; }
-static void setquit(int sig) { saveall=-1; return; }
+// Function declarations
+void load_mines(void);
+void save_mines(void);
+void fire_starbursts(void);
+void update_teleports(void);
+
+static void setsave(int sig) { (void)sig; saveall=-2; return; }
+static void setquit(int sig) { (void)sig; saveall=-1; return; }
 
 void build_sintable() {
 	int i;
 	DL("Building sin table");
 	for (i=1;i<90;i++) {
-		sintable[i]=sin(((double) i)/180.0*PI);
+		sintable[i]=sin(((double) i)/180.0*M_PI);
 		sintable[180-i]=sintable[i];
 	}
 	sintable[0]=0; sintable[90]=1;
 	for (i=0;i<180;i++) sintable[i+180]=-sintable[i];
-	for (i=0;i<360;i++) sintable[i+360]=sintable[i];
+	for (i=0;i<90;i++) sintable[i+360]=sintable[i];
 	sn=sintable; cs=&sintable[90];
 }
 
-int main(int argc,char *argv[]) {
+int main(int argc, char *argv[]) {
+	(void)argc; (void)argv;  // Mark unused parameters
 	struct timeval start_time, end_time;  // For frame timing
 	long frame_time_us;  // Frame time in microseconds
 	const long target_frame_time_us = 59000;  // Target ~17fps (59ms per frame)

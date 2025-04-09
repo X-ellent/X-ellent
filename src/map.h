@@ -61,9 +61,9 @@ extern int tpcount;
 #define MAP_TWALL	(MAP_TWALL0|MAP_TWALL1)
 #define MAP_LWALL	(MAP_LWALL0|MAP_LWALL1)
 
-#define rd(l,x,y) (map.data[l][(x)+(y)*map.wid])
-#define rd2(l,x,y) (map.data2[l][(x)+(y)*map.wid])
-#define rd3(l,x,y) (map.data3[l][(x)+(y)*map.wid])
+#define rd(l,x,y) (map.data[l][x+y*map.wid])
+#define rd2(l,x,y) (map.data2[l][x+y*map.wid])
+#define rd3(l,x,y) (map.data3[l][x+y*map.wid])
 
 int is_hole(int l,int x,int y);
 void create_map();

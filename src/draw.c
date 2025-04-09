@@ -260,7 +260,7 @@ static void draw_map(struct player *p) {
 	}
 	/* Draw in them laserbeam thingsp */
 	{
-		for(strut beam *b=firstbeam;b;b=b->next) if (p->body.l==b->l) {
+		for(struct beam *b=firstbeam;b;b=b->next) if (p->body.l==b->l) {
 			dx=(b->x)-p->body.x; dy=(b->y)-p->body.y;
 			int sx=dx*co+dy*si+mx, sy=dy*co-dx*si+my;
 			dx=(b->xx)-p->body.x; dy=(b->yy)-p->body.y;
@@ -411,14 +411,14 @@ void draw_map_level(struct player *p,int l) {
 			}
 			break;
 		case MAP_OBSC:
-			for (a=0;a<5;a++) for (b=0;b<5;b++)
+			for (int a=0;a<5;a++) for (int b=0;b<5;b++)
 				XDrawPoint(d,w,grey,mx+x*wx+wx*a/4,my+y*wx+wx*b/4);
 			break;
 		default:
 			break;
 		}
 	} // for x (and y)
-	for (y=0;y<map.hgt;y++) for (x=0;x<map.wid;x++) {
+	for (int y=0;y<map.hgt;y++) for (int x=0;x<map.wid;x++) {
 		switch (rd(l,x,y)&(MAP_LWALL)) {
 		case MAP_LWALL:
 			XDrawLine(d,w,white,mx+x*wx,my+y*wx,mx+x*wx,my+(y+1)*wx);
@@ -596,7 +596,7 @@ static void draw_me(struct player *p) {
 		}
 	}
 	if (p->flags&FLG_STATUS) {
-		char ontop=rd2(p->body.l,p->body.x/128,p->body.y/128);
+		char ontop=rd2(p->body.l,(int)p->body.x/128,(int)p->body.y/128);
 		int n=10;
 		if (p->flags&FLG_IDENT) XDrawString(d,w,red,32,p->d.fh*n++,"Identifier",10);
 		if (p->flags&FLG_NOMSG) XDrawString(d,w,red,32,p->d.fh*n++,"No Messages",11);
@@ -607,7 +607,8 @@ static void draw_me(struct player *p) {
 		if (p->flags&FLG_MINESWEEP) XDrawString(d,w,red,32,p->d.fh*n++,"Mine Sweeping",13);
 		if ((p->ptarg)&&(tarad)) XDrawString(d,w,red,32,p->d.fh*n++,"Tracking",8);
 		if ((ontop=='L')||(ontop=='l')) {
-			if ((struct lift *l=find_lift(p->body.x/128,p->body.y/128))) {
+			struct lift *l;
+			if ((l=find_lift(p->body.x/128,p->body.y/128))) {
 				sprintf(txt,"Lift #%d L:%d",l->id,l->l);
 				XDrawString(d,w,red,32,p->d.fh*n++,txt,strlen(txt));
 			}
@@ -711,9 +712,9 @@ static void draw_others(struct player *p) {
 	double ms=-sn[(int) p->rot], mc=cs[(int) p->rot];
 	struct player *o;
 	for (o=playone;o;o=o->next) if (!(o->flags&FLG_INVIS)&&(o->body.on)&&
-				(o!=me)&&(o->body.l==p->body.l)) {
+				(o!=p)&&(o->body.l==p->body.l)) {
 		int l,mx=(o->body.x-p->body.x), my=(o->body.y-p->body.y);
-		dr=(o->rot-p->rot+720)%360;
+		dr=(int)(o->rot-p->rot+720)%360;
 		cx=WINWID/2+mx*mc-my*ms; cy=WINHGT/2+my*mc+mx*ms;
 		rd=o->body.radius+2*o->body.height;
 		rx=rd*3*sn[dr]/4; ry=-rd*3*cs[dr]/4;

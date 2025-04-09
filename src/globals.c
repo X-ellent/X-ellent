@@ -24,10 +24,6 @@
 #include "message.h"
 #include "xsetup.h"
 
-/* From mymath.h */
-double sintable[720];
-double *sn = NULL, *cs = NULL;
-
 /* From xbits.h */
 XPoint pc[PCACHE];
 
