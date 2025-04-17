@@ -36,10 +36,9 @@ static void draw_msg(struct player *p);
 static void draw_map(struct player *p) {
 	int x=(int)p->body.x,y=(int)p->body.y,l=p->body.l;
 	XPoint rc[25];
-	Display *d=p->d.disp;
-	Pixmap *w=p->d.backing;
-	GC red=p->d.gc_red, blue=p->d.gc_blue, white=p->d.gc_white;
-	GC grey=p->d.gc_grey, dgrey=p->d.gc_dgrey, yellow=p->d.gc_yellow;
+	Display *d=p->d.disp; Pixmap w=p->d.backing;
+	GC red=p->d.gc_red,blue=p->d.gc_blue,white=p->d.gc_white;
+	GC grey=p->d.gc_grey,dgrey=p->d.gc_dgrey,yellow=p->d.gc_yellow;
 	int a=p->rot, xx=x/128, yy=y/128, dx=x&127, dy=y&127;
 	double si=sn[a], co=cs[a], tsi, tco;
 	int mx=WINWID/2-dx*co-dy*si, my=WINHGT/2+dx*si-dy*co;
@@ -201,10 +200,8 @@ static void draw_map(struct player *p) {
 	}
 	/* Draw in objects */
 	{
-		struct object *u;
-		GC mc;
-		mx=WINWID/2;my=WINHGT/2;
-		for (u=obj_first;u;u=u->next) if (p->body.l==u->l) {
+		GC mc; mx=WINWID/2;my=WINHGT/2;
+		for (struct object *u=obj_first;u;u=u->next) if (p->body.l==u->l) {
 			dx=(u->x)-x; dy=(u->y)-y;
 			if (!((dx>WINWID)||(dx<-WINWID)||(dy>WINHGT)||(dy<-WINHGT))) {
 				ddx=dx*co+dy*si; ddy=dy*co-dx*si;
@@ -215,10 +212,9 @@ static void draw_map(struct player *p) {
 				case OBJ_MINE_VELY:
 				case OBJ_MINE_SMART:
 					if (u->flags&OBJ_F_ARM) {
-						if ((!(u->flags&OBJ_F_FLASH))&&(u->flags&OBJ_F_TRIG)) {
-							mc=red;
-							u->flags|=OBJ_F_FLASH;
-						} else mc=dgrey;
+						if ((!(u->flags&OBJ_F_FLASH))&&(u->flags&OBJ_F_TRIG))
+							{ mc=red; u->flags|=OBJ_F_FLASH; }
+						else mc=dgrey;
 						if (p->flags&FLG_MINESWEEP)
 							XDrawArc(d,w,mc,mx+ddx-8,my+ddy-8,16,16,0,360*64);
 					} else XDrawArc(d,w,blue,mx+ddx-8,my+ddy-8,16,16,0,360*64);
@@ -336,8 +332,7 @@ void draw_map_level(struct player *p,int l) {
 	XDrawString(d,w,p->d.gc_red,20,p->d.fh,txt,strlen(txt));
 	int wx=WINWID/((map.wid>map.hgt)?map.wid:map.hgt);
 	int mx=WINWID/2-wx*(map.wid)/2, my=WINHGT/2-wx*(map.hgt)/2;
-	int wwx=wx/2;
-	int pl=p->body.l;
+	int wwx=wx/2, pl=p->body.l;
 	int px=(int)p->body.x/128, py=(int)p->body.y/128;
 	for (int y=1;y<(map.hgt-1);y++) for (int x=1;x<(map.wid-1);x++) {
 		if ((l==pl)&&(x==px)&&(y==py))
@@ -495,7 +490,7 @@ static void draw_me(struct player *p) {
 				dx=o->body.x-p->body.x; dy=o->body.y-p->body.y;
 				int t=dx*co-si*dy;dy=dy*co+si*dx;dx=t;
 				rx=dx/rng;ry=dy/rng;
-				if ((rx<100)&&(rx>-100)&&(ry<100)&&(ry>-100))
+				if ((rx<100)&&(rx>-100)&&(ry<100)&&(ry>-100)) {
 					if ((o==p->ptarg)&&(tarad)) {
 						XDrawPoint(d,w,red,mx+rx,my+ry);
 						XDrawPoint(d,w,red,mx+rx,my+ry+1);
@@ -509,6 +504,7 @@ static void draw_me(struct player *p) {
 						XDrawPoint(d,w,blue,mx+rx+1,my+ry+1);
 						XDrawPoint(d,w,blue,mx+rx+1,my+ry);
 					}
+				}
 			}
 	}
 	cansee=0;
@@ -697,7 +693,7 @@ void DrawMeter(struct player *p,int x,int y,int l,int h,int max,int val) {
 }
 
 static void draw_others(struct player *p) {
-	int mx,my, cx,cy, rx,ry,dr, r;
+	int cx,cy, rx,ry,dr, r;
 	char txt[256];
 	Display *d=p->d.disp; Pixmap w=p->d.backing;
 	GC red=p->d.gc_red,blue=p->d.gc_blue,white=p->d.gc_white,yellow=p->d.gc_yellow;
@@ -705,7 +701,7 @@ static void draw_others(struct player *p) {
 	double ms=-sn[(int)p->rot], mc=cs[(int)p->rot];
 	for (o=playone;o;o=o->next) if (!(o->flags&FLG_INVIS)&&(o->body.on)&&
 				(o!=p)&&(o->body.l==p->body.l)) {
-		int l,mx=(o->body.x-p->body.x), my=(o->body.y-p->body.y);
+		int l,mx=(int)(o->body.x-p->body.x), my=(int)(o->body.y-p->body.y);
 		dr=(int)(o->rot-p->rot+720)%360;
 		cx=WINWID/2+mx*mc-my*ms; cy=WINHGT/2+my*mc+mx*ms;
 		r=o->body.radius+2*o->body.height;
@@ -745,12 +741,12 @@ static void draw_falling(struct player *p) {
 	Display *d=p->d.disp; Pixmap w=p->d.backing;
 	GC white=p->d.gc_white;
 	int mx=WINWID/2, my=WINHGT/2;
-	int rd=800/((p->body.fallen++)+20);
+	int r=800/((p->body.fallen++)+20);
 	XFillRectangle(d,w,p->d.gc_black,0,0,WINWID,WINHGT);
 	XDrawRectangle(d,w,p->d.gc_blue,mx-100,my-100,200,200);
-	XDrawArc(d,w,white,mx-rd/8,my-rd/8,rd/4,rd/4,0,360*64);
-	XDrawArc(d,w,white,mx-rd/2,my-rd/2,rd,rd,0,360*64);
-	XDrawLine(d,w,white,mx,my-rd/16,mx,my-3*rd/8);
+	XDrawArc(d,w,white,mx-r/8,my-r/8,r/4,r/4,0,360*64);
+	XDrawArc(d,w,white,mx-r/2,my-r/2,r,r,0,360*64);
+	XDrawLine(d,w,white,mx,my-r/16,mx,my-3*r/8);
 	if (!(p->flags&FLG_NOMSG)) for (int i=0;i<4;i++)
 		XDrawString(d,w,p->d.gc_blue,16,WINHGT-p->d.fh*(i+1),p->msg[i],
 				strlen(p->msg[i]));
