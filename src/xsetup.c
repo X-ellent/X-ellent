@@ -28,6 +28,7 @@ static XColor xc,ex;
 char why[2048];
 
 static int my_error_handler(Display *d) {
+	(void)d;
 	DL("XIOErrorHandler called!!!! Someone just did something nasty");
 	if (jumpable) longjmp(jmpenv,2);
 	DL("ARGH!!! I Can't recover from the situation either!!!");
@@ -37,8 +38,9 @@ static int my_error_handler(Display *d) {
 }
 
 static int my_other_error_handler(Display *d,XErrorEvent *e) {
+	(void)d;
 	DL("XErrorHandler called!!!! Something very nasty happened");
-	fprintf(stderr,"Serial %d Error %d Request %d Minor %d",(int) e->serial,
+	fprintf(stderr,"Serial %d Error %d Request %d Minor %d\n",(int) e->serial,
 			(int)e->error_code,(int)e->request_code,(int)e->minor_code);
 	if (jumpable) longjmp(jmpenv,2);
 	DL("ARGH!!! I Can't recover from the situation either!!!");
@@ -51,8 +53,7 @@ void bloody_errors(struct player *p) {
 	char txt[1024];
 	DL("Emergency code called to chuck off offending player");
 	XAutoRepeatOn(p->d.disp);
-	p->qflags=0;
-	p->connected=0;
+	p->qflags=p->connected=0;
 	players--;
 	if (!p->body.on) {
 		if (p->flags&FLG_SHOPPING) add_pbody(p);
@@ -84,11 +85,10 @@ int init_player_display(struct player *p,char *d) {
 	}
 	fprintf(stderr,"Display name is %s (%s)\n",d,p->user);
 	switch (setjmp(jmpenv)) {
-	case 0:break;
-	case 1:return -1;
-	case 2:
-		bloody_errors(p);
-	case 3:return 0;
+	    case 0:break;
+	    case 1:return -1;
+	    case 2:bloody_errors(p); // fallthrough
+	    case 3:return 0;
 	}
 	p->d.screen=DefaultScreen(p->d.disp);
 	p->d.gc=DefaultGC(p->d.disp,p->d.screen);
@@ -185,9 +185,7 @@ int init_player_display(struct player *p,char *d) {
 	XCopyGC(p->d.disp,p->d.gc_blue,vm,p->d.gc_fblue);
 	XCopyGC(p->d.disp,p->d.gc_dgrey,vm,p->d.gc_fdgrey);
 	if (DefaultDepth(p->d.disp,p->d.screen)==1) {
-		Pixmap greytile;
-		Pixmap bluetile;
-		Pixmap greentile;
+		Pixmap greytile,bluetile,greentile;
 		greytile=XCreatePixmap(p->d.disp,p->d.gamewin,2,2,1);
 		bluetile=XCreatePixmap(p->d.disp,p->d.gamewin,2,2,1);
 		greentile=XCreatePixmap(p->d.disp,p->d.gamewin,2,2,1);
@@ -195,24 +193,20 @@ int init_player_display(struct player *p,char *d) {
 		XDrawPoint(p->d.disp,greytile,p->d.gc_black,0,1);
 		XDrawPoint(p->d.disp,greytile,p->d.gc_white,1,1);
 		XDrawPoint(p->d.disp,greytile,p->d.gc_black,1,0);
-
 		XDrawPoint(p->d.disp,bluetile,p->d.gc_black,1,1);
 		XDrawPoint(p->d.disp,bluetile,p->d.gc_white,0,1);
 		XDrawPoint(p->d.disp,bluetile,p->d.gc_white,1,0);
 		XDrawPoint(p->d.disp,bluetile,p->d.gc_white,0,0);
-
 		XDrawPoint(p->d.disp,greentile,p->d.gc_white,1,1);
 		XDrawPoint(p->d.disp,greentile,p->d.gc_black,0,1);
 		XDrawPoint(p->d.disp,greentile,p->d.gc_black,1,0);
 		XDrawPoint(p->d.disp,greentile,p->d.gc_black,0,0);
-
 		XSetLineAttributes(p->d.disp,p->d.gc_dred,1,LineOnOffDash,0,0);
 		XSetLineAttributes(p->d.disp,p->d.gc_blue,1,LineOnOffDash,0,0);
 		XSetLineAttributes(p->d.disp,p->d.gc_grey,1,LineOnOffDash,0,0);
 		XSetDashes(p->d.disp,p->d.gc_dred,0,"\002\004",2);
 		XSetDashes(p->d.disp,p->d.gc_blue,0,"\007\002",2);
 		XSetDashes(p->d.disp,p->d.gc_grey,0,"\005\001",2);
-
 		XSetFillStyle(p->d.disp,p->d.gc_fred,FillStippled);
 		XSetFillStyle(p->d.disp,p->d.gc_fblue,FillStippled);
 		XSetFillStyle(p->d.disp,p->d.gc_fdgrey,FillStippled);
@@ -236,17 +230,14 @@ int init_player_display(struct player *p,char *d) {
 }
 
 void shutdown_display(struct player *p) {
-	int y;
 	DL("Shutting down display");
-	y=jumpable;
+	int y=jumpable;
 	if (!y) {
 		jumpable=-1;
 		switch (setjmp(jmpenv)) {
-		case 0:break;
-		case 1:return;
-		case 2:
-			bloody_errors(p);
-			return;
+			case 0:break;
+			case 1:return;
+			case 2:bloody_errors(p);return;
 		}
 	}
 	XUnmapWindow(p->d.disp,p->d.gamewin);
@@ -264,17 +255,14 @@ void shutdown_display(struct player *p) {
 	XCloseDisplay(p->d.disp);
 	XFlush(p->d.disp);
 	p->connected=0;
-	if (!y) {
-		jumpable=0;
-		longjmp(jmpenv,1);
-	}
+	if (!y) {jumpable=0;longjmp(jmpenv,1);}
 	return;
 }
 
 void Setup_color(struct player *p,char *dname,char *dcol) {
-	char *str;
 	char err[1024];
-	if ((str=(char *) ctquery(dname))) {
+	char *str;
+	if ((str=ctquery(dname))) {
 		if (XAllocNamedColor(p->d.disp,DefaultColormap(p->d.disp,p->d.screen),
 							 str,&ex,&xc)) return;
 		sprintf(err,"Cannot find color %s\n",str);
@@ -284,7 +272,7 @@ void Setup_color(struct player *p,char *dname,char *dcol) {
 					 &ex,&xc);
 }
 
-int Setup_value(struct player *p,char *dname,int val,int min,int max) {
+int Setup_value(char *dname,int val,int min,int max) {
 	char *str;
 	if ((str=(char *) ctquery(dname))) {
 		int v=atoi(str);
@@ -295,7 +283,7 @@ int Setup_value(struct player *p,char *dname,int val,int min,int max) {
 	return val;
 }
 
-int Setup_flag(struct player *p,char *dname,int on,int off,int def) {
+int Setup_flag(char *dname,int on,int off,int def) {
 	char *str;
 	int v=def?on:off;
 	if ((str=(char*) ctquery(dname))) {
@@ -307,7 +295,7 @@ int Setup_flag(struct player *p,char *dname,int on,int off,int def) {
 	return v;
 }
 
-void Setup_string(struct player *p,char *dname,char *s,int l) {
+void Setup_string(char *dname,char *s,int l) {
 	char *str;
 	if ((str=(char*) ctquery(dname))) strncpy(s,str,l);
 }

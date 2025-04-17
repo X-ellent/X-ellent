@@ -163,18 +163,18 @@ int setup_player() {
 	players++;
 
 	/* Set configurable things */
-	p->flags|=Setup_flag(p,"ident",FLG_IDENT,0,1);
-	p->flags|=Setup_flag(p,"status",FLG_STATUS,0,1);
-	p->flags|=Setup_flag(p,"message",0,FLG_NOMSG,1);
-	p->flags|=Setup_flag(p,"slots",0,FLG_NOWEP,1);
-	p->flags|=Setup_flag(p,"instruments",0,FLG_NOINSTR,1);
+	p->flags|=Setup_flag("ident",FLG_IDENT,0,1);
+	p->flags|=Setup_flag("status",FLG_STATUS,0,1);
+	p->flags|=Setup_flag("message",0,FLG_NOMSG,1);
+	p->flags|=Setup_flag("slots",0,FLG_NOWEP,1);
+	p->flags|=Setup_flag("instruments",0,FLG_NOINSTR,1);
 
-	p->thrust=Setup_value(p,"thrust",40,0,100);
-	p->spin=Setup_value(p,"spin",75,0,100);
-	p->ethrust=Setup_value(p,"altthrust",70,0,100);
-	p->espin=Setup_value(p,"altspin",100,0,100);
-	p->step=Setup_value(p,"step",5,0,50);
-	p->fuelmin=200*Setup_value(p,"fuel",30,0,p->maxfuel/200);
+	p->thrust=Setup_value("thrust",40,0,100);
+	p->spin=Setup_value("spin",75,0,100);
+	p->ethrust=Setup_value("altthrust",70,0,100);
+	p->espin=Setup_value("altspin",100,0,100);
+	p->step=Setup_value("step",5,0,50);
+	p->fuelmin=200*Setup_value("fuel",30,0,p->maxfuel/200);
 
 	p->delay=0;
 

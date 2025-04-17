@@ -35,14 +35,13 @@ static void draw_msg(struct player *p);
 
 static void draw_map(struct player *p) {
 	int x=(int)p->body.x,y=(int)p->body.y,l=p->body.l;
-	double tsi,tco;
 	XPoint rc[25];
 	Display *d=p->d.disp;
 	Pixmap *w=p->d.backing;
 	GC red=p->d.gc_red, blue=p->d.gc_blue, white=p->d.gc_white;
 	GC grey=p->d.gc_grey, dgrey=p->d.gc_dgrey, yellow=p->d.gc_yellow;
 	int a=p->rot, xx=x/128, yy=y/128, dx=x&127, dy=y&127;
-	double si=sn[a], co=cs[a];
+	double si=sn[a], co=cs[a], tsi, tco;
 	int mx=WINWID/2-dx*co-dy*si, my=WINHGT/2+dx*si-dy*co;
 	int sx=xx-3;if (sx<0) sx=0;
 	int sy=yy-3;if (sy<0) sy=0;
@@ -57,10 +56,10 @@ static void draw_map(struct player *p) {
 			ddx=dx*co+dy*si; ddy=dy*co-dx*si;
 			if (e->r>20)
 				XDrawArc(d,w,red,ddx+mx-e->r+20,ddy-e->r+20+my,
-						 e->r*2-40,e->r*2-40,0,360*64);
+						e->r*2-40,e->r*2-40,0,360*64);
 			if (e->r>10)
 				XDrawArc(d,w,yellow,ddx+mx-e->r+10,ddy-e->r+10+my,
-						 e->r*2-20,e->r*2-20,0,360*64);
+						e->r*2-20,e->r*2-20,0,360*64);
 			XDrawArc(d,w,white,ddx+mx-e->r,ddy-e->r+my,e->r*2,e->r*2,0,360*64);
 		} return;
 	}
@@ -78,6 +77,7 @@ static void draw_map(struct player *p) {
 				case 'L':
 					XDrawLine(d,w,p->d.gc_dred,rc[0].x,rc[0].y,rc[2].x,rc[2].y);
 					XDrawLine(d,w,p->d.gc_dred,rc[1].x,rc[1].y,rc[3].x,rc[3].y);
+					// fallthrough
 				case 'l':
 					XDrawLines(d,w,p->d.gc_dred,rc,5,CoordModeOrigin);break;
 				case 'H':
@@ -196,8 +196,7 @@ static void draw_map(struct player *p) {
 			case MAP_TWALL0:XDrawLine(d,w,dgrey,xc,yc,xc+dx,yc+dy);break;
 			default:break;
 			}
-			xc=xc+dx;
-			yc=yc+dy;
+			xc=xc+dx;yc=yc+dy;
 		}
 	}
 	/* Draw in objects */
@@ -221,13 +220,13 @@ static void draw_map(struct player *p) {
 							u->flags|=OBJ_F_FLASH;
 						} else mc=dgrey;
 						if (p->flags&FLG_MINESWEEP)
-							XDrawArc(d,w,mc,mx+ddx-8,mx+ddy-8,16,16,0,360*64);
-					} else XDrawArc(d,w,blue,mx+ddx-8,mx+ddy-8,16,16,0,360*64);
+							XDrawArc(d,w,mc,mx+ddx-8,my+ddy-8,16,16,0,360*64);
+					} else XDrawArc(d,w,blue,mx+ddx-8,my+ddy-8,16,16,0,360*64);
 					break;
 				case OBJ_BONUS:
-					XDrawArc(d,w,white,mx+ddx-8,mx+ddy-8,16,16,0,360*64);
+					XDrawArc(d,w,white,mx+ddx-8,my+ddy-8,16,16,0,360*64);
 				default:
-					XDrawArc(d,w,yellow,mx+ddx-8,mx+ddy-8,16,16,0,360*64);
+					XDrawArc(d,w,yellow,mx+ddx-8,my+ddy-8,16,16,0,360*64);
 					break;
 				} // switch
 			}

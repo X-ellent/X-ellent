@@ -22,9 +22,9 @@ void setup_error_handler();
 void bloody_errors(struct player *p);
 int init_player_display(struct player *p,char *d);
 void shutdown_display(struct player *p);
-int Setup_value(struct player *p,char *dname,int val,int min,int max);
+int Setup_value(char *dname,int val,int min,int max);
 void Setup_color(struct player *p,char *dname,char *dcol);
-void Setup_string(struct player *p,char *dname,char *s,int l);
-int Setup_flag(struct player *p,char *dname,int on,int off,int def);
+void Setup_string(char *dname,char *s,int l);
+int Setup_flag(char *dname,int on,int off,int def);
 
 #endif
