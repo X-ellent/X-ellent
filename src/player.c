@@ -184,13 +184,13 @@ int setup_player() {
 }
 
 static void quit_player(struct player *p) {
-	char txt[1024];
 	p->flags&=~FLG_DEADCLR;
 	XAutoRepeatOn(p->d.disp);
 	p->qflags=0;
 	shutdown_display(p);
 	players--;
 	psend(p,"#DISCONNECT\n");
+	char txt[120];
 	sprintf(txt,"%s has just disconnected",p->name);
 	global_message(txt);
 }
@@ -245,92 +245,59 @@ static void away_stuff(struct player *p) {
 }
 
 extern void update_player(struct player *p) {
-	int xc,yc;
+	int xc,yc, t,i, bigfall=0;
 	double oxv,oyv;
-	int t,i;
-	int bigfall;
 	char tx[60];
 	double friction,inertia;
-	jumpable=-1;
+	jumpable=1;
 	switch (setjmp(jmpenv)) {
-	case 0:break;
-	case 1:return;
-	case 2:
-		bloody_errors(p);
-		return;
+		case 0:break;
+		case 1:return;
+		case 2:bloody_errors(p);return;
 	}
-	bigfall=0;
 	if (p->immune) p->immune--;
 	process_events(p);
-	if (!p->body.on) {
-		away_stuff(p);
-		jumpable=0;
-		longjmp(jmpenv,1);
-	}
+	if (!p->body.on) { away_stuff(p); jumpable=0; longjmp(jmpenv,1); }
 	if (p->qflags==7) quit_player(p);
-	if (p->homing) {
-		p->homing--;
-		if (!p->homing)
-			player_message(p,"Home base now available...");
-	}
-	if ((p->flags&FLG_FUELLING)&&(rd2(p->body.l,(int) p->body.x/128,
-									 (int) p->body.y/128)=='F')) {
-		int x,y;
-		x=(int) p->body.x;y=(int) p->body.y;
+	if (p->homing-- && !p->homing) player_message(p,"Home base now available...");
+	if ((p->flags&FLG_FUELLING)&&(rd2(p->body.l,(int)p->body.x/128,
+									 (int)p->body.y/128)=='F')) {
+		int x=(int)p->body.x, y=(int)p->body.y;
 		x&=127;y&=127;
-		if ((x>32)&&(x<=96)&&(y>32)&&(y<=96)) {
-			if (p->cash>=FUEL_COST) {
-				p->cash-=FUEL_COST;
-				p->fuel+=FUEL_PLUS;
-				if (p->fuel>p->maxfuel) p->fuel=p->maxfuel;
-			}
+		if ((x>32)&&(x<=96)&&(y>32)&&(y<=96) && p->cash>=FUEL_COST) {
+			p->cash-=FUEL_COST; p->fuel+=FUEL_PLUS;
+			if (p->fuel>p->maxfuel) p->fuel=p->maxfuel;
 		}
 	}
 	if ((p->flags&FLG_THRUST)&&(p->fuel)) {
-		t=4000*p->thrust/100;
-		p->fuel-=p->thrust;
+		t=4000*p->thrust/100; p->fuel-=p->thrust;
 		if (p->fuel<0) p->fuel=0;
-		p->body.xf+=t*sn[(int) p->rot];
-		p->body.yf-=t*cs[(int) p->rot];
+		p->body.xf+=t*sn[(int)p->rot]; p->body.yf-=t*cs[(int)p->rot];
 	}
 	if (p->flags&FLG_CLOAKING) {
 		p->fuel-=CLOAK_FUEL_DRAIN;
-		if (p->fuel<=0) {
-			p->flags&=~FLG_CLOAKING;
-			p->fuel=0;
-		}
+		if (p->fuel<=0) { p->flags&=~FLG_CLOAKING; p->fuel=0; }
 	}
 	if (p->flags&FLG_ANTICLOAK) {
 		p->fuel-=ANTICLOAK_FUEL_DRAIN;
-		if (p->fuel<=0) {
-			p->flags&=~FLG_ANTICLOAK;
-			p->fuel=0;
-		}
+		if (p->fuel<=0) { p->flags&=~FLG_ANTICLOAK; p->fuel=0; }
 	}
 	if (p->flags&FLG_MINESWEEP) {
 		p->fuel-=SWEEP_FUEL_DRAIN;
-		if (p->fuel<=0) {
-			p->flags&=~FLG_MINESWEEP;
-			p->fuel=0;
-		}
+		if (p->fuel<=0) { p->flags&=~FLG_MINESWEEP; p->fuel=0; }
 	}
 	if (p->flags&FLG_INVIS) {
 		p->fuel-=INVIS_FUEL_DRAIN;
-		if (p->fuel<=0) {
-			p->flags&=~FLG_INVIS;
-			p->fuel=0;
-		}
+		if (p->fuel<=0) { p->flags&=~FLG_INVIS; p->fuel=0; }
 	}
 	apply_forces(&p->body,p->flags&FLG_BRAKING);
-	xc=((int)p->body.x)/128;
-	yc=((int)p->body.y)/128;
+	xc=((int)p->body.x)/128; yc=((int)p->body.y)/128;
 	if (p->body.height==0) {
-		double vel;
 		if (is_hole(p->body.l,p->body.x,p->body.y)) {
 			p->onground=GROUND_TIME;
-			if ((p->body.fallen==0)&&
-				(rd2(p->body.l,(int)p->body.x/128,(int)p->body.y/128)!='l')) {
-				vel=(p->body.xv*p->body.xv+p->body.yv*p->body.yv);
+			if ((p->body.fallen==0)&&(rd2(p->body.l,
+							(int)p->body.x/128,(int)p->body.y/128)!='l')) {
+				double vel=(p->body.xv*p->body.xv+p->body.yv*p->body.yv);
 				if (vel<400) {p->body.fallen=1;p->body.height++;};
 				if (vel<200) {p->body.fallen=2;};
 				if (vel<100) {p->body.fallen=2;p->body.height--;};
@@ -344,12 +311,9 @@ extern void update_player(struct player *p) {
 					psend(p,"#FELL OFF\n");
 					p->body.fallen=0;
 					bigfall=-1;
-				} else {
-					p->body.fallen++;
-					p->body.height=3;
-				}
+				} else { p->body.fallen++; p->body.height=3; }
 			}
-} else {
+		} else {
 			if (p->body.fallen>9) {
 				sprintf(tx,"%s just fell off",p->name);
 				global_message(tx);
@@ -364,52 +328,34 @@ extern void update_player(struct player *p) {
 				}
 				p->onground--;
 			} else {
-				p->ox=p->oox;
-				p->oy=p->ooy;
-				p->olvl=p->oolvl;
-				p->oox=p->body.x;
-				p->ooy=p->body.y;
-				p->oolvl=p->body.l;
+				p->ox=p->oox; p->oy=p->ooy; p->olvl=p->oolvl;
+				p->oox=p->body.x; p->ooy=p->body.y; p->oolvl=p->body.l;
 			}
 			if (p->locate&&(--p->loctime<0)) {
 				p->loctime=LOCATE_TIME;
 				psend(p,(sprintf(tx,"#LOCATE %d %d:%d,%d\n",(int)p->rot,
-								 p->body.l,(int)p->body.x,(int)p->body.y),
-						 tx));
+								 p->body.l,(int)p->body.x,(int)p->body.y),tx));
 			}
 			if (p->locate&&(--p->tartime<0)) {
-				struct addon *tarad;
 				p->tartime=LOCATE_TARGET_TIME;
-				tarad=find_addon(p->firstadd,ADD_TARGET);
+				struct addon *tarad=find_addon(p->firstadd,ADD_TARGET);
 
 				if ((tarad)&&(tarad->level>2)&&(p->ptarg)&&
-					((!(p->ptarg->flags&FLG_CLOAKING))||
-					 can_locate(p,p->ptarg))) {
+						((!(p->ptarg->flags&FLG_CLOAKING))||can_locate(p,p->ptarg))) {
 					if (p->ptarg->body.l==p->body.l) {
 						psend(p,(sprintf(txt,"#TARGET %s %d:%d,%d\n",
-										p->ptarg->user,
-										p->ptarg->body.l,
-										(int) p->ptarg->body.x,
-										 (int) p->ptarg->body.y),txt));
-					} else {
-						if (((p->body.l+tarad->info[1])==p->ptarg->body.l)&&
-							((!(p->ptarg->flags&FLG_CLOAKING))||
-							 can_locate(p,p->ptarg))) {
-							psend(p,(sprintf(txt,"#TARGET %s %s\n",
-											p->ptarg->user,
-											(tarad->info[1]>0)?
-											"Below":"Above"),txt));
-						}
+							p->ptarg->user, p->ptarg->body.l,(int)p->ptarg->body.x,(int)p->ptarg->body.y),txt));
+					} else if (((p->body.l+tarad->info[1])==p->ptarg->body.l)&&
+							((!(p->ptarg->flags&FLG_CLOAKING))||can_locate(p,p->ptarg))) {
+						psend(p,(sprintf(txt,"#TARGET %s %s\n", p->ptarg->user,
+										(tarad->info[1]>0)?"Below":"Above"),txt));
 					}
 				}
 			}
 		}
 	} else {
-		if (p->body.fallen<3) {
-			if (p->body.fallen==1) p->body.height++;
-		} else {
-			p->body.height--;
-		}
+		if (p->body.fallen>=3) p->body.height--;
+		else if (p->body.fallen==1) p->body.height++;
 		p->body.fallen++;
 	}
 	if (bigfall!=-1) {
@@ -660,14 +606,13 @@ extern void init_all_weap() {
 	weap_name[WEP_LASER]="Laser Cannon";
 }
 
-extern struct player *find_player(char *n) {
+struct player *find_player(char *n) {
 	struct player *p;
-	for (p=playone;p;p=p->next)
-		if (strcmp(p->user,n)==0) return p;
+	for (p=playone;p;p=p->next) if (strcmp(p->user,n)==0) return p;
 	return 0;
 }
 
-extern void save_players() {
+void save_players() {
 	struct player *p;
 	struct addon *ao;
 	char ft[128];
@@ -702,19 +647,14 @@ extern void save_players() {
 		ft[f]=0;
 		fprintf(pd,"%d/%d/%d/%d/%d/%s/%d\n",p->thrust,p->spin,p->ethrust,
 				p->espin,p->step,ft,p->weap);
-		for (f=1;f<MAX_WEAPS;f++)
-			if (p->weap_mask&(1<<f))
-				fprintf(pd,"W%d/%d\n",f,p->ammo[f]);
-		for (f=0;f<9;f++)
-			if (p->slots[f]&&!p->slotobj[f])
-				fprintf(pd,"M%d/%d/%d\n",p->slots[f],p->size[f],p->mode[f]);
-		for (f=0;f<9;f++)
-			if (p->homeslots[f])
-				fprintf(pd,"S%d/%d/%d\n",p->homeslots[f],p->homesize[f],
-						p->homemode[f]);
+		for (f=1;f<MAX_WEAPS;f++) if (p->weap_mask&(1<<f))
+			fprintf(pd,"W%d/%d\n",f,p->ammo[f]);
+		for (f=0;f<9;f++) if (p->slots[f]&&!p->slotobj[f])
+			fprintf(pd,"M%d/%d/%d\n",p->slots[f],p->size[f],p->mode[f]);
+		for (f=0;f<9;f++) if (p->homeslots[f])
+			fprintf(pd,"S%d/%d/%d\n",p->homeslots[f],p->homesize[f],p->homemode[f]);
 		for (ao=p->firstadd;ao;ao=ao->next)
-			fprintf(pd,"A%d/%d/%d\n",ao->is->type,ao->level,
-					ao->damage);
+			fprintf(pd,"A%d/%d/%d\n",ao->is->type,ao->level,ao->damage);
 		fprintf(pd,"\n");
 	}
 	fprintf(pd,"END\n");
@@ -722,32 +662,22 @@ extern void save_players() {
 }
 
 static void mychop() {
-	char *c;
-	int n;
-	c=(chop[0]=inbuf);
-	n=1;
-	while((c=(char *)strchr(c,'/'))) {
-		*c=0;
-		c++;
-		chop[n++]=c;
-	}
+	char *c=(chop[0]=inbuf);
+	int n=1;
+	while((c=(char*)strchr(c,'/')))
+		{ *c=0;c++;chop[n++]=c; }
 }
 
 static int mygets(FILE *pd) {
 	int l;
+	if (fgets(inbuf, sizeof(inbuf), pd) == NULL)
+		{ inbuf[0] = '\0'; return 0; }
 
-	if (fgets(inbuf, sizeof(inbuf), pd) == NULL) {
-		inbuf[0] = '\0';
-		return 0;
-	}
-
-	if ((l=strlen(inbuf))) {
-		if (inbuf[l-1]=='\n') inbuf[--l]=0;
-	}
+	if ((l=strlen(inbuf)) && inbuf[l-1]=='\n') inbuf[--l]=0;
 	return l;
 }
 
-extern void load_players() {
+void load_players() {
 	struct player *p;
 	int i;
 	struct addon *ao;
@@ -773,11 +703,8 @@ extern void load_players() {
 
 		mychop();
 		strncpy(p->user,chop[0],16);
-		p->user[16-1] = '\0';
 		strncpy(p->name,chop[1],31);
-		p->name[31-1] = '\0';
 		strncpy(p->pass,chop[2],8);
-		p->pass[8-1] = '\0';
 		p->score=atoi(chop[3]);
 		p->cash=atoi(chop[4]);
 		p->rating=atoi(chop[5]);
@@ -797,18 +724,16 @@ extern void load_players() {
 		p->ethrust=atoi(chop[2]);
 		p->espin=atoi(chop[3]);
 		p->step=atoi(chop[4]);
-		for (i=0;chop[5][i];i++)
-			switch (chop[5][i]) {
+		for (i=0;chop[5][i];i++) switch (chop[5][i]) {
 			case 'S':p->flags|=FLG_STATUS;break;
 			case 'N':p->flags|=FLG_IDENT;break;
 			case 'W':p->flags|=FLG_NOWEP;break;
 			case 'I':p->flags|=FLG_NOINSTR;break;
 			case 'M':p->flags|=FLG_NOMSG;break;
-			}
+		}
 		p->weap=atoi(chop[6]);
 		while (mygets(pd)) {
-			mychop();
-			chop[0]++;
+			mychop(); chop[0]++;
 			switch(*inbuf) {
 			case 'W':
 				i=atoi(chop[0]);
@@ -816,24 +741,20 @@ extern void load_players() {
 				p->weap_mask|=(1<<i);
 				break;
 			case 'M':
-				for (i=0;i<9;i++)
-					if (p->slots[i]==OBJ_EMPTY) {
-						p->slots[i]=atoi(chop[0]);
-						p->size[i]=atoi(chop[1]);
-						p->mode[i]=atoi(chop[2]);
-						p->slotobj[i]=0;
-						i=10;
-					}
-				break;
+				for (i=0;i<9;i++) if (p->slots[i]==OBJ_EMPTY) {
+					p->slots[i]=atoi(chop[0]);
+					p->size[i]=atoi(chop[1]);
+					p->mode[i]=atoi(chop[2]);
+					p->slotobj[i]=0;
+					i=10;
+				} break;
 			case 'S':
-				for (i=0;i<9;i++)
-					if (p->homeslots[i]==OBJ_EMPTY) {
-						p->homeslots[i]=atoi(chop[0]);
-						p->homesize[i]=atoi(chop[1]);
-						p->homemode[i]=atoi(chop[2]);
-						i=10;
-					}
-				break;
+				for (i=0;i<9;i++) if (p->homeslots[i]==OBJ_EMPTY) {
+					p->homeslots[i]=atoi(chop[0]);
+					p->homesize[i]=atoi(chop[1]);
+					p->homemode[i]=atoi(chop[2]);
+					i=10;
+				} break;
 			case 'A':
 				i=atoi(chop[0]);
 				ao=add_addon(i);
@@ -843,24 +764,21 @@ extern void load_players() {
 					ao->level=atoi(chop[1]);
 					ao->damage=atoi(chop[2]);
 					new_addon_level(p,ao);
-				}
-				break;
-			}
-		}
-	}
+				} break;
+			} // switch
+		} // while mygets
+	} // while not END
 	fclose(pd);
 }
 
-extern int can_locate(struct player *p,struct player *q) {
-	struct addon *anticlk;
-	struct addon *othclk;
+int can_locate(struct player *p,struct player *q) {
 	if (!p||!q) return 0;
 	if (!q->body.on) return 0;
-	if (!(q->flags&FLG_CLOAKING)) return -1;
-	othclk=find_addon(q->firstadd,ADD_CLOAKING);
-	if (!othclk) return -1;
+	if (!(q->flags&FLG_CLOAKING)) return 1;
+	struct addon *othclk=find_addon(q->firstadd,ADD_CLOAKING);
+	if (!othclk) return 1;
 	if (!(p->flags&FLG_ANTICLOAK)) return 0;
-	anticlk=find_addon(p->firstadd,ADD_ANTICLOAK);
+	struct addon *anticlk=find_addon(p->firstadd,ADD_ANTICLOAK);
 	if (othclk->level>anticlk->level) return 0;
-	return -1;
+	return 1;
 }

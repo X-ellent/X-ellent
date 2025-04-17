@@ -15,21 +15,11 @@
 
 #include "constants.h"
 
-void init_term(struct player *p);
-void exit_term(struct player *p);
+void init_term(struct player *);
+void exit_term(struct player *);
 void init_all_term();
-void run_program(struct player *p);
-void term_option(struct player *p,int n);
-int terminal_input(int chan,int state,char *s);
-void terminal_disconnect(int n);
-void tsend(int n,char *s);
-void psend(struct player *p,char *s);
-int terminal_operand(struct player *p,char *s);
-int terminal_command(struct player *p,char *sys,char *com);
-int system_command(struct player *p,char *com);
-int login_command(struct player *p,char *com);
-int teleport_command(struct player *p,char *com);
-int lift_command(struct player *p,char *com);
-int weapons_command(struct player *p,char *com);
+void run_program(struct player *);
+void term_option(struct player *,int);
+int terminal_input(int,int,char *);
 
 #endif

@@ -447,7 +447,7 @@ static int term_print(struct player *p,char *c,int l) {
 
 void exit_term(struct player *p) {
 	add_pbody(p);
-	p->term->p=p->term=0;
+	p->term->p=0;p->term=0;
 	psend(p,"#TERM EXIT\n");
 }
 
