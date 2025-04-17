@@ -64,7 +64,6 @@ struct player {
 	int delay;
 	struct menu *shopmenu;
 	struct login *term;
-	char mapmem[MAXDEPTH];
 	int shopsel;
 	int immune;
 	struct player *ptarg;

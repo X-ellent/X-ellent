@@ -328,7 +328,6 @@ void draw_map_level(struct player *p,int l) {
 	GC grey=p->d.gc_grey, dgrey=p->d.gc_dgrey, yellow=p->d.gc_yellow;
 	XFillRectangle(d,w,p->d.gc_black,0,0,WINWID,WINHGT);
 	sprintf(txt,"Map of level #%d",l);
-	if (p->mapmem[l]) strcat(txt," [Mem]");
 	XDrawString(d,w,p->d.gc_red,20,p->d.fh,txt,strlen(txt));
 	int wx=WINWID/((map.wid>map.hgt)?map.wid:map.hgt);
 	int mx=WINWID/2-wx*(map.wid)/2, my=WINHGT/2-wx*(map.hgt)/2;

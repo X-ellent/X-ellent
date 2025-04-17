@@ -176,7 +176,6 @@ void home_quit(struct player *p) {
 	p->home->owner=0;
 	p->oldhome=p->home; // Only remembered as long as the server is running
 	p->home=0;
-	for (i=0;i<map.depth;i++) p->mapmem[i]=0;
 	remove_body(&p->body);
 	p->flags&=~FLG_DEADCLR;
 	XAutoRepeatOn(p->d.disp);

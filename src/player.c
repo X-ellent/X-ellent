@@ -132,7 +132,7 @@ int setup_player() {
 		return 0;
 	}
 	if (strcmp(nm, p->name)) {
-		new_name = true;
+		new_name = 1;
 		strncpy(p->name, nm, 31);
 	}
 	char *c = ctpass();
@@ -159,7 +159,6 @@ int setup_player() {
 	p->slot=p->ptarg=p->scount=p->delay=p->onground=0;
 	p->immune=DEATH_IMMUNE;
 	p->msg[0][0]=p->msg[1][0]=p->msg[2][0]=p->msg[3][0]=0;
-	for (int i=0;i<map.depth;i++) p->mapmem[i]=0;
 	players++;
 
 	/* Set configurable things */
@@ -199,7 +198,6 @@ static void quit_player(struct player *p) {
 static void lose_items(struct player *p) {
 	int i;
 	struct addon *ad;
-	for (i=0;i<map.depth;i++) p->mapmem[i]=0;
 	for (i=0;i<9;i++) if (p->slots[i]&&(!p->slotobj[i])) {
 		p->slots[i]=OBJ_EMPTY;
 		p->size[i]=0;
@@ -216,7 +214,6 @@ static void away_stuff(struct player *p) {
 		p->home->owner=0;
 		p->home=0;
 		lose_items(p);
-		for (int i=0;i<map.depth;i++) p->mapmem[i]=0;
 		remove_body(&p->body);
 		return;
 	}
