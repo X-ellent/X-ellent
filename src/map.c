@@ -72,17 +72,14 @@ void create_map() {
 	for (l=0;l<map.depth;l++) {
 		map.data[l]=(char*)calloc(map.wid,map.hgt);
 		map.data2[l]=(char*)calloc(map.wid,map.hgt);
-		map.data3[l]=(char*)calloc(map.wid,map.hgt);
 		readin(buf);for (y=1;y<(map.hgt-1);y++) {
 			readin(buf);for (x=1;x<(map.wid-1);x++) {
 				rd(l,x,y)|=MAP_SOLID;
 				rd2(l,x,y)=buf[x-1];
-				map.data3[l][x+map.wid*y]|=MAP_NET_NODE;
 				switch (buf[x-1]) {
 				case ' ':
 				case  0 :
 				case '.':
-					map.data3[l][x+map.wid*y]&=~MAP_NET_NODE;
 					rd2(l,x,y)=0; // TODO make MAP_SOLID defunct
 					rd(l,x,y)&=~MAP_SOLID; break;
 				case 'L':add_lift(l,x,y);break;

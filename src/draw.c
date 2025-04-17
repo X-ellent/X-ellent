@@ -455,8 +455,7 @@ static void draw_me(struct player *p) {
 	int antilev;
 	int cansee=0;/* can see target?? (if have one)*/
 	char txt[80];
-	Display *d=p->d.disp;
-	Pixmap w=p->d.backing;
+	Display *d=p->d.disp; Pixmap w=p->d.backing;
 	GC red=p->d.gc_red,blue=p->d.gc_blue,white=p->d.gc_white;
 	GC yellow=p->d.gc_yellow,dgrey=p->d.gc_dgrey;
 	int mx=WINWID/2,my=WINHGT/2;
@@ -465,7 +464,7 @@ static void draw_me(struct player *p) {
 	XDrawArc(d,w,white,mx-rd/4,my-rd/4,rd/2,rd/2,0,360*64);
 	XDrawArc(d,w,p->immune?yellow:white,mx-rd,my-rd,rd*2,rd*2,0,360*64);
 	XDrawLine(d,w,white,mx,my-rd/4,mx,my-3*rd/4);
-	double si=sn[360-(int) p->rot], co=cs[360-(int) p->rot];
+	double si=sn[360-(int)p->rot], co=cs[360-(int)p->rot];
 	radad=find_addon(p->firstadd,ADD_RADAR);
 	tarad=find_addon(p->firstadd,ADD_TARGET);
 	visad=find_addon(p->firstadd,ADD_VISUAL);
@@ -484,8 +483,7 @@ static void draw_me(struct player *p) {
 				case 2: tx=dx*co-dy*si;dy=dy*co+dx*si;dx=tx;
 						tx=rx*co-ry*si;ry=ry*co+rx*si;rx=tx; // fallthrough
 				case 1:
-				default:
-					XDrawLine(d,w,p->d.gc_yellow,mx+dx,my+dy,mx+rx,my+ry);
+				default:XDrawLine(d,w,p->d.gc_yellow,mx+dx,my+dy,mx+rx,my+ry);
 			}
 		}
 	}
@@ -494,17 +492,16 @@ static void draw_me(struct player *p) {
 		for (struct player *o=playone;o;o=o->next)
 			if ((!(o->flags&FLG_CLOAKING))&&(o->body.on)&&(o!=p)&&
 				((p->body.l+radad->info[1])==o->body.l)) {
-				dx=(o->body.x-p->body.x); dy=(o->body.y-p->body.y);
+				dx=o->body.x-p->body.x; dy=o->body.y-p->body.y;
 				int t=dx*co-si*dy;dy=dy*co+si*dx;dx=t;
 				rx=dx/rng;ry=dy/rng;
-				if ((rx<100)&&(rx>-100)&&(ry<100)&&(ry>-100)) {
+				if ((rx<100)&&(rx>-100)&&(ry<100)&&(ry>-100))
 					if ((o==p->ptarg)&&(tarad)) {
 						XDrawPoint(d,w,red,mx+rx,my+ry);
 						XDrawPoint(d,w,red,mx+rx,my+ry+1);
 						XDrawPoint(d,w,red,mx+rx+1,my+ry+1);
 						XDrawPoint(d,w,red,mx+rx+1,my+ry);
-						if ((tarad->level>=3)&&
-							(dx<mx)&&(dx>-mx)&&(dy<my)&&(dy>-my))
+						if ((tarad->level>=3)&&(dx<mx)&&(dx>-mx)&&(dy<my)&&(dy>-my))
 							XDrawRectangle(d,w,red,mx+dx-25,my+dy-25,50,50);
 					} else {
 						XDrawPoint(d,w,blue,mx+rx,my+ry);
@@ -512,7 +509,6 @@ static void draw_me(struct player *p) {
 						XDrawPoint(d,w,blue,mx+rx+1,my+ry+1);
 						XDrawPoint(d,w,blue,mx+rx+1,my+ry);
 					}
-				}
 			}
 	}
 	cansee=0;
@@ -526,12 +522,12 @@ static void draw_me(struct player *p) {
 	}
 	if (tarad && radad) {
 		if (cansee&&((p->body.l+radad->info[1])==p->ptarg->body.l)) {
-			dx=(p->ptarg->body.x-p->body.x); dy=(p->ptarg->body.y-p->body.y);
+			dx=p->ptarg->body.x-p->body.x;dy=p->ptarg->body.y-p->body.y;
 			int t=100*(1<<radad->info[2]);
 			if ((p->body.l==p->ptarg->body.l)||((dx<t)&&(dx>-t)&&(dy<t)&&(dy>-t))) {
 				t=dx*co-si*dy;dy=dy*co+si*dx;dx=t;
 				double r=sqrt(dx*dx+dy*dy);
-				dx=(90*dx)/r;dy=(90*dy)/r;
+				dx=90*dx/r;dy=90*dy/r;
 				XDrawArc(d,w,red,mx+dx-5,my+dy-5,10,10,0,64*360);
 				if (tarad->level>=2) {
 					sprintf(txt,"%d",(int)(r/1.28));
@@ -684,10 +680,9 @@ static void draw_me(struct player *p) {
 	}
 }
 
-extern void DrawMeter(struct player *p,int x,int y,int l,int h,int max,int val) {
+void DrawMeter(struct player *p,int x,int y,int l,int h,int max,int val) {
 	char v[32];
-	Display *d=p->d.disp;
-	Pixmap w=p->d.backing;
+	Display *d=p->d.disp; Pixmap w=p->d.backing;
 	GC red=p->d.gc_red,white=p->d.gc_white,grey=p->d.gc_grey;
 	sprintf(v,"%d",val);
 	XDrawString(d,w,red,x+l+10,y,v,strlen(v));
@@ -702,39 +697,39 @@ extern void DrawMeter(struct player *p,int x,int y,int l,int h,int max,int val) 
 }
 
 static void draw_others(struct player *p) {
-	int mx,my, cx,cy, rx,ry,dr, rd;
+	int mx,my, cx,cy, rx,ry,dr, r;
 	char txt[256];
 	Display *d=p->d.disp; Pixmap w=p->d.backing;
 	GC red=p->d.gc_red,blue=p->d.gc_blue,white=p->d.gc_white,yellow=p->d.gc_yellow;
-	double ms=-sn[(int) p->rot], mc=cs[(int) p->rot];
 	struct player *o;
+	double ms=-sn[(int)p->rot], mc=cs[(int)p->rot];
 	for (o=playone;o;o=o->next) if (!(o->flags&FLG_INVIS)&&(o->body.on)&&
 				(o!=p)&&(o->body.l==p->body.l)) {
 		int l,mx=(o->body.x-p->body.x), my=(o->body.y-p->body.y);
 		dr=(int)(o->rot-p->rot+720)%360;
 		cx=WINWID/2+mx*mc-my*ms; cy=WINHGT/2+my*mc+mx*ms;
-		rd=o->body.radius+2*o->body.height;
-		rx=rd*3*sn[dr]/4; ry=-rd*3*cs[dr]/4;
-		XDrawArc(d,w,white,cx-rd/4,cy-rd/4,rd/2,rd/2,0,360*64);
-		XDrawArc(d,w,o->immune?yellow:white,cx-rd,cy-rd,rd*2,rd*2,0,360*64);
+		r=o->body.radius+2*o->body.height;
+		rx=r*3*sn[dr]/4; ry=-r*3*cs[dr]/4;
+		XDrawArc(d,w,white,cx-r/4,cy-r/4,r/2,r/2,0,360*64);
+		XDrawArc(d,w,o->immune?yellow:white,cx-r,cy-r,r*2,r*2,0,360*64);
 		XDrawLine(d,w,white,cx+rx/3,cy+ry/3,cx+rx,cy+ry);
 		if (o->flags&FLG_IDENT) {
 			l=strlen(o->name);
 			XDrawString(d,w,white,cx-p->d.tfont->max_bounds.width*l/2,
-					cy+rd+8+p->d.tfont->max_bounds.ascent,o->name,l);
+					cy+r+8+p->d.tfont->max_bounds.ascent,o->name,l);
 		}
 		sprintf(txt,"%d",o->rating); l=strlen(txt);
 		if (p->rating<=(o->rating*2))
 			XDrawString(d,w,white,cx-p->d.tfont->max_bounds.width*l/2,
-					cy-rd-8-p->d.tfont->max_bounds.descent,txt,l);
+					cy-r-8-p->d.tfont->max_bounds.descent,txt,l);
 		else XDrawString(d,w,p->d.gc_fred,
 					cx-p->d.tfont->max_bounds.width*l/2,
-					cy-rd-8-p->d.tfont->max_bounds.descent,txt,l);
+					cy-r-8-p->d.tfont->max_bounds.descent,txt,l);
 	}
 	for (struct trolley *tr=firsttrol;tr;tr=tr->next) if (tr->body.l==p->body.l) {
 		int mx=tr->body.x-p->body.x, my=tr->body.y-p->body.y;
 		cx=WINWID/2+mx*mc-my*ms; cy=WINHGT/2+my*mc+mx*ms;
-		int r=tr->body.radius;
+		r=tr->body.radius;
 		XDrawArc(d,w,white,cx-r,cy-r,r*2,r*2,tr->ang*64,120*64);
 		XDrawArc(d,w,red,cx-r,cy-r,r*2,r*2,((tr->ang+120)%360)*64,120*64);
 		XDrawArc(d,w,blue,cx-r,cy-r,r*2,r*2,((tr->ang+240)%360)*64,120*64);
@@ -747,10 +742,9 @@ static void draw_others(struct player *p) {
 }
 
 static void draw_falling(struct player *p) {
-	Display *d=p->d.disp;
-	Pixmap w=p->d.backing;
+	Display *d=p->d.disp; Pixmap w=p->d.backing;
 	GC white=p->d.gc_white;
-	int mx=WINWID/2,my=WINHGT/2;
+	int mx=WINWID/2, my=WINHGT/2;
 	int rd=800/((p->body.fallen++)+20);
 	XFillRectangle(d,w,p->d.gc_black,0,0,WINWID,WINHGT);
 	XDrawRectangle(d,w,p->d.gc_blue,mx-100,my-100,200,200);
