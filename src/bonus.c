@@ -24,7 +24,6 @@ static void add_bonus();
 static void get_bogus(struct player *p);
 static void get_bonus_mine(struct player *p);
 static void get_bonus_ammo(struct player *p);
-static void get_bonus_mapmem(struct player *p);
 static void get_mega_bonus(struct player *p);
 static void get_mega_bogus(struct player *p);
 
@@ -98,7 +97,7 @@ void get_bonus(struct player *p) {
 	case 13:p->fuel+=400*200;txt="Wow Excellent! Load of fuel!";break;
 	case 14:get_bonus_mine(p);break;
 	case 15:get_bonus_ammo(p);break;
-	case 16:get_bonus_mapmem(p);break;
+	case 16:get_bonus(p);break;
 	case 17:get_bonus_ammo(p);break;
 	case 18:get_bogus(p);break;
 	case 19:get_mega_bonus(p);break;
@@ -162,10 +161,6 @@ static void get_bonus_ammo(struct player *p) {
 		player_message(p,"Bonus Ammunition!");
 		return;
 	}
-	get_bonus(p);
-}
-
-static void get_bonus_mapmem(struct player *p) {
 	get_bonus(p);
 }
 
