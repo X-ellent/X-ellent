@@ -702,11 +702,9 @@ extern void DrawMeter(struct player *p,int x,int y,int l,int h,int max,int val) 
 }
 
 static void draw_others(struct player *p) {
-	int cx,cy,rx,ry,dr,rd;
-	struct trolley *tr;
+	int mx,my, cx,cy, rx,ry,dr, rd;
 	char txt[256];
-	Display *d=p->d.disp;
-	Pixmap w=p->d.backing;
+	Display *d=p->d.disp; Pixmap w=p->d.backing;
 	GC red=p->d.gc_red,blue=p->d.gc_blue,white=p->d.gc_white,yellow=p->d.gc_yellow;
 	double ms=-sn[(int) p->rot], mc=cs[(int) p->rot];
 	struct player *o;
@@ -723,25 +721,25 @@ static void draw_others(struct player *p) {
 		if (o->flags&FLG_IDENT) {
 			l=strlen(o->name);
 			XDrawString(d,w,white,cx-p->d.tfont->max_bounds.width*l/2,
-						cy+rd+8+p->d.tfont->max_bounds.ascent,o->name,l);
+					cy+rd+8+p->d.tfont->max_bounds.ascent,o->name,l);
 		}
 		sprintf(txt,"%d",o->rating); l=strlen(txt);
 		if (p->rating<=(o->rating*2))
 			XDrawString(d,w,white,cx-p->d.tfont->max_bounds.width*l/2,
-						cy-rd-8-p->d.tfont->max_bounds.descent,txt,l);
+					cy-rd-8-p->d.tfont->max_bounds.descent,txt,l);
 		else XDrawString(d,w,p->d.gc_fred,
 					cx-p->d.tfont->max_bounds.width*l/2,
 					cy-rd-8-p->d.tfont->max_bounds.descent,txt,l);
 	}
-	for (tr=firsttrol;tr;tr=tr->next) if (tr->body.l==p->body.l) {
-		int mx=(tr->body.x-p->body.x), my=(tr->body.y-p->body.y);
+	for (struct trolley *tr=firsttrol;tr;tr=tr->next) if (tr->body.l==p->body.l) {
+		int mx=tr->body.x-p->body.x, my=tr->body.y-p->body.y;
 		cx=WINWID/2+mx*mc-my*ms; cy=WINHGT/2+my*mc+mx*ms;
-		int rd=tr->body.radius;
-		XDrawArc(d,w,white,cx-rd,cy-rd,rd*2,rd*2,tr->ang*64,120*64);
-		XDrawArc(d,w,red,cx-rd,cy-rd,rd*2,rd*2,((tr->ang+120)%360)*64,120*64);
-		XDrawArc(d,w,blue,cx-rd,cy-rd,rd*2,rd*2,((tr->ang+240)%360)*64,120*64);
+		int r=tr->body.radius;
+		XDrawArc(d,w,white,cx-r,cy-r,r*2,r*2,tr->ang*64,120*64);
+		XDrawArc(d,w,red,cx-r,cy-r,r*2,r*2,((tr->ang+120)%360)*64,120*64);
+		XDrawArc(d,w,blue,cx-r,cy-r,r*2,r*2,((tr->ang+240)%360)*64,120*64);
 		for (o=tr->holder;o;o=o->nexthold) {
-			mx=(o->body.x-p->body.x); my=(o->body.y-p->body.y);
+			mx=o->body.x-p->body.x; my=o->body.y-p->body.y;
 			int px=WINWID/2+mx*mc-my*ms, py=WINHGT/2+my*mc+mx*ms;
 			XDrawLine(d,w,p->d.gc_yellow,cx,cy,px,py);
 		}
@@ -760,7 +758,8 @@ static void draw_falling(struct player *p) {
 	XDrawArc(d,w,white,mx-rd/2,my-rd/2,rd,rd,0,360*64);
 	XDrawLine(d,w,white,mx,my-rd/16,mx,my-3*rd/8);
 	if (!(p->flags&FLG_NOMSG)) for (int i=0;i<4;i++)
-		XDrawString(d,w,p->d.gc_blue,16,WINHGT-p->d.fh*(i+1),p->msg[i],strlen(p->msg[i]));
+		XDrawString(d,w,p->d.gc_blue,16,WINHGT-p->d.fh*(i+1),p->msg[i],
+				strlen(p->msg[i]));
 }
 
 
