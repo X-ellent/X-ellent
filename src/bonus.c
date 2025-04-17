@@ -24,8 +24,6 @@ static void add_bonus();
 static void get_bogus(struct player *p);
 static void get_bonus_mine(struct player *p);
 static void get_bonus_ammo(struct player *p);
-static void get_mega_bonus(struct player *p);
-static void get_mega_bogus(struct player *p);
 
 static struct object *firstbonus;
 static int bonuscount;
@@ -62,8 +60,7 @@ void vape_bonus(struct object *o) {
 void update_bonus() {
 	for (struct object *o=firstbonus;o;o=o->has.same) {
 		o->count--;
-		if (o->count<0)
-			o->flags|=OBJ_F_EXPLODE;
+		if (o->count<0) o->flags|=OBJ_F_EXPLODE;
 		if (o->count==BONUS_SHOUT) {
 			sprintf(txt,"** BONUS On level %d at %d,%d!! **",o->l,
 					(int)o->x/128,(int)o->y/128);
@@ -90,17 +87,17 @@ void get_bonus(struct player *p) {
 	case 6:p->cash+=150;txt="Excellent! Bonus Cash!";break;
 	case 7:p->cash+=200;txt="Excellent! Bonus Cash!";break;
 	case 8:p->cash+=(random()%500+100);txt="BONUS!!!! A stash of cash!";break;
-	case 9:get_bogus(p);break;
-	case 10:p->fuel+=20*200;txt="Wow! Some fuel!";break;
-	case 11:p->fuel+=80*200;txt="Wow! Some fuel!";break;
-	case 12:p->fuel+=150*200;txt="Wow! Some fuel!";break;
-	case 13:p->fuel+=400*200;txt="Wow Excellent! Load of fuel!";break;
-	case 14:get_bonus_mine(p);break;
+	case 9:p->fuel+=20*200;txt="Wow! Some fuel!";break;
+	case 10:p->fuel+=80*200;txt="Wow! Some fuel!";break;
+	case 11:p->fuel+=150*200;txt="Wow! Some fuel!";break;
+	case 12:p->fuel+=400*200;txt="Wow Excellent! Load of fuel!";break;
+	case 13:get_bonus_mine(p);break;
+	case 14:
 	case 15:get_bonus_ammo(p);break;
-	case 16:get_bonus(p);break;
-	case 17:get_bonus_ammo(p);break;
-	case 18:get_bogus(p);break;
-	case 19:get_mega_bonus(p);break;
+	case 16:
+	case 17:get_bonus(p);break;
+	case 18:
+	case 19:get_bogus(p);break;
 	}
 	if (p->fuel>p->maxfuel) p->fuel=p->maxfuel;
 	if (txt) player_message(p,txt);
@@ -161,17 +158,5 @@ static void get_bonus_ammo(struct player *p) {
 		player_message(p,"Bonus Ammunition!");
 		return;
 	}
-	get_bonus(p);
-}
-
-static void get_mega_bonus(struct player *p) {
-	if ((random()%2)==0) {
-		get_mega_bogus(p);
-		return;
-	}
-	get_bonus(p);
-}
-
-static void get_mega_bogus(struct player *p) {
 	get_bonus(p);
 }
