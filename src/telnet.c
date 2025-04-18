@@ -115,7 +115,7 @@ static void do_connect() {
 	}
 	there=-1;
 	setup_player();
-	close(path);
+	close(path); // Disconnect the client
 }
 
 static void term_connect() {
