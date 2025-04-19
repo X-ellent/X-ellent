@@ -67,6 +67,10 @@ int setup_player() {
 			return 0;
 		}
 	} else {
+		for (struct player *op=playone;op;op=op->next) if (!strcmp(op->name,nm)) {
+			ctwrite("Selected username is in use. Failed to create player!");
+			return 0;
+		}
 		printf("DEBUG: Setting up a new player: user=%s\n", nm);
 		p=alloc_player();
 		if (!p) {
@@ -105,34 +109,27 @@ int setup_player() {
 		return 0;
 	}
 
-	if (p->playing) { // Player is in the game but not necessarily connected
+	if (p->playing) { // Player was in the game but not connected
 		sprintf(txt,"%s has rejoined us.",p->name);
 		global_message(txt);
-		players++;
+		players++; // Playing AND connected
 		p->immune=START_IMMUNE_REJ;
 		return 1;
 	}
-	/* Set up for rejoining or new player */
+
+	// Newly joining player
 	int new_name = 0;
 	nm = ctquery("name");
-	if (!nm) {
-		shutdown_display(p);
-		return 0;
-	}
-	if (strcmp(nm, p->name)) {
-		new_name = 1;
-		strncpy(p->name, nm, 31);
-	}
+	if (!nm) { shutdown_display(p); return 0; }
+	if (strcmp(nm, p->name)) { new_name = 1; strncpy(p->name, nm, 31); }
 	char *c = ctpass();
 	if (c && *c) strncpy(p->pass,c,8);
-	if (new_name) {
-		for (struct player *op=playone;op;op=op->next) if (op!=p)
-			if (strcmp(op->name,p->name)==0 || strcmp(op->user,p->name)==0) {
-				strcpy(p->name,p->user);
-				ctwrite("Selected name already taken. Defaulting to username.");
-				break;
-			}
-	}
+	if (new_name) for (struct player *op=playone;op;op=op->next) if (op!=p)
+		if (strcmp(op->name,p->name)==0 || strcmp(op->user,p->name)==0) {
+			strcpy(p->name,p->user);
+			ctwrite("Selected name already taken. Defaulting to username.");
+			break;
+		}
 	p->body.mass=500;
 	if ((p->homefuel+p->fuel)<MIN_FUEL) p->homefuel=MIN_FUEL;
 	p->home->owner=p;
@@ -192,9 +189,7 @@ static void lose_items(struct player *p) {
 
 static void away_stuff(struct player *p) {
 	if (!(p->connected)) {
-		p->playing=0;
-		p->home->owner=0;
-		p->home=0;
+		p->playing=0;p->home->owner=0;p->home=0;
 		lose_items(p);
 		remove_body(&p->body);
 		return;
@@ -222,12 +217,12 @@ static void away_stuff(struct player *p) {
 		}
 	}
 	if (p->flags&FLG_TERMINAL) run_program(p);
-	if (p->flags&FLG_HOME) do_home(p);
+	else if (p->flags&FLG_HOME) do_home(p);
 	return;
 }
 
 void update_player(struct player *p) {
-	int xc,yc, t,i, bigfall=0;
+	int xc,yc, t,i, bigfall=0, d;
 	char tx[60];
 	double inertia;
 	jumpable=1;
@@ -283,7 +278,7 @@ void update_player(struct player *p) {
 				if (vel<200) p->body.fallen=2;
 				if (vel<100) {p->body.fallen=2;p->body.height--;};
 				if (vel<50) p->body.fallen=3;
-			} else {
+			} else { // fallen or lift shaft
 				p->body.l++;
 				if (p->body.l==map.depth) {
 					sprintf(tx,"%s just fell off",p->name);
@@ -332,7 +327,7 @@ void update_player(struct player *p) {
 				}
 			}
 		}
-	} else {
+	} else {  // height!=0
 		if (p->body.fallen>=3) p->body.height--;
 		else if (p->body.fallen==1) p->body.height++;
 		p->body.fallen++;
@@ -348,91 +343,62 @@ void update_player(struct player *p) {
 		p->rot+=p->rv;
 		if (p->rot<0) p->rot+=360;
 		if (p->rot>=360) p->rot-=360;
-		p->body.xf=0;p->body.yf=0;
+		p->body.xf=0;p->body.yf=0; // TODO - probably replace by add_pbody
 		if (p->ammo[p->weap]==0) p->flags&=(~FLG_FIRING);
 		if ((p->flags&FLG_FIRING)&&(!p->recharge)) {
 			double v=random()%50; v=v/10; // TODO - what is this?
-			p->immune=0;
-			int d;
-			v=random()%50;
-			p->immune=0;
-			v=v/10;
+			p->immune=0; p->ammo[p->weap]--;
 			switch(p->weap) {
 			case WEP_RIF:
 				fire_particle(p,p->body.l,p->body.x+v*sn[(int)p->rot],
 						p->body.y-v*cs[(int)p->rot],p->rot,30.0,10,15,16);
+				p->ammo[p->weap]++; // Offset the -- above
 				p->flags&=(~FLG_FIRING); break;
 			case WEP_LMG:
-				fire_particle(p,p->body.l,p->body.x+v*sn[(int) p->rot],
-					p->body.y-v*cs[(int)p->rot],(int)p->rot,30.0,10,18,20);
-				p->ammo[p->weap]--;
+				fire_particle(p,p->body.l,p->body.x+v*sn[(int)p->rot],
+						p->body.y-v*cs[(int)p->rot],(int)p->rot,30.0,10,18,20);
 				break;
 			case WEP_HMG:
-				fire_particle(p,p->body.l,p->body.x+v*sn[(int) p->rot],
-					p->body.y-v*cs[(int)p->rot],(int)p->rot,28.0,20,25,100);
-				p->ammo[p->weap]--;
+				fire_particle(p,p->body.l,p->body.x+v*sn[(int)p->rot],
+						p->body.y-v*cs[(int)p->rot],(int)p->rot,28.0,20,25,100);
 				break;
 			case WEP_MORTAR:
-				v=v+18.0;
-				fire_particle(p,p->body.l,p->body.x+v*sn[(int) p->rot],
-					p->body.y-v*cs[(int) p->rot],(int) p->rot,10.0,100,100,2000);
-				p->ammo[p->weap]--;
-				p->flags&=(~FLG_FIRING);
-				break;
+				v=v+18.0;fire_particle(p,p->body.l,p->body.x+v*sn[(int)p->rot],
+					p->body.y-v*cs[(int)p->rot],(int)p->rot,10.0,100,100,2000);
+				p->flags&=(~FLG_FIRING); break;
 			case WEP_FLAME:
 				for (i=0;i<5;i++) {
 					v=random()%200/10+5.0;
-					fire_particle(p,p->body.l,p->body.x+v*sn[(int) p->rot],
-						p->body.y-v*cs[(int) p->rot],(int)p->rot-9+random()%19,20.0,20,200,20);
-				}
-				p->ammo[p->weap]--;
-				break;
+					fire_particle(p,p->body.l,p->body.x+v*sn[(int)p->rot],
+						p->body.y-v*cs[(int)p->rot],(int)p->rot-9+random()%19,20.0,20,200,20);
+				} break;
 			case WEP_RMG:
-				v/=4;
-				fire_particle(p,p->body.l,p->body.x-v*sn[(int) p->rot],
-							  p->body.y+v*cs[(int) p->rot],
-							  (((int) p->rot)+180)%360,
-							  28.0,20,25,100);
-				p->ammo[p->weap]--;
+				v/=4;fire_particle(p,p->body.l,p->body.x-v*sn[(int)p->rot],
+					p->body.y+v*cs[(int)p->rot],(((int)p->rot)+180)%360,
+					28.0,20,25,100);
 				break;
 			case WEP_PRONG:
-				fire_particle(p,p->body.l,p->body.x+v*sn[(int) p->rot],
-							  p->body.y-v*cs[(int) p->rot],(int) p->rot,
-							  28.0,20,25,100);
-				fire_particle(p,p->body.l,p->body.x+v*sn[(int) p->rot],
-							  p->body.y-v*cs[(int) p->rot],(int) p->rot+5,
-							  28.0,20,25,100);
-				fire_particle(p,p->body.l,p->body.x+v*sn[(int) p->rot],
-							  p->body.y-v*cs[(int) p->rot],(int) p->rot-5,
-							  28.0,20,25,100);
-				p->ammo[p->weap]--;
+				fire_particle(p,p->body.l,p->body.x+v*sn[(int)p->rot],
+					p->body.y-v*cs[(int)p->rot],(int)p->rot,28.0,20,25,100);
+				fire_particle(p,p->body.l,p->body.x+v*sn[(int)p->rot],
+					p->body.y-v*cs[(int)p->rot],(int)p->rot+5,28.0,20,25,100);
+				fire_particle(p,p->body.l,p->body.x+v*sn[(int)p->rot],
+					p->body.y-v*cs[(int)p->rot],(int)p->rot-5,28.0,20,25,100);
 				break;
 			case WEP_TARGLASER:
-				if ((d=fire_beam_weapon(p,&p->body,p->body.x,p->body.y,
-									   (int)p->rot,0))) {
-					player_message(p,(sprintf(tx,"Target encountered %d",d),tx));
-					psend(p,(sprintf(tx,"#LASER TARGET %d %d:%d,%d %d\n",
-									(int)p->rot,p->body.l,(int)p->body.x,
-									(int)p->body.y,d),tx));
-				} else {
-					player_message(p,(sprintf(tx,"No target encountered"),tx));
-				}
-				p->ammo[p->weap]--;
-				p->recharge=RECHARGE_TARGLASER;
-				break;
+				if ((d=fire_beam_weapon(p,&p->body,p->body.x,p->body.y,(int)p->rot,0))) {
+					player_message(p,(sprintf(txt,"Target encountered %d",d),txt));
+					psend(p,(sprintf(txt,"#LASER TARGET %d %d:%d,%d %d\n",
+						(int)p->rot,p->body.l,(int)p->body.x,(int)p->body.y,d),txt));
+				} else player_message(p,(sprintf(txt,"No target encountered"),txt));
+				p->recharge=RECHARGE_TARGLASER; break;
 			case WEP_LASER:
-				fire_beam_weapon(p,&p->body,p->body.x,p->body.y,(int)p->rot,
-								 200);
-				p->ammo[p->weap]--;
-				p->recharge=RECHARGE_LASER;
-				break;
-			}
-		} else {
-			if (p->recharge) p->recharge--;
-		}
+				fire_beam_weapon(p,&p->body,p->body.x,p->body.y,(int)p->rot,200);
+				p->recharge=RECHARGE_LASER; break;
+			} // switch
+		} else if (p->recharge) p->recharge--;
 		if (++p->scount>=10) {
-			int rate;
-			rate=addon_level(p->firstadd,ADD_ENERGY);
+			int rate=addon_level(p->firstadd,ADD_ENERGY);
 			if ((p->shield<p->maxshield)&&(p->fuel)) {
 				p->shield+=(1<<rate)*3;
 				if (p->shield>p->maxshield) p->shield=p->maxshield;
@@ -446,7 +412,7 @@ void update_player(struct player *p) {
 	if (p->body.y<20) p->body.y=20;
 	if (p->body.x>=(map.wid*128-20)) p->body.x=map.wid*128-21;
 	if (p->body.y>=(map.hgt*128-20)) p->body.y=map.hgt*128-21;
-	if (bigfall==-1) {
+	if (bigfall) {
 		p->flags|=(FLG_DEAD|FLG_FALLEN);
 		p->delay=DEATH_DELAY;
 		p->shield=p->shield*9/10;
