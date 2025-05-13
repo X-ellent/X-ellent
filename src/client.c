@@ -28,14 +28,11 @@ Display *dis;
 
 char str[512];
 
-char servin[1024];
-char termin[1024];
+char servin[1024], termin[1024];
 char subs[4];
-int servi;
-int termi;
+int servi, termi;
 int guessing=-1;
-int lastnum=0;
-int guesspos=0;
+int lastnum=0, guesspos=0;
 char guessed[5];
 
 struct map {
@@ -67,38 +64,6 @@ int  bp;
 int  drawn;
 int  drawm;
 
-static void connect_to_socket(char*serv,int p) {
-	struct sockaddr_in name;
-	struct hostent *h;
-	if (!(h=gethostbyname(serv))) {
-		fprintf(stderr,"Cannot find host '%s'\n",serv);
-		exit(1);
-	}
-	bzero((char *) &name, sizeof(struct sockaddr_in));
-	name.sin_family=AF_INET;
-	name.sin_port=p;
-	memcpy(&name.sin_addr, h->h_addr_list[0], 4);
-	if ((fd=socket(AF_INET,SOCK_STREAM,0))==-1) {
-		fprintf(stderr,"Could not create a socket!\n");
-		exit(1);
-	}
-	if (connect(fd, (struct sockaddr *)&name, sizeof(struct sockaddr_in))) {
-		fprintf(stderr,"Could not connect to server on '%s'\n",serv);
-		exit(1);
-	}
-}
-
-static void twrite(char *s) {
-	char buf[256];
-	int n=0,r;
-	strcpy(buf,s);
-	while (n<256) {
-		r=write(fd,&buf[n],256-n);
-		if (r<0) r=0;
-		n+=r;
-	}
-}
-
 static int getmore() {
 	fd_set readfds;
 	while (1) {
@@ -119,6 +84,39 @@ static int getmore() {
 	return 0;
 }
 
+static void connect_to_socket(char*serv,int p) {
+	struct sockaddr_in name;
+	struct hostent *h;
+	if (!(h=gethostbyname(serv))) {
+		fprintf(stderr,"Cannot find host '%s'\n",serv);
+		exit(1);
+	}
+	printf("Attempting to connect to server on port %d\n", p);
+	bzero((char*)&name,sizeof(struct sockaddr_in));
+	name.sin_family=AF_INET;
+	name.sin_port=htons(p);
+	memcpy(&name.sin_addr, h->h_addr_list[0], 4);
+	if ((fd=socket(AF_INET,SOCK_STREAM,0))==-1) {
+		fprintf(stderr,"Could not create a socket!\n");
+		exit(1);
+	}
+	if (connect(fd, (struct sockaddr*)&name, sizeof(struct sockaddr_in))) {
+		fprintf(stderr,"Could not connect to server on '%s'\n",serv);
+		exit(1);
+	}
+}
+
+static void twrite(char *s) {
+	char buf[256];
+	int n=0,r;
+	strcpy(buf,s);
+	while (n<256) {
+		r=write(fd,&buf[n],256-n);
+		if (r<0) r=0;
+		n+=r;
+	}
+}
+
 static void getstring() {
 	int p=0, r;
 	while (1) {
@@ -133,9 +131,7 @@ static void getstring() {
 }
 
 int main(int argc,char *argv[]) {
-	char *name, *disp, *serv;
-	int ret;
-	serv=(char *)getenv("XELLENT");
+	char *serv=(char*)getenv("XELLENT"), *name, *disp;
 	if (!serv) serv="localhost";
 	if (argc>1) serv=argv[1];
 	disp=(char *) getenv("DISPLAY");
@@ -152,30 +148,30 @@ int main(int argc,char *argv[]) {
 	twrite(name);
 	twrite(disp);
 	if (!(dis=XOpenDisplay(disp))) exit(1);
-	ret=-1;
+	int ret=-1;
 	while (ret==-1) {
 		char *cc;
 		getstring();
 		switch (str[0]) {
-		case '>':
-			fprintf(stderr,"%s",&str[1]);
-			break;
-		case '?':
-			str[strlen(str)-1]=0;
-			cc=XGetDefault(dis,"xellent",&str[1]);
-			if (!cc) twrite("");
-			else twrite(cc);
-			break;
-		case 'E':
-			ret=atoi(&str[1]);
-			break;
-		case 'P':
-			if (argc>2) twrite(argv[2]);
-			else twrite("");
-			break;
-		default:
-			fprintf(stderr,"Unknown response from server.\n");
-			exit(1);
+			case '>':
+				fprintf(stderr,"%s",str+1);
+				break;
+			case '?':
+				str[strlen(str)-1]=0;
+				cc=XGetDefault(dis,"xellent",&str[1]);
+				if (!cc) twrite("");
+				else twrite(cc);
+				break;
+			case 'E':
+				ret=atoi(&str[1]);
+				break;
+			case 'P':
+				if (argc>2) twrite(argv[2]);
+				else twrite("");
+				break;
+			default:
+				fprintf(stderr,"Unknown response from server.\n");
+				ret=1;
 		}
 	}
 	if (ret) {

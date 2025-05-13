@@ -69,7 +69,7 @@ void update_bonus() {
 
 static void get_bogus(struct player *p) {
 	int s; char *txt;
-	if ((random()%10)==1) {
+	if (random()%10==1) {
 		txt="Most heinous! Mega BOGUS!";
 		damage_player(p,1000,0,DAM_BOGUS);
 		s=2;

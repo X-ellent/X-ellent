@@ -34,6 +34,7 @@ void add_body(struct body *b) {
 	firstbody=b;
 	if (b->next) b->next->last=b;
 	b->on=1;
+	b->xv=b->yv=b->xf=b->yf=b->fallen=b->height=0;
 }
 
 void add_pbody(struct player *p) {
@@ -63,8 +64,16 @@ int is_stopped(struct body *b) {
 	return 0;
 }
 
+void bounds(struct body *b) {
+	if (b->x<20) b->x=20;
+	if (b->y<20) b->y=20;
+	if (b->x>=(map.wid*128-20)) b->x=map.wid*128-21;
+	if (b->y>=(map.hgt*128-20)) b->y=map.hgt*128-21;
+}
+
 void do_collisions() {
 	for (struct body *b=firstbody;b;b=b->next) if (b->on) {
+		bounds(b);
 		int bx=b->x,by=b->y; double dx,dy,dr;
 		for (struct body *c=b->next;c;c=c->next) if ((c->on)&&(b!=c)&&(b->l==c->l)) {
 			int dist = b->radius + c->radius;
@@ -162,22 +171,9 @@ void do_collisions() {
 					c->x+=(1-time)*c->xv;c->y+=(1-time)*c->yv;
 				}
 
-				if (b->x<20) b->x=20;
-				if (b->y<20) b->y=20;
-				if (b->x>=(map.wid*128-20)) b->x=map.wid*128-21;
-				if (b->y>=(map.hgt*128-20)) b->y=map.hgt*128-21;
-
-				if (c->x<20) c->x=20;
-				if (c->y<20) c->y=20;
-				if (c->x>=(map.wid*128-20)) c->x=map.wid*128-21;
-				if (c->y>=(map.hgt*128-20)) c->y=map.hgt*128-21;
+				bounds(b); bounds(c);
 			} // if dr < dist*dist
 		} // c loop
-
-		if (bx<20) bx=20;
-		if (by<20) by=20;
-		if (bx>=(map.wid*128-20)) bx=map.wid*128-21;
-		if (by>=(map.hgt*128-20)) by=map.hgt*128-21;
 
 		switch(rd2(b->l,bx/128,by/128)) {
 			case 'O':
@@ -228,8 +224,5 @@ void apply_forces(struct body *b, bool braking) {
 		b->xv*=(1-friction);b->yv*=(1-friction);
 	}
 	b->x+=(b->xv+oxv)/2;b->y+=(b->yv+oyv)/2;
-	if (b->x<20) b->x=20;
-	if (b->y<20) b->y=20;
-	if (b->x>=(map.wid*128-20)) b->x=map.wid*128-21;
-	if (b->y>=(map.hgt*128-20)) b->y=map.hgt*128-21;
+	bounds(b);
 }

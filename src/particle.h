@@ -29,9 +29,7 @@ struct particle {
 };
 
 extern struct particle *parts[MAXDEPTH];
-
 extern struct particle *part_free;
-
 extern int part_count;
 
 struct explosion {

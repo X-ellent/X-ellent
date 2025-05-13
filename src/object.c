@@ -25,7 +25,7 @@
 #include "fix.h"
 
 static void move_trolley(struct trolley *p);
-static int mygets(FILE *pd);
+static int mygets(FILE *pd); // TODO needed?
 
 static char inbuf[1024];
 static struct trolley *spottrol;
@@ -50,7 +50,6 @@ void move_objects() {
 	struct player *p;
 	double dx,dy;
 	int rng,det,det2;
-	if (!obj_first) return;
 	for (o=obj_first,n=o->next;o;o=n,o?n=o->next:0) {
 		if (o->flags&OBJ_F_ARMING && !(--o->count)) {
 			o->flags|=OBJ_F_ARM;
@@ -140,7 +139,6 @@ void create_trolley(struct trolley *tr) {
 	t->body.y=t->cp->y*128+32+random()%64;
 	t->cp=pick_check(t->cp);
 	t->body.mass=200;
-	t->body.xv=0;t->body.yv=0;t->body.xf=0;t->body.yf=0;
 	if (!tr) {
 		t->next=firsttrol;
 		firsttrol=t;

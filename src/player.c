@@ -66,6 +66,7 @@ int setup_player() {
 			ctwrite("You are ALREADY connected...");
 			return 0;
 		}
+		// TODO - give a daily bonus for connecting?
 	} else {
 		for (struct player *op=playone;op;op=op->next) if (!strcmp(op->name,nm)) {
 			ctwrite("Selected username is in use. Failed to create player!");

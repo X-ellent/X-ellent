@@ -57,50 +57,43 @@ int fire_beam_weapon(struct player *p,struct body *src,double x, double y,int r,
 			}
 		}
 	}
-	for (t=firstturret;t;t=t->next)
-		if ((!(t->flags&TFLG_DESTROYED))&&(t->d==l)) {
-			xx=x-t->x*128-64; yy=y-t->y*128-64;
-			n=(xx*dy)-(yy*dx);
-			if (ABS(n)<25.0) {
-				m=-(xx*dx+yy*dy);
-				if (m>0 && (((!targ)&&(!ttarg))||(m<near))) {
-					ttarg=t;
-					near=m;
-				}
+	for (t=firstturret;t;t=t->next) if ((!(t->flags&TFLG_DESTROYED))&&(t->d==l)) {
+		xx=x-t->x*128-64; yy=y-t->y*128-64;
+		n=(xx*dy)-(yy*dx);
+		if (ABS(n)<25.0) {
+			m=-(xx*dx+yy*dy);
+			if (m>0 && (((!targ)&&(!ttarg))||(m<near))) {
+				ttarg=t;
+				near=m;
 			}
 		}
+	}
 	if ((!targ)&&(!ttarg)) {
 		be=alloc_beam();
 		be->next=firstbeam;
 		firstbeam=be;
 		near=((map.wid>map.hgt)?map.wid:map.hgt)*128;
-		be->l=l;
-		be->x=(int) x;
-		be->y=(int) y;
-		be->xx=(int) x+dx*near;
-		be->yy=(int) y+dy*near;
+		be->l=l;be->x=(int)x;be->y=(int)y;
+		be->xx=x+dx*near;be->yy=y+dy*near;
 		be->type=(dam)?BEAM_RED:BEAM_BLUE;
 		return 0;
 	} else {
 		be=alloc_beam();
 		be->next=firstbeam;
 		firstbeam=be;
-		be->l=l;
-		be->x=(int) x;
-		be->y=(int) y;
-		be->xx=(int) x+dx*near;
-		be->yy=(int) y+dy*near;
+		be->l=l;be->x=(int)x;be->y=(int)y;
+		be->xx=x+dx*near;be->yy=y+dy*near;
 		be->type=(dam)?BEAM_RED:BEAM_BLUE;
 	}
 	if (targ) {
 		switch(targ->type) {
 		case BODY_PLAYER:
-			if (dam==0) return (int)near/1.28;
+			if (dam==0) return (int)(near/1.28);
 			damage_player(targ->is.player,dam,p,(p)?DAM_SHOT:DAM_LASER);
 			return 0;
 			break;
 		case BODY_TROLLEY:
-			if (dam==0) return (int)near/1.28;
+			if (dam==0) return (int)(near/1.28);
 			fire_beam_weapon(p,targ,x+dx*near,y+dy*near,random()%360,dam/3);
 			fire_beam_weapon(p,targ,x+dx*near,y+dy*near,random()%360,dam/3);
 			fire_beam_weapon(p,targ,x+dx*near,y+dy*near,random()%360,dam/3);
@@ -110,7 +103,7 @@ int fire_beam_weapon(struct player *p,struct body *src,double x, double y,int r,
 			break;
 		}
 	} else if (ttarg) {
-		if (dam==0) return (int)near/1.28;
+		if (dam==0) return (int)(near/1.28);
 		damage_turret(ttarg,dam,p);
 		return 0;
 	}

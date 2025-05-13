@@ -54,20 +54,20 @@ extern struct object *obj_freepool;
 extern int obj_used;
 extern int obj_free;
 
-#define OBJ_EMPTY           0
-#define OBJ_MINE_TRIG       1
-#define OBJ_MINE_TIME       2
-#define OBJ_MINE_PROX       3
-#define OBJ_MINE_VELY       4
-#define OBJ_MINE_SMART      5
-#define OBJ_BONUS           6
+#define OBJ_EMPTY			0
+#define OBJ_MINE_TRIG		1
+#define OBJ_MINE_TIME		2
+#define OBJ_MINE_PROX		3
+#define OBJ_MINE_VELY		4
+#define OBJ_MINE_SMART		5
+#define OBJ_BONUS			6
 
-#define OBJ_F_ARM        (1<<0)
-#define OBJ_F_ARMING     (1<<1)
-#define OBJ_F_TRIG       (1<<2)
-#define OBJ_F_FLASH      (1<<3)
-#define OBJ_F_EXPLODE    (1<<4)
-#define OBJ_F_CHAIN      (1<<5)
+#define OBJ_F_ARM		 (1<<0)
+#define OBJ_F_ARMING	 (1<<1)
+#define OBJ_F_TRIG		 (1<<2)
+#define OBJ_F_FLASH		 (1<<3)
+#define OBJ_F_EXPLODE	 (1<<4)
+#define OBJ_F_CHAIN		 (1<<5)
 
 struct object *alloc_object();
 void move_objects();

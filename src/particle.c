@@ -74,8 +74,8 @@ void move_particles() {
 					case 'O':
 						if (!((tu=find_turret(l,(int) t->x/128,(int) t->y/128))
 							  ->flags&TFLG_DESTROYED)) {
-							dx=(int) (t->x);dx&=127;dx-=64;
-							dy=(int) (t->y);dy&=127;dy-=64;
+							dx=(int)(t->x);dx&=127;dx-=64;
+							dy=(int)(t->y);dy&=127;dy-=64;
 							if ((dx*dx+dy*dy)<=(25*25)) {
 								t->life=-1;
 								damage_turret(tu,t->dam,t->owner);
