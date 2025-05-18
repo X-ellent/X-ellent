@@ -97,10 +97,11 @@ typedef uintptr_t ptr_int_t; /* Use this type for pointer-integer conversions */
 #define PFLG_MI (1<<1)
 #define PFLG_HI (1<<2)
 
-#define PSTAT_ERR -1
 #define PSTAT_INN 1
 #define PSTAT_KEY 2
 #define PSTAT_INS 3
+
+#define RAM_SIZE 512
 
  /* I have decided to treat the terminals as if they were all little */
  /* processorts which run their own assembly language, this WILL take */
@@ -119,17 +120,17 @@ typedef uintptr_t ptr_int_t; /* Use this type for pointer-integer conversions */
 
 struct login {
 	struct player *p;
-	int x;              /* Cursor address on screen */
-	int psp;            /* Position in pc stack */
-	int nsp;            /* Position in num stack */
-	int state;          /* Set if performing operation of some sort */
-	int tmp;            /* Internal register for operations */
-	int tmpb;           /* Internal register for operations */
-	int pc[20];         /* My pc stack */
-	ptr_int_t num[64];  /* My num stack - now uses ptr_int_t to safely store pointers */
-	int a,b;            /* Number registers */
-	int status;         /* Status register */
-	char ram[512];      /* Terminal's ram */
+	int x;         // Cursor address on screen
+	int psp;       // Position in pc stack
+	int nsp;       // Position in num stack
+	int state;     // Set if performing operation of some sort
+	int tmp;       // Internal register for operations
+	int tmpb;      // Internal register for operations
+	int pc[20];    // My pc stack
+	int32_t num[64]; // My num stack
+	int32_t a,b;   // Number registers
+	int status;    // Status register
+	char ram[RAM_SIZE]; // Terminal's ram
 };
 
 struct label {
@@ -151,42 +152,33 @@ static struct player *tuser[256];
 #define POP ((ptr_int_t)t->num[--t->nsp])
 #define PUSH(x) (t->num[t->nsp++] = (ptr_int_t)(x))
 
-
-
-
-
-
-
-
 static void get_playerinfo(struct login *t,struct player *p,int a) {
-	char *rc;
-	int *ri;
-	a&=~3;
 	if (!p) return;
-	rc=&t->ram[a];
-	ri=(int *) rc;
+	a&=~3;
+	char *rc=&t->ram[a];		// 1 byte per entry
+	int32_t *ri=(int32_t*)rc;	// 4 bytes per entry
 	strcpy(&rc[0],p->user);
 	strcpy(&rc[16],p->name);
-	ri[12]=p->rating;
-	ri[13]=p->score;
-	ri[14]=p->cash;
-	ri[15]=p->body.l;
-	ri[16]=p->body.x/128;
-	ri[17]=p->body.y/128;
-	ri[18]=p->fuel/200;
-	ri[19]=p->shield/10;
+	ri[12]=(int32_t)p->rating;
+	ri[13]=(int32_t)p->score;
+	ri[14]=(int32_t)p->cash;
+	ri[15]=(int32_t)p->body.l;
+	ri[16]=(int32_t)p->body.x/128;
+	ri[17]=(int32_t)p->body.y/128;
+	ri[18]=(int32_t)p->fuel/200;
+	ri[19]=(int32_t)p->shield/10;
 	if (p->home) {
-		ri[20]=p->home->l;
-		ri[21]=p->home->x;
-		ri[22]=p->home->y;
+		ri[20]=(int32_t)p->home->l;
+		ri[21]=(int32_t)p->home->x;
+		ri[22]=(int32_t)p->home->y;
 	} else {
-		ri[20]=-1;
+		ri[20]=(int32_t)-1;
 		ri[21]=0;
 		ri[22]=0;
 	}
-	ri[23]=p->deaths;
-	ri[24]=p->kills;
-	ri[25]=p->tkills;
+	ri[23]=(int32_t)p->deaths;
+	ri[24]=(int32_t)p->kills;
+	ri[25]=(int32_t)p->tkills;
 }
 
 static void cts(struct player *p) {
@@ -200,7 +192,6 @@ void init_term(struct player *p) {
 	for (i=0;(i<TERM_NUMBER)&&(tty[i].p);i++);
 	if (i==TERM_NUMBER) {
 		player_message(p,"Out of tty's.... please try later...");
-		p->term=0;
 		return;
 	} else {
 		p->flags|=FLG_TERMINAL;
@@ -209,11 +200,9 @@ void init_term(struct player *p) {
 		p->term->p=p;
 		t=p->term;
 		cts(p);
-		t->psp=0;
-		t->nsp=0;
+		t->psp=t->nsp=0;
 		t->pc[0]=startpc;
-		t->state=0;
-		t->status=0;
+		t->state=t->status=0;
 		psend(p,"#TERM ENTER\n");
 		get_playerinfo(t,p,0);
 		run_program(p);
@@ -221,28 +210,19 @@ void init_term(struct player *p) {
 }
 
 static int get_string(FILE *td,int pc) {
-	char c;
-
-	while((c=getc(td))!='"') {
-		rom[pc++]=c;
-	}
-	rom[pc++]=0;  /* Add null terminator */
+	while((rom[pc++]=getc(td))!='"');
+	rom[pc-1]=0;
 	return pc;
 }
 
 static int get_number(char c,FILE *td,int pc) {
-	char d;
-	ptr_int_t n;  /* Changed to ptr_int_t for 64-bit compatibility */
-	n=c-'0';
+	int8_t d, n=c-'0';
 	if ((c=='-')||(c=='+')) n=0;
-	while (isdigit(d=getc(td))) n=n*10+d-'0';
+	while (isdigit((d=getc(td)))) n=n*10+d-'0';
 	if (c=='-') n=-n;
-	char *nc=(char *) &n;
 	rom[pc++]=OP_PSH;
-	rom[pc++]=nc[0];
-	rom[pc++]=nc[1];
-	rom[pc++]=nc[2];
-	rom[pc++]=nc[3];
+	for (int i=0;i<4;i++)
+		rom[pc++] = (n >> (i*8)) & 0xFF;
 	return pc;
 }
 
@@ -325,10 +305,8 @@ static int get_thing(char c,FILE *td,int pc) {
 			comperr=-1;
 		}
 	}
-
-	char *nc=(char *) &n;
 	rom[pc++]=OP_PSH;
-	rom[pc++]=nc[0];rom[pc++]=nc[1];rom[pc++]=nc[2];rom[pc++]=nc[3];
+	for (int i=0;i<4;i++) rom[pc++]=(int8_t)(n >> (i*8)) & 0xFF;
 	return pc;
 }
 
@@ -414,25 +392,13 @@ void exit_term(struct player *p) {
 
 static void term_newline(struct player *p) {
 	p->term->x=0;
-	XCopyArea(p->d.disp,p->d.backing,p->d.backing,p->d.gc,0,p->d.th,WINWID,
-			  WINHGT-p->d.th,0,0);
+	XCopyArea(p->d.disp,p->d.backing,p->d.backing,p->d.gc,0,p->d.th,WINWID,WINHGT-p->d.th,0,0);
 }
 
-static int term_print(struct player *p,char *c,int l) {
-	int wid;
-	wid=WINWID/p->d.tw-2;
-	XDrawString(p->d.disp,p->d.backing,p->d.gc_termlo,10+p->d.tw*p->term->x,
-				WINHGT-p->d.th*2,c,l);
-	p->term->x+=l;
-	if (p->term->x>=wid) term_newline(p);
-	return l;
-}
-
-static int term_hprint(struct player *p,char *c,int l) {
-	int wid;
-	wid=WINWID/p->d.tw-2;
-	XDrawString(p->d.disp,p->d.backing,p->d.gc_termhi,10+p->d.tw*p->term->x,
-				WINHGT-p->d.th*2,c,l);
+static int term_print(struct player *p,char *c,int l, int high) {
+	int wid=WINWID/p->d.tw-2;
+	GC gc=high?p->d.gc_termhi:p->d.gc_termlo;
+	XDrawString(p->d.disp,p->d.backing,gc,10+p->d.tw*p->term->x,WINHGT-p->d.th*2,c,l);
 	p->term->x+=l;
 	if (p->term->x>=wid) term_newline(p);
 	return l;
@@ -462,21 +428,36 @@ static ptr_int_t getnextplayer(struct player *p) {
 	return 0;
 }
 
-void run_program(struct player *p) {
+int run_program(struct player *p) {
 	struct login *t;
+
+	char* get_mem_loc(int n) {
+		if (n>=ROMBASE) {
+			if (n-ROMBASE>=TERM_ROMSIZE) {
+				t->state=-1;
+				return NULL;
+			}
+			return &rom[n-ROMBASE];
+		} else {
+			if (n>=RAM_SIZE) {
+				t->state=-1;
+				return NULL;
+			}
+			return &t->ram[n];
+		}
+	}
+
 	char *s,*ss;
 	char txt[64];
-	int n,m;
-	int aa,bb,cc;
+	int n,m,aa,bb,cc;
 	struct player *ply;
-	int done;
 	t=p->term;
-	for (done=0;done<50;done++) {
+	for (int done=0;done<50;done++) {
 		switch(t->state) {
 		case 0:
-			switch(rom[(t->pc[t->psp]++)-ROMBASE]) {
+			int opcode = rom[(t->pc[t->psp]++)-ROMBASE]; switch (opcode) {
 			case OP_CLS:cts(p);break;
-			case OP_NEW:term_newline(p);return;
+			case OP_NEW:term_newline(p);return 1;
 			case OP_PSH:
 			{
 				ptr_int_t *pval;
@@ -501,11 +482,7 @@ void run_program(struct player *p) {
 				}
 				n=(int)t->num[--t->nsp];
 				s = (n>=ROMBASE) ? &rom[n-ROMBASE] : &t->ram[n];
-				if (t->status&PFLG_HI) {
-					term_hprint(p,s,strlen(s));
-				} else {
-					term_print(p,s,strlen(s));
-				}
+				term_print(p,s,strlen(s),t->status&PFLG_HI);
 				break;
 			case OP_NUM:
 				if (!t->nsp) {
@@ -515,151 +492,65 @@ void run_program(struct player *p) {
 				}
 				n=(int)t->num[--t->nsp];
 				sprintf(txt,"%d",n);
-				if (t->status&PFLG_HI) {
-					term_hprint(p,txt,strlen(txt));
-				} else {
-					term_print(p,txt,strlen(txt));
-				}
+				term_print(p,txt,strlen(txt),t->status&PFLG_HI);
 				break;
-			case OP_INN:t->state=PSTAT_INN;return;
-			case OP_INS:
-				t->tmp=POP;
-				t->tmpb=POP;
-				t->state=PSTAT_INS;return;
-			case OP_KEY:t->state=PSTAT_KEY;return;
+			case OP_INN:t->state=PSTAT_INN;return 1;
+			case OP_INS:t->tmp=POP;t->tmpb=POP;t->state=PSTAT_INS;return 1;
+			case OP_KEY:t->state=PSTAT_KEY;return 1;
 			case OP_RTS:
 				if (t->psp) {
 					t->psp--;
 					break;
 				} else {
-					add_body(&p->body);
-					p->flags&=~(FLG_TERMINAL|FLG_BRAKING);
-					t->p=0;
-					p->term=0;
-					psend(p,"#TERM EXIT\n");
-					return;
+					exit_term(p);
+					return 1;
 				}
 			case OP_FETA:
-				n=POP;
-				s = (n>=ROMBASE) ? &rom[n-ROMBASE] : &t->ram[n];
-				ss=(char *)&t->a;
-				ss[0]=s[0];ss[1]=s[1];ss[2]=s[2];ss[3]=s[3];
+				n=POP;s=get_mem_loc(n);ss=(char*)&t->a;memcpy(ss,s,4);
 				break;
 			case OP_FETB:
-				n=POP;
-				s = (n>=ROMBASE) ? &rom[n-ROMBASE] : &t->ram[n];
-				ss=(char *)&t->b;
-				ss[0]=s[0];ss[1]=s[1];ss[2]=s[2];ss[3]=s[3];
+				n=POP;s=get_mem_loc(n);ss=(char*)&t->b;memcpy(ss,s,4);
 				break;
 			case OP_FET:
-				n=(int)t->num[t->nsp-1];
-				s = (n>=ROMBASE) ? &rom[n-ROMBASE] : &t->ram[n];
-				ss=(char *)&t->num[t->nsp-1];
-				ss[0]=s[0];ss[1]=s[1];ss[2]=s[2];ss[3]=s[3];
+				n=t->num[t->nsp-1];s=get_mem_loc(n);
+				ss=(char*)&t->num[t->nsp-1];memcpy(ss,s,4);
 				break;
 			case OP_STO:
-				n=POP;
-				aa=POP;
-				s = (n>=ROMBASE) ? &rom[n-ROMBASE] : &t->ram[n];
-				ss=(char *)&aa;
-				s[0]=ss[0];s[1]=ss[1];s[2]=ss[2];s[3]=ss[3];
-				break;
 			case OP_STOA:
-				n=POP;
-				s = (n>=ROMBASE) ? &rom[n-ROMBASE] : &t->ram[n];
-				ss=(char *)&t->a;
-				s[0]=ss[0];s[1]=ss[1];s[2]=ss[2];s[3]=ss[3];
-				break;
-			case OP_STOB:
-				n=POP;
-				s = (n>=ROMBASE) ? &rom[n-ROMBASE] : &t->ram[n];
-				ss=(char *)&t->b;
-				s[0]=ss[0];s[1]=ss[1];s[2]=ss[2];s[3]=ss[3];
-				break;
+			case OP_STOB:n=POP;s=get_mem_loc(n);
+				aa=(opcode==OP_STO)?POP:(opcode==OP_STOA)?t->a:t->b;
+				memcpy(s,&aa,4); break;
 			case OP_THI:t->status|=PFLG_HI;break;
 			case OP_TLO:t->status&=~PFLG_HI;break;
-			case OP_SPC:term_print(p," ",1);break;
+			case OP_SPC:term_print(p," ",1,0);break;
 			case OP_TAB:n=POP;if (t->x<n) t->x=n;break;
 			case OP_BAT:t->x=POP;break;
 			case OP_POS:PUSH(t->x);break;
-			case OP_JSR:
-				n=(int)t->num[--t->nsp];
-				t->pc[++t->psp]=n;
-				break;
-			case OP_JMP:
-				n=(int)t->num[--t->nsp];
-				t->pc[t->psp]=n;
-				break;
-			case OP_INC:
-				aa=POP;
-				PUSH(aa+1);
-				break;
-			case OP_DEC:
-				aa=POP;
-				PUSH(aa-1);
-				break;
+			case OP_JSR:n=t->num[--t->nsp];t->pc[++t->psp]=n;break;
+			case OP_JMP:n=t->num[--t->nsp];t->pc[t->psp]=n;break;
+			case OP_INC:aa=POP;PUSH(aa+1);break;
+			case OP_DEC:aa=POP;PUSH(aa-1);break;
 			case OP_INCA:t->a++;break;
 			case OP_INCB:t->b++;break;
 			case OP_DECA:t->a--;break;
 			case OP_DECB:t->b--;break;
-			case OP_CMPA:
-				n=(int)t->num[--t->nsp];
-				if (n==t->a) {
-					t->status|=PFLG_EQ;
-				} else {
-					t->status&=~PFLG_EQ;
-				}
-				if (n<t->a) {
-					t->status|=PFLG_MI;
-				} else {
-					t->status&=~PFLG_MI;
-				}
+			case OP_CMPA:n=t->num[--t->nsp];
+				if (n==t->a) t->status|=PFLG_EQ; else t->status&=~PFLG_EQ;
+				if (n<t->a) t->status|=PFLG_MI; else t->status&=~PFLG_MI;
 				break;
-			case OP_CMPB:
-				n=(int)t->num[--t->nsp];
-				if (n==t->b) {
-					t->status|=PFLG_EQ;
-				} else {
-					t->status&=~PFLG_EQ;
-				}
-				if (n<t->b) {
-					t->status|=PFLG_MI;
-				} else {
-					t->status&=~PFLG_MI;
-				}
+			case OP_CMPB:n=t->num[--t->nsp];
+				if (n==t->b) t->status|=PFLG_EQ; else t->status&=~PFLG_EQ;
+				if (n<t->b) t->status|=PFLG_MI; else t->status&=~PFLG_MI;
 				break;
-			case OP_CMP:
-				n=(int)t->num[--t->nsp];
-				m=(int)t->num[t->nsp-1];
-				if (n==m) {
-					t->status|=PFLG_EQ;
-				} else {
-					t->status&=~PFLG_EQ;
-				}
-				if (n<m) {
-					t->status|=PFLG_MI;
-				} else {
-					t->status&=~PFLG_MI;
-				}
+			case OP_CMP:n=t->num[--t->nsp]; m=t->num[t->nsp-1];
+				if (n==m) t->status|=PFLG_EQ; else t->status&=~PFLG_EQ;
+				if (n<m) t->status|=PFLG_MI; else t->status&=~PFLG_MI;
 				break;
-			case OP_BEQ:
-				n=(int)t->num[--t->nsp];
-				if (t->status&PFLG_EQ) t->pc[t->psp]=n;
-				break;
-			case OP_BNE:
-				n=(int)t->num[--t->nsp];
-				if (!(t->status&PFLG_EQ)) t->pc[t->psp]=n;
-				break;
-			case OP_BMI:
-				n=(int)t->num[--t->nsp];
-				if (t->status&PFLG_MI) t->pc[t->psp]=n;
-				break;
-			case OP_BPL:
-				n=(int)t->num[--t->nsp];
-				if (!(t->status&PFLG_MI)) t->pc[t->psp]=n;
-				break;
-			case OP_SYSTEM:
-				n=(int)t->num[--t->nsp];
+			case OP_BEQ:n=t->num[--t->nsp];if (t->status&PFLG_EQ) t->pc[t->psp]=n;break;
+			case OP_BNE:n=t->num[--t->nsp];if (!(t->status&PFLG_EQ)) t->pc[t->psp]=n;break;
+			case OP_BMI:n=t->num[--t->nsp];if (t->status&PFLG_MI) t->pc[t->psp]=n;break;
+			case OP_BPL:n=t->num[--t->nsp];if (!(t->status&PFLG_MI)) t->pc[t->psp]=n;break;
+			case OP_SYSTEM:n=t->num[--t->nsp];
 				switch(n) {
 				case 0:draw_map_level(p,POP);break; /* Draw this level */
 				case 1:
@@ -709,7 +600,7 @@ void run_program(struct player *p) {
 					fprintf(stderr,"Illegal system call %d\n",n);break;
 				}
 				break;
-			case OP_NOP:return;
+			case OP_NOP:return 1;
 			case OP_BITA:aa=POP;
 				if (t->a&(1<<aa)) {
 					t->status&=~PFLG_EQ;
@@ -754,13 +645,14 @@ void run_program(struct player *p) {
 			}
 			break;
 		case PSTAT_INN:
-			return;
+			return 1;
 		case PSTAT_KEY:
-			return;
+			return 1;
 		default:
-			return;
-		}
-	}
+			exit_term(p); return 0; // Error, invalid state
+		} // switch (t->state)
+	} // for loop done<50
+	return 1;
 }
 
 void term_option(struct player *p,int n) {
@@ -769,14 +661,14 @@ void term_option(struct player *p,int n) {
 		if (n==10) {
 			p->term->state=0;
 			p->term->num[p->term->nsp++]=-1;
-			term_hprint(p,"ESC",3);
+			term_print(p,"ESC",3,1);
 			return;
 		}
 		if ((n<'0')||(n>'9')) return;
 		p->term->state=0;
 		p->term->num[p->term->nsp++]=n-'0';
 		b=n;
-		term_hprint(p,&b,1);
+		term_print(p,&b,1,1);
 		return;
 	}
 	if (p->term->state==PSTAT_KEY) {
@@ -794,11 +686,7 @@ void term_option(struct player *p,int n) {
 				if (p->term->tmp) {
 					p->term->ram[p->term->tmpb++]=n;
 					b=n;
-					if (p->term->status&PFLG_HI) {
-						term_hprint(p,&b,1);
-					} else {
-						term_print(p,&b,1);
-					}
+					term_print(p,&b,1,p->term->status&PFLG_HI);
 					p->term->tmp--;
 				}
 			}
@@ -832,7 +720,7 @@ int system_command(struct player *p,char *com) {
 		psend(p,"=HOME\n=USERS\n");
 		return 3;
 	}
-	if (strcmp(com,"SUBSYSTEMS")==0) {      /* Lists subsystems */
+	if (strcmp(com,"SUBSYSTEMS")==0) {		/* Lists subsystems */
 		struct addon *ad;
 		psend(p,"=SYS SUBSYSTEMS\n");
 		for (ad=p->firstadd;ad;ad=ad->next) {
@@ -871,11 +759,9 @@ int system_command(struct player *p,char *com) {
 	}
 	if (strcmp(com,"STATUS")==0) {			/* Shows my status */
 		psend(p,(sprintf(txt,"=SYS STATUS\n=F%d S%d $%d R%d Sc%d %s %s %s\n",
-						 p->fuel/200,
-						 p->shield/10,p->cash,p->rating,p->score,
-						 (p->flags&FLG_IDENT)?"ID":"",
-						 (p->flags&FLG_NOMSG)?"":"MSG",
-						 (p->locate)?"LOC":""),txt));
+				p->fuel/200, p->shield/10,p->cash,p->rating,p->score,
+				(p->flags&FLG_IDENT)?"ID":"", (p->flags&FLG_NOMSG)?"":"MSG",
+				(p->locate)?"LOC":""),txt));
 		return 3;
 	}
 	if (strcmp(com,"LOCATE ON")==0) {			/* Shows my coordinates */
@@ -907,14 +793,9 @@ int system_command(struct player *p,char *com) {
 
 int login_command(struct player *p,char *com) {
 	int x,y;
-	if (!(p->flags&FLG_TERMINAL)) {
-		psend(p,"!Not in a terminal!\n");
-		return 3;
-	}
-	if (strcmp(com,"HELP")==0) {
-		psend(p,"=TER HELP\n=HELP\n=MAP\n=TELEPORTS\n=LIFTS\n");
-		return 3;
-	}
+	if (!(p->term)) { psend(p,"!Not in a terminal!\n"); return 3; }
+	if (strcmp(com,"HELP")==0)
+		{ psend(p,"=TER HELP\n=HELP\n=MAP\n=TELEPORTS\n=LIFTS\n"); return 3; }
 	if (strcmp(com,"MAP")==0) {
 		psend(p,(sprintf(txt,"=TER MAP\n=%d %d:%d,%d\n",map.depth,p->body.l,
 						 map.wid,map.hgt),txt));
@@ -1085,22 +966,18 @@ int teleport_command(struct player *p,char *com) {
 
 int weapons_command(struct player *p,char *com) {
 	int i,n;
-	if (strcmp(com,"HELP")==0) {            /* Lists accepted commands */
+	if (strcmp(com,"HELP")==0) {			/* Lists accepted commands */
 		psend(p,"=WEP HELP\n=HELP\n=STATUS\n=SELECT\n=FIRE <ON/OFF>\n");
 		return 3;
 	}
-	if (strcmp(com,"STATUS")==0) {          /* Shows weapon's status */
+	if (strcmp(com,"STATUS")==0) {			/* Shows weapon's status */
 		psend(p,(sprintf(txt,"=WEP STATUS\n=S%d R%d %s\n",p->weap,p->recharge,
 						 (p->flags&FLG_FIRING)?"FIR":""),txt));
-		for (i=0;i<MAX_WEAPS;i++) {
-			if (p->weap_mask&(1<<i)) {
-					if (p->ammo[i]!=-1) {
-						psend(p,(sprintf(txt,"=%d %d %s\n",i,p->ammo[i],
-										 weap_name[i]),txt));
-					} else {
-						psend(p,(sprintf(txt,"=%d Inf %s\n",i,weap_name[i]),txt));
-					}
-			}
+		for (i=0;i<MAX_WEAPS;i++) if (p->weap_mask&(1<<i)) {
+			if (p->ammo[i]!=-1)
+				psend(p,(sprintf(txt,"=%d %d %s\n",i,p->ammo[i],weap_name[i]),txt));
+			else
+				psend(p,(sprintf(txt,"=%d Inf %s\n",i,weap_name[i]),txt));
 		}
 		return 3;
 	}

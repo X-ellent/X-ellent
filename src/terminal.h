@@ -19,7 +19,7 @@ void psend(struct player *,char *);
 void init_term(struct player *);
 void exit_term(struct player *);
 void init_all_term();
-void run_program(struct player *);
+int run_program(struct player *);
 void term_option(struct player *,int);
 int terminal_input(int,int,char *);
 
