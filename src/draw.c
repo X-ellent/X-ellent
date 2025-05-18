@@ -45,7 +45,7 @@ static void draw_map(struct player *p) {
 	int ddx=dx/4,ddy=dy/4,dddx=dx*3/4,dddy=dy*3/4;
 	XFillRectangle(d,w,p->d.gc_black,0,0,WINWID,WINHGT);
 	if (l>=map.depth) {
-		for (struct explosion *e=bang_first;e;e=e->next) if (e->d==p->body.l) {
+		for (struct explosion *e=firstbang;e;e=e->next) if (e->d==p->body.l) {
 			dx=e->x-p->body.x; dy=e->y-p->body.y;
 			ddx=dx*co+dy*si; ddy=dy*co-dx*si;
 			if (e->r>20)
@@ -270,7 +270,7 @@ static void draw_map(struct player *p) {
 	}
 	/* Then draw explosions */
 	{
-		for (struct explosion *e=bang_first;e;e=e->next) if (e->d==p->body.l) {
+		for (struct explosion *e=firstbang;e;e=e->next) if (e->d==p->body.l) {
 			dx=e->x-p->body.x; dy=e->y-p->body.y;
 			ddx=dx*co+dy*si; ddy=dy*co-dx*si;
 			if (e->r>20) XDrawArc(d,w,red,ddx+mx-e->r+20,ddy-e->r+20+my,

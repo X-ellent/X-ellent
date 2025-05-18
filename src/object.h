@@ -43,16 +43,8 @@ struct trolley {
 };
 
 extern struct trolley *firsttrol;
-extern struct trolley thetrol;
-extern struct trolley thetrolb;
-extern struct trolley thetrolc;
-extern struct trolley thetrold;
-
 extern struct object *obj_first;
 extern struct object *obj_freepool;
-
-extern int obj_used;
-extern int obj_free;
 
 #define OBJ_EMPTY			0
 #define OBJ_MINE_TRIG		1

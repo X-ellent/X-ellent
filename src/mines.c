@@ -28,10 +28,8 @@ void activate_slot(struct player *p) {
 	case OBJ_MINE_VELY:
 	case OBJ_MINE_PROX:
 		o=(p->slotobj[p->slot-1]=alloc_object());
-		o->x=p->body.x;
-		o->y=p->body.y;
-		o->xv=p->body.xv;
-		o->yv=p->body.yv;
+		o->x=p->body.x; o->y=p->body.y;
+		o->xv=p->body.xv; o->yv=p->body.yv;
 		o->xv+=2*sn[(int)p->rot]; // Throw it in the direction we're facing
 		o->yv-=2*cs[(int)p->rot];
 		o->flags=0;
@@ -79,8 +77,7 @@ void disarm_slot(struct player *p) {
 	case OBJ_MINE_PROX:
 		if (o) o->flags&=(~(OBJ_F_ARMING|OBJ_F_ARM));
 		break;
-	default:
-		break;
+	default: break;
 	}
 }
 

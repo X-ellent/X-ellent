@@ -45,7 +45,7 @@ void fire_particle(struct player *pl,int l,int x,int y,int a,double v,
 	p->x=x;
 	p->y=y;
 	p->rot=a;
-	p->vely=v;
+	p->vel=v;
 	p->life=r;
 	p->dam=d;
 	p->mass=m;
@@ -66,11 +66,11 @@ void move_particles() {
 	for(int l=0;l<map.depth;l++) {
 		if (parts[l]) for (p=0,t=parts[l],n=t->next;t;p=t,t=n,t?n=t->next:0) {
 			if ((--t->life)>0) {
-				t->x+=t->vely*sn[t->rot];t->y-=t->vely*cs[t->rot];
+				t->x+=t->vel*sn[t->rot];t->y-=t->vel*cs[t->rot];
 				if ((t->x<0)||(t->x>=map.wid*128)||(t->y<0)||(t->y>=map.hgt*128))
 					t->life=0;
 				else {
-					switch (rd2(l,(int) t->x/128,(int) t->y/128)) {
+					switch (rd2(l,(int)t->x/128,(int)t->y/128)) {
 					case 'O':
 						if (!((tu=find_turret(l,(int) t->x/128,(int) t->y/128))
 							  ->flags&TFLG_DESTROYED)) {
@@ -103,8 +103,8 @@ void move_particles() {
 					p->life=-1;
 					if (!pl->immune) {
 						damage_player(pl,p->dam,p->owner,DAM_SHOT); // TODO money here
-						pl->body.xf+=p->vely*p->mass*sn[p->rot]/10;
-						pl->body.yf-=p->vely*p->mass*cs[p->rot]/10;
+						pl->body.xf+=p->vel*p->mass*sn[p->rot]/10;
+						pl->body.yf-=p->vel*p->mass*cs[p->rot]/10;
 					}
 				}
 			}
@@ -117,16 +117,16 @@ void move_particles() {
 			if ((dx*dx+dy*dy)<400) {
 				/* Do bullet collision */
 				p->life=-1;
-				tr->body.xf+=p->vely*p->mass*sn[p->rot]/10;
-				tr->body.yf-=p->vely*p->mass*cs[p->rot]/10;
+				tr->body.xf+=p->vel*p->mass*sn[p->rot]/10;
+				tr->body.yf-=p->vel*p->mass*cs[p->rot]/10;
 			}
 		}
 	}
 }
 
 struct explosion *alloc_bang() {
-	struct explosion *p=bang_free;
-	if (p) bang_free=p->next;
+	struct explosion *p=freebang;
+	if (p) freebang=p->next;
 	else p=(struct explosion *) calloc(1,sizeof(struct explosion));
 	return p;
 }
@@ -136,7 +136,7 @@ void explode(int l,int x, int y,int s,int f,int d,struct player *who) {
 	int dx,dy;
 	double r;
 	struct explosion *e=alloc_bang();
-	e->next=bang_first;bang_first=e;
+	e->next=firstbang;firstbang=e;
 	e->x=x; /* X pos */
 	e->y=y; /* Y pos */
 	e->d=l; /* Level */
@@ -176,13 +176,13 @@ void explode(int l,int x, int y,int s,int f,int d,struct player *who) {
 
 void move_explosions() {
 	struct explosion *e,*l=0,*n;
-	if (bang_first) for (e=bang_first,n=e->next;e;l=e,e=n,e?n=e->next:0) {
+	for (e=firstbang,n=e->next;e;l=e,e=n,e?n=e->next:0) {
 		e->r+=10;
 		if (e->a++>e->s) {
 			if (l) l->next=e->next;
-			else bang_first=e->next;
-			e->next=bang_free;
-			bang_free=e;
+			else firstbang=e->next;
+			e->next=freebang;
+			freebang=e;
 			e=l;
 		}
 	}

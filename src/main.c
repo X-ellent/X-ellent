@@ -50,8 +50,8 @@ void save_mines(void);
 void fire_starbursts(void);
 void update_teleports(void);
 
-static void setsave(int sig) { (void)sig; saveall=-2; return; }
-static void setquit(int sig) { (void)sig; saveall=-1; return; }
+static void setsave() { saveall=-2; return; }
+static void setquit() { saveall=-1; return; }
 
 void build_sintable() {
 	int i;
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
 		printf("Error: Signals handling failure!\n");
 		exit(1);
 	}
-	if ((signal(SIGUSR2,setquit))==SIG_ERR) {
+	if ((signal(SIGTERM,setquit))==SIG_ERR) {
 		printf("Error: Signals handling failure!\n");
 		exit(1);
 	}
@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
 		// Frame rate limiter
 		gettimeofday(&end_time, NULL);
 		frame_time_us = (end_time.tv_sec - start_time.tv_sec) * 1000000 +
-					   (end_time.tv_usec - start_time.tv_usec);
+						(end_time.tv_usec - start_time.tv_usec);
 
 		if (frame_time_us < target_frame_time_us)
 			usleep(target_frame_time_us - frame_time_us);

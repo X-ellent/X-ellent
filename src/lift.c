@@ -106,7 +106,7 @@ int move_lift_up(struct lift *l) {
 		return 1;
 	}
 	int d;
-	for (d=(l->l-1);(d>=0)&&(!(rd(d,l->x,l->y)&MAP_SOLID));d--);
+	for (d=(l->l-1);(d>=0)&&(!(rd2(d,l->x,l->y)));d--);
 	if (d<0) {
 		l->t=l->l;
 		return 1;
@@ -125,7 +125,7 @@ int move_lift_down(struct lift *l) {
 		return 1;
 	}
 	int d;
-	for (d=(l->l+1);(d<map.depth)&&(!(rd(d,l->x,l->y)&MAP_SOLID));d++);
+	for (d=(l->l+1);(d<map.depth)&&(!(rd2(d,l->x,l->y)));d++);
 	if (d==map.depth) {
 		l->t=l->l;
 		return 1;
@@ -141,7 +141,7 @@ int move_lift_down(struct lift *l) {
 int can_lift_descend(struct lift *l) {
 	if (l->l==(map.depth-1)) return 0;
 	int d;
-	for (d=(l->l+1);(d<map.depth)&&(!(rd(d,l->x,l->y)&MAP_SOLID));d++);
+	for (d=(l->l+1);(d<map.depth)&&(!(rd2(d,l->x,l->y)));d++);
 	if (d==map.depth) return 0;
 	if (rd2(d,l->x,l->y)!='l') return 0;
 	return 1;
@@ -150,7 +150,7 @@ int can_lift_descend(struct lift *l) {
 int can_lift_ascend(struct lift *l) {
 	if (l->l==0) return 0;
 	int d;
-	for (d=(l->l-1);(d>=0)&&(!(rd(d,l->x,l->y)&MAP_SOLID));d--);
+	for (d=(l->l-1);(d>=0)&&(!(rd2(d,l->x,l->y)));d--);
 	if (d<0) return 0;
 	if (rd2(d,l->x,l->y)!='l') return 0;
 	return 1;

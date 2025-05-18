@@ -175,9 +175,9 @@ void create_map() {
 
 static void readin(char *b) {
 	int l;
-	if (fgets(b, 1024, mdata) == NULL) {
+	if (!fgets(b,1024,mdata)) {
 		fprintf(stderr, "Error reading map data\n");
-		b[0] = '\0';
+		*b=0;
 		return;
 	}
 	if ((l=strlen(b))) b[l-1]=0;

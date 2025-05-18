@@ -23,7 +23,7 @@ struct particle {
 	int life;
 	int dam;
 	int mass;
-	double vely;
+	double vel;
 	struct particle *next;
 	struct player *owner;
 };
@@ -38,8 +38,7 @@ struct explosion {
 	struct explosion *next;
 };
 
-extern struct explosion *bang_first;
-extern struct explosion *bang_free;
+extern struct explosion *firstbang, *freebang;
 
 void fire_particle(struct player *pl,int l,int x,int y,int a,double v,int d,int r,int m);
 void explode(int l,int x, int y,int s,int f,int d,struct player *who);

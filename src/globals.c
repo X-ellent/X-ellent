@@ -30,7 +30,7 @@ XPoint pc[PCACHE];
 /* From particle.h */
 int part_count = 0;
 struct particle *parts[MAXDEPTH], *part_free = NULL;
-struct explosion *bang_first = NULL, *bang_free = NULL;
+struct explosion *firstbang = NULL, *freebang = NULL;
 
 /* From xsetup.h */
 int jumpable = 0;
