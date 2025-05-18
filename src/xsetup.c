@@ -23,6 +23,8 @@
 #include "xsetup.h"
 #include "message.h"
 
+jmp_buf jmpenv;
+bool jumpable;
 static XColor xc,ex;
 
 char why[2048];
@@ -260,21 +262,19 @@ void shutdown_display(struct player *p) {
 }
 
 void Setup_color(struct player *p,char *dname,char *dcol) {
-	char err[1024];
-	char *str;
+	char err[1024], *str;
 	if ((str=ctquery(dname))) {
 		if (XAllocNamedColor(p->d.disp,DefaultColormap(p->d.disp,p->d.screen),
 							 str,&ex,&xc)) return;
 		sprintf(err,"Cannot find color %s\n",str);
 		ctwrite(err);
 	}
-	XAllocNamedColor(p->d.disp,DefaultColormap(p->d.disp,p->d.screen),dcol,
-					 &ex,&xc);
+	XAllocNamedColor(p->d.disp,DefaultColormap(p->d.disp,p->d.screen),dcol,&ex,&xc);
 }
 
 int Setup_value(char *dname,int val,int min,int max) {
 	char *str;
-	if ((str=(char *) ctquery(dname))) {
+	if ((str=(char*)ctquery(dname))) {
 		int v=atoi(str);
 		if (v<min) v=min;
 		if (v>max) v=max;

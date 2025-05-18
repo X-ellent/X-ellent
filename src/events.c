@@ -10,7 +10,7 @@
 ** some acknowledgement of the source (ie me!) 8-)
 */
 
-//#include <stdio.h>
+#include <stdio.h> // For stderr
 //#include <X11/keysym.h>
 #include <X11/XKBlib.h>  // For XkbKeycodeToKeysym
 
@@ -27,50 +27,11 @@
 #include "lift.h"
 #include "addon.h"
 
-static void key_press(struct player *p,int k);
-static void key_unpress(struct player *p,int k);
+//static void key_press(struct player *p,int k);
+//static void key_unpress(struct player *p,int k);
 
 static char c;
 static struct addon *ad;
-
-extern void process_events(struct player *p) {
-	XEvent xev;
-	if (!p->connected) return;
-	XSync(p->d.disp,False);
-	if (p->flags&FLG_INWINDOW) {
-		XAutoRepeatOff(p->d.disp);
-		XSync(p->d.disp,False);
-	}
-	while (XPending(p->d.disp)) {
-		XNextEvent(p->d.disp,&xev);
-		switch(xev.xany.type) {
-		case KeyPress:
-			key_press(p,XkbKeycodeToKeysym(p->d.disp,xev.xkey.keycode,0,0));
-			break;
-		case KeyRelease:
-			key_unpress(p,XkbKeycodeToKeysym(p->d.disp,xev.xkey.keycode,0,0));
-			break;
-		case NoExpose:
-			break;
-		case DestroyNotify:
-			p->qflags=7;
-			break;
-		case LeaveNotify:
-			p->flags&=~(FLG_THRUST|FLG_BRAKING|FLG_ROTCLOCK|FLG_ROTACLOCK|
-						FLG_CTRL|FLG_FIRING);
-			XAutoRepeatOn(p->d.disp);
-			p->flags&=~FLG_INWINDOW;
-			break;
-		case EnterNotify:
-			XAutoRepeatOff(p->d.disp);
-			p->flags|=FLG_INWINDOW;
-			break;
-		default:
-/*	    fprintf(stderr,"Unknown event: Code %d\n",xev.xany.type);*/
-			break;
-		}
-	}
-}
 
 static void key_press(struct player *p,int k) {
 	int t;
@@ -197,35 +158,25 @@ static void key_press(struct player *p,int k) {
 	} else switch(k) {
 		case XK_z:p->flags|=FLG_ROTACLOCK;break;
 		case XK_x:p->flags|=FLG_ROTCLOCK;break;
-		case XK_minus:p->immune=0;
-			if (!(ad=find_addon(p->firstadd,ADD_RADAR))) break;
-			if (ad->info[0]>0) ad->info[0]--;
-			break;
-		case XK_equal:p->immune=0;
-			if (!(ad=find_addon(p->firstadd,ADD_RADAR))) break;
-			if (ad->info[2]>ad->info[0]) ad->info[0]++;
-			break;
+		case XK_minus:if ((ad=find_addon(p->firstadd,ADD_RADAR)) && ad->info[0]>0) ad->info[0]--;
+			p->immune=0;break;
+		case XK_equal:if ((ad=find_addon(p->firstadd,ADD_RADAR)) && ad->info[2]>ad->info[0]) ad->info[0]++;
+			p->immune=0;break;
 		case XK_KP_7:
 		case XK_KP_Subtract:
 		case XK_KP_Divide:
 		case XK_KP_Multiply:
-		case XK_r:p->immune=0;
-			if (!(ad=find_addon(p->firstadd,ADD_RADAR))) break;
-			if (ad->level>1) ad->info[1]=-1;
-			break;
+		case XK_r:if ((ad=find_addon(p->firstadd,ADD_RADAR)) && ad->level>1) ad->info[1]=-1;
+			p->immune=0;break;
 		case XK_KP_4:
 		case XK_KP_Add:
 		case XK_KP_Separator:
-		case XK_g:p->immune=0;
-			if (!(ad=find_addon(p->firstadd,ADD_RADAR))) break;
-			if (ad->level>1) ad->info[1]=0;
-			break;
+		case XK_g:if ((ad=find_addon(p->firstadd,ADD_RADAR)) && ad->level>1) ad->info[1]=0;
+			p->immune=0;break;
 		case XK_KP_1:
 		case XK_KP_Enter:
-		case XK_v:p->immune=0;
-			if (!(ad=find_addon(p->firstadd,ADD_RADAR))) break;
-			if (ad->level>1) ad->info[1]=1;
-			break;
+		case XK_v:if ((ad=find_addon(p->firstadd,ADD_RADAR)) && ad->level>1) ad->info[1]=1;
+			p->immune=0;break;
 		case XK_Shift_L:
 		case XK_Shift_R:p->flags|=FLG_THRUST;break;
 		case XK_space:p->qflags|=4;p->flags|=FLG_BRAKING;break;
@@ -236,44 +187,38 @@ static void key_press(struct player *p,int k) {
 		case XK_f:p->immune=0;p->flags|=FLG_FUELLING;break;
 		case XK_Delete:p->flags^=FLG_NOINSTR;break;
 		case XK_b:p->immune=0;take_hold(p);break;
-		case XK_i:p->immune=0;
-			if (find_addon(p->firstadd,ADD_INVIS)) p->flags^=FLG_INVIS;
-			break;
-		case XK_o:p->immune=0;
-			if (find_addon(p->firstadd,ADD_CLOAKING)) p->flags^=FLG_CLOAKING;
-			break;
-		case XK_y:p->immune=0;
-			if (find_addon(p->firstadd,ADD_ANTICLOAK)) p->flags^=FLG_ANTICLOAK;
-			break;
-		case XK_p:p->immune=0;
-			if (find_addon(p->firstadd,ADD_MINESWEEP)) p->flags^=FLG_MINESWEEP;
-			break;
-		case XK_c:p->immune=0;
-			for (p->weap=(p->weap+1)%MAX_WEAPS;
-				 !((p->weap_mask&(1<<p->weap))&&(p->ammo[p->weap]));
-				 p->weap=(p->weap+1)%MAX_WEAPS);
+		case XK_i:if (find_addon(p->firstadd,ADD_INVIS)) p->flags^=FLG_INVIS;
+			p->immune=0;break;
+		case XK_o:if (find_addon(p->firstadd,ADD_CLOAKING)) p->flags^=FLG_CLOAKING;
+			p->immune=0;break;
+		case XK_y:if (find_addon(p->firstadd,ADD_ANTICLOAK)) p->flags^=FLG_ANTICLOAK;
+			p->immune=0;break;
+		case XK_p:if (find_addon(p->firstadd,ADD_MINESWEEP)) p->flags^=FLG_MINESWEEP;
+			p->immune=0;break;
+		case XK_c:p->immune=0;p->weap=(p->weap+1)%MAX_WEAPS;
+			while (!((p->weap_mask&(1<<p->weap))&&(p->ammo[p->weap]))) p->weap=(p->weap+1)%MAX_WEAPS;
 			break;
 		case XK_t:p->immune=0;next_target(p);break;
 		case XK_h:p->qflags|=2;p->immune=0;
-			if (rd2(p->body.l,(int) p->body.x/128,(int) p->body.y/128)!='H') break;
-			if (!is_stopped(&p->body)) break;
-			take_home(p);break;
-		case XK_e:p->immune=0;
-			c=rd2(p->body.l,(int) p->body.x/128,(int) p->body.y/128);
+			if (rd2(p->body.l,(int)p->body.x/128,(int)p->body.y/128)=='H')
+				if (is_stopped(&p->body)) take_home(p);
+			break;
+		case XK_e:c=rd2(p->body.l,(int)p->body.x/128,(int)p->body.y/128);
 			if (c=='X') {
 				struct teleport *tp;
 				tp=locate_teleport(p->body.l,(int)p->body.x/128,(int)p->body.y/128);
 				if (!tp->clk) tp->clk=1;
-				break;
+				p->immune=0;break;
 			}
 			if (!is_stopped(&p->body)) break;
+			int x=(int)p->body.x&127, y=(int)p->body.y&127;if (x<32||x>96||y<32||y>96) break;
 			switch (c) {
-			case 'S': enter_shop(p);break;
+			case 'S': init_shop(p);break;
 			case 'T': init_term(p);break;
 			case 'H': go_home(p);break;
 			} break;
 		case XK_l:p->immune=0;
-			if (rd2(p->body.l,(int) p->body.x/128,(int) p->body.y/128)=='l')
+			if (rd2(p->body.l,(int)p->body.x/128,(int)p->body.y/128)=='l')
 			switch (summon_lift(p->body.l,(int)p->body.x/128,(int)p->body.y/128)) {
 				case LIFT_NONE:player_message(p,"No lift here!");break;
 				case LIFT_BUSY:player_message(p,"Lift Busy...");break;
@@ -283,42 +228,34 @@ static void key_press(struct player *p,int k) {
 		case XK_Up:
 		case XK_Down:p->immune=0;
 			if (rd2(p->body.l,(int) p->body.x/128,(int) p->body.y/128)=='L') {
-				int x,y;
-				x=(int) p->body.x;y=(int) p->body.y;
-				x&=127;y&=127;
-				if ((x>32)&&(x<=96)&&(y>32)&&(y<=96)) {
-					struct lift *l;
-					l=find_lift((int) p->body.x/128,(int) p->body.y/128);
-					if (l->t==l->l)
-						if ((k==XK_Up && can_lift_ascend(l)) || (k==XK_Down && can_lift_descend(l))) {
-							player_message(p,"Lift Activated...");
-							l->clk=0;
-							k==XK_Up ? l->t-- : l->t++;
-						} else k==XK_Up ? player_message(p,"Lift Cannot Go Up.")
-							: player_message(p,"Lift Cannot Go Down.");
-					else player_message(p,"Lift Busy...");
-				}
+				int x=(int)p->body.x&127, y=(int)p->body.y&127;
+				if (x<32||x>96||y<32||y>96) break;
+				struct lift *l=find_lift((int)p->body.x/128,(int)p->body.y/128);
+				if (l->t==l->l)
+					if ((k==XK_Up && can_lift_ascend(l)) || (k==XK_Down && can_lift_descend(l))) {
+						player_message(p,"Lift Activated...");
+						l->clk=0;
+						k==XK_Up ? l->t-- : l->t++;
+					} else k==XK_Up ? player_message(p,"Lift Cannot Go Up.")
+						: player_message(p,"Lift Cannot Go Down.");
+				else player_message(p,"Lift Busy...");
 			} break;
 		case XK_KP_8:
 		case XK_bracketleft:
-			p->thrust-=p->step;
-			if (p->thrust<0) p->thrust=0;
+			p->thrust-=p->step; if (p->thrust<0) p->thrust=0;
 			break;
 		case XK_KP_9:
 		case XK_bracketright:
-			p->thrust+=p->step;
-			if (p->thrust>100) p->thrust=100;
+			p->thrust+=p->step; if (p->thrust>100) p->thrust=100;
 			break;
 		case XK_q: p->qflags|=1;break;
 		case XK_KP_5:
 		case XK_semicolon:
-			p->spin-=p->step;
-			if (p->spin<0) p->spin=0;
+			p->spin-=p->step; if (p->spin<0) p->spin=0;
 			break;
 		case XK_KP_6:
 		case XK_apostrophe:
-			p->spin+=p->step;
-			if (p->spin>100) p->spin=100;
+			p->spin+=p->step; if (p->spin>100) p->spin=100;
 			break;
 		case XK_KP_2:
 		case XK_period:p->immune=0;
@@ -378,23 +315,73 @@ static void key_unpress(struct player *p,int k) {
 	if (!p->body.on) {
 		if (p->flags&FLG_HOME) switch (k) {
 			case XK_Control_L:
-			case XK_Control_R:
-				p->flags&=~FLG_CTRL;
-				break;
-			case XK_f:
-				p->flags&=~FLG_FUELLING;
-				break;
+			case XK_Control_R:p->flags&=~FLG_CTRL;break;
+			case XK_f:p->flags&=~FLG_FUELLING;break;
 		}
 	} else switch(k) {
-		case XK_z:p->flags&=(~FLG_ROTACLOCK);break;
-		case XK_x:p->flags&=(~FLG_ROTCLOCK);break;
+		case XK_z:p->flags&=~FLG_ROTACLOCK;break;
+		case XK_x:p->flags&=~FLG_ROTCLOCK;break;
 		case XK_Shift_R:
-		case XK_Shift_L:p->flags&=(~FLG_THRUST);break;
-		case XK_space:p->qflags&=~4;p->flags&=(~FLG_BRAKING);break;
-		case XK_Return:p->flags&=~(FLG_FIRING);break;
+		case XK_Shift_L:p->flags&=~FLG_THRUST;break;
+		case XK_space:p->qflags&=~4;p->flags&=~FLG_BRAKING;break;
+		case XK_Return:p->flags&=~FLG_FIRING;break;
 		case XK_q:p->qflags&=~1;break;
 		case XK_h:p->qflags&=~2;break;
 		case XK_f:p->flags&=~FLG_FUELLING;break;
 	}
 }
 
+void process_events(struct player *p) {
+	XEvent xev;
+	if (!p->connected) return;
+	XSync(p->d.disp,False);
+	if (p->flags&FLG_INWINDOW) {
+		XAutoRepeatOff(p->d.disp);
+		XSync(p->d.disp,False);
+	}
+	while (XPending(p->d.disp)) {
+		XNextEvent(p->d.disp,&xev);
+		switch(xev.xany.type) {
+		case KeyPress: // 2
+			key_press(p,XkbKeycodeToKeysym(p->d.disp,xev.xkey.keycode,0,0));
+			break;
+		case KeyRelease: // 3
+			key_unpress(p,XkbKeycodeToKeysym(p->d.disp,xev.xkey.keycode,0,0));
+			break;
+		case EnterNotify: // 7
+			printf("%s: EnterNotify\n", __func__);
+			break;
+		case LeaveNotify: // 8
+			printf("%s: LeaveNotify\n", __func__);
+			break;
+		case FocusIn: // 9
+			printf("%s: FocusIn\n", __func__);
+			XAutoRepeatOff(p->d.disp);p->flags|=FLG_INWINDOW;break;
+		case FocusOut: // 10
+			printf("%s: FocusOut\n", __func__);
+			p->flags&=~(FLG_THRUST|FLG_BRAKING|FLG_ROTCLOCK|FLG_ROTACLOCK|
+						FLG_CTRL|FLG_FIRING);
+			XAutoRepeatOn(p->d.disp);
+			p->flags&=~FLG_INWINDOW;
+			break;
+		case NoExpose: // 14
+			printf("%s: NoExpose\n", __func__);
+			break;
+		case DestroyNotify: // 17
+			printf("%s: DestroyNotify\n", __func__);
+			p->qflags=7;
+			break;
+		case ColormapNotify: // 32
+			printf("%s: ColormapNotify\n", __func__); break;
+		case ClientMessage: // 33
+			printf("%s: ClientMessage\n", __func__); break;
+		case MappingNotify: // 34
+			printf("%s: MappingNotify\n", __func__); break;
+		case GenericEvent: // 35
+			printf("%s: GenericEvent\n", __func__); break;
+		default:
+/*	    fprintf(stderr,"Unknown event: Code %d\n",xev.xany.type);*/
+			break;
+		} // switch
+	}
+}

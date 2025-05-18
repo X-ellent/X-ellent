@@ -36,8 +36,7 @@ static void buy_weap(struct player *p,struct item *it);
 static void buy_othr(struct player *p,struct item *it);
 static void buy_repr(struct player *p,struct item *it);
 
-extern void init_all_shop() {
-
+void init_all_shop() {
 	if (!(pdata=fopen("price.data","rb"))) {
 		perror("Cannot open price file");
 		exit(1);
@@ -49,25 +48,21 @@ extern void init_all_shop() {
 }
 
 static int readin() {
-	int l;
 	*buf=0;
-	if (fgets(buf, 2048, pdata) == NULL) {
-		return 0;
-	}
-	if (!*buf) return 0;
-	l=strlen(buf);
+	char *res=fgets(buf,2048,pdata);
+	if (!res||!*buf) return 0;
+	int l=(int)strlen(buf);
 	if (buf[l-1]=='\n') buf[l-1]=0;
 	pos=0;
 	return 1;
 }
 
 static void next_bit() {
-	char *n;
 	if (pos==-1) {
 		*str=0;
 		return;
 	}
-	n=(char *) strchr(&buf[pos],',');
+	char *n=strchr(&buf[pos],',');
 	if (!n) {
 		strcpy(str,&buf[pos]);
 		pos=-1;
@@ -79,30 +74,19 @@ static void next_bit() {
 	}
 }
 
-extern void read_menu(struct menu *m) {
-	int n;
+void read_menu(struct menu *m) {
 	readin();
-	next_bit();
-	if (strlen(str) >= 63) {
-		memcpy(m->name, str, 63);
-	} else {
-		strcpy(m->name, str);
-	}
+	next_bit();safe_strcpy(m->name,str,63);
 	next_bit();switch(*str) {
-	case 'M':m->show=SHOW_MINES;break;
-	case 'W':m->show=SHOW_WEAPS;break;
-	case 'O':m->show=SHOW_OTHER;break;
+		case 'M':m->show=SHOW_MINES;break;
+		case 'W':m->show=SHOW_WEAPS;break;
+		case 'O':m->show=SHOW_OTHER;break;
 	}
-	for (n=0;n<10;n++) {
+	for (int n=0;n<10;n++) {
 		readin();
 		if (*buf=='.') return;
 		m->item[n]=(struct item *) calloc(1,sizeof(struct item));
-		next_bit();
-		if (strlen(str) >= 63) {
-			memcpy(m->item[n]->name, str, 63);
-		} else {
-			strcpy(m->item[n]->name, str);
-		}
+		next_bit();safe_strcpy(m->item[n]->name,str,63);
 		next_bit();
 		if (*str=='>') {
 			m->item[n]->type=ITEM_NEXT;
@@ -122,81 +106,70 @@ extern void read_menu(struct menu *m) {
 	}
 }
 
-extern void stock_mine(struct item *i) {
+void stock_mine(struct item *i) {
 	i->type=ITEM_MINE;
 	next_bit();i->obj.mine.type=atoi(str);
 	next_bit();i->obj.mine.charge=atoi(str);
 }
 
-extern void stock_ammo(struct item *i) {
+void stock_ammo(struct item *i) {
 	i->type=ITEM_AMMO;
 	next_bit();i->obj.ammo.type=atoi(str);
 	next_bit();i->obj.ammo.qty=atoi(str);
 }
 
-extern void stock_weap(struct item *i) {
+void stock_weap(struct item *i) {
 	i->type=ITEM_WEAP;
 	next_bit();i->obj.weap.type=atoi(str);
 	next_bit();i->obj.weap.ammo=atoi(str);
 }
 
-extern void stock_othr(struct item *i) {
+void stock_othr(struct item *i) {
 	i->type=ITEM_OTHR;
 	next_bit();i->obj.othr.type=atoi(str);
 }
 
-extern void stock_repr(struct item *i) {
+void stock_repr(struct item *i) {
 	i->type=ITEM_REPR;
 	next_bit();i->obj.repr.type=atoi(str);
 }
 
-extern void init_shop(struct player *p) {
-	p->flags|=FLG_SHOPPING;
+void init_shop(struct player *p) {
+	p->flags|=FLG_SHOPPING; // TODO obsolete
 	remove_body(&p->body);
 	p->shopmenu=&m_root;
 	psend(p,"#SHOP ENTER\n");
 	show_shop_menu(p);
 }
 
-extern void exit_shop(struct player *p) {
+void exit_shop(struct player *p) {
 	if (p->shopmenu->prev) {
 		p->shopmenu=p->shopmenu->prev;
 		show_shop_menu(p);
 	} else {
-		add_body(&p->body);
+		add_pbody(p);
 		p->flags&=~(FLG_SHOPPING|FLG_BRAKING);
 		psend(p,"#SHOP EXIT\n");
 	}
 }
 
-static void show_shop_menu(struct player *p)
-{
-	Display *d;
-	Pixmap w;
-	GC red,dgrey,yellow;
+static void show_shop_menu(struct player *p) {
 	int i,n;
-	char prc[80];
-	d=p->d.disp;
-	w=p->d.backing;
-	red=p->d.gc_red;
-	dgrey=p->d.gc_dgrey;
-	yellow=p->d.gc_yellow;
-	XFillRectangle(p->d.disp,p->d.backing,p->d.gc_black,0,0,WINWID,WINHGT);
-
+	char prc[81];
+	Display *d=p->d.disp;
+	Pixmap w=p->d.backing;
+	GC red=p->d.gc_red,dgrey=p->d.gc_dgrey,yellow=p->d.gc_yellow;
+	XFillRectangle(d,w,p->d.gc_black,0,0,WINWID,WINHGT);
 	if (p->shopmenu->name[0]) {
 		i=strlen(p->shopmenu->name);
-		XDrawString(p->d.disp,p->d.backing,p->d.gc_yellow,WINWID/2-p->d.bw*i/2,
-					p->d.bo,p->shopmenu->name,i);
-	} else {
-		XDrawString(p->d.disp,p->d.backing,p->d.gc_yellow,WINWID/2-p->d.bw*2,
-					p->d.bo,"Shop",4);
-	}
+		XDrawString(d,w,p->d.gc_yellow,WINWID/2-p->d.bw*i/2,p->d.bo,p->shopmenu->name,i);
+	} else
+		XDrawString(d,w,p->d.gc_yellow,WINWID/2-p->d.bw*2,p->d.bo,"Shop",4);
 
-	snprintf(prc, sizeof(prc), "Cash: %d", p->cash);
+	sprintf(prc,"Cash: %d",p->cash);
 	XDrawString(d,w,yellow,40,p->d.bo*2+p->d.bh/2,prc,strlen(prc));
 	for (i=1;(i<10)&&(p->shopmenu->item[i-1]);i++) {
-		char c;
-		c='0'+i;
+		char c='0'+(char)i;
 		XDrawString(d,w,red,20,100+p->d.fh*i,&c,1);
 		if ((p->shopmenu->item[i-1]->type!=ITEM_OTHR)&&
 			(p->shopmenu->item[i-1]->type!=ITEM_REPR)) {
@@ -210,49 +183,30 @@ static void show_shop_menu(struct player *p)
 				XDrawString(d,w,red,WINWID*3/4,100+p->d.fh*i,"<More>",6);
 			}
 		} else {
-			int typ;
 			struct addtype *adt;
 			int l;
-			typ=p->shopmenu->item[i-1]->obj.othr.type;
+			int typ=p->shopmenu->item[i-1]->obj.othr.type;
 			if ((adt=find_addtyp(typ))) {
 				if (p->shopmenu->item[i-1]->type!=ITEM_REPR) {
 					l=addon_level(p->firstadd,typ)+1;
-					if (l>adt->upgrades) {
-						snprintf(prc, sizeof(prc), "%s", adt->name);
-					} else {
-						char fmt[120];
-						snprintf(fmt, sizeof(fmt), "%s Mark %%d", adt->name);
-						snprintf(prc, sizeof(prc), fmt, l);
-					}
-					XDrawString(d,w,red,20+p->d.fw*3,100+p->d.fh*i,
-								prc,strlen(prc));
+					if (l>adt->upgrades) sprintf(prc,"%s",adt->name);
+					else snprintf(prc,sizeof(prc),"%s Mark %d",adt->name,l);
+					XDrawString(d,w,red,20+p->d.fw*3,100+p->d.fh*i,prc,strlen(prc));
 					if (l<=adt->upgrades) {
-						snprintf(prc, sizeof(prc), "$%d", adt->cost[l-1]);
-						XDrawString(d,w,red,WINWID*3/4,100+p->d.fh*i,prc,
-									strlen(prc));
-					} else {
-						XDrawString(d,w,red,WINWID*3/4,100+p->d.fh*i,
-									"-- None --",10);
-					}
+						sprintf(prc,"$%d",adt->cost[l-1]);
+						XDrawString(d,w,red,WINWID*3/4,100+p->d.fh*i,prc,strlen(prc));
+					} else
+						XDrawString(d,w,red,WINWID*3/4,100+p->d.fh*i,"-- None --",10);
 				} else {
 					l=addon_level(p->firstadd,typ);
-					if (!l) {
-						snprintf(prc, sizeof(prc), "%s", adt->name);
-					} else {
-						char fmt[120];
-						snprintf(fmt, sizeof(fmt), "%s Mark %%d", adt->name);
-						snprintf(prc, sizeof(prc), fmt, l);
-					}
-					XDrawString(d,w,red,20+p->d.fw*3,100+p->d.fh*i,
-								prc,strlen(prc));
+					if (!l) sprintf(prc,"%s",adt->name);
+					else snprintf(prc,sizeof(prc)-1,"%s Mark %d",adt->name,l);
+					XDrawString(d,w,red,20+p->d.fw*3,100+p->d.fh*i,prc,strlen(prc));
 					if (l) {
-						if (adt->damage!=(find_addon(p->firstadd,adt->type)->damage)) {
-							snprintf(prc, sizeof(prc), "$%d", adt->repcost*l);
-						} else {
-							snprintf(prc, sizeof(prc), "Repaired");
-						}
-						XDrawString(d,w,red,WINWID*3/4,100+p->d.fh*i,prc,
-									strlen(prc));
+						if (adt->damage!=(find_addon(p->firstadd,adt->type)->damage))
+							sprintf(prc,"$%d",adt->repcost*l);
+						else sprintf(prc,"Repaired");
+						XDrawString(d,w,red,WINWID*3/4,100+p->d.fh*i,prc,strlen(prc));
 					}
 				}
 			}
@@ -271,25 +225,24 @@ static void show_shop_menu(struct player *p)
 		XDrawString(d,w,red,20,100+p->d.fh*n++,"Drop-Slots Filled:",18);
 		for (i=0;i<9;i++)
 			if (p->slots[i]!=OBJ_EMPTY) {
-				snprintf(prc, sizeof(prc), "%d   ",i+1);
+				sprintf(prc,"%d   ",i+1);
 				switch(p->slots[i]) {
-				case OBJ_MINE_TRIG:strncat(prc, "Mine (Trig)", sizeof(prc) - strlen(prc) - 1);break;
-				case OBJ_MINE_TIME:strncat(prc, "Mine (Time)", sizeof(prc) - strlen(prc) - 1);break;
-				case OBJ_MINE_PROX:strncat(prc, "Mine (Prox)", sizeof(prc) - strlen(prc) - 1);break;
-				case OBJ_MINE_VELY:strncat(prc, "Mine (Vely)", sizeof(prc) - strlen(prc) - 1);break;
-				default:strncat(prc, "Unknown", sizeof(prc) - strlen(prc) - 1);break;
+				case OBJ_MINE_TRIG:strcat(prc,"Mine (Trig)");break;
+				case OBJ_MINE_TIME:strcat(prc,"Mine (Time)");break;
+				case OBJ_MINE_PROX:strcat(prc,"Mine (Prox)");break;
+				case OBJ_MINE_VELY:strcat(prc,"Mine (Vely)");break;
+				default:strcat(prc,"Unknown");break;
 				}
 				switch(p->size[i]) {
-				case 1:strncat(prc, " <Small>", sizeof(prc) - strlen(prc) - 1);break;
-				case 2:strncat(prc, " <Medium>", sizeof(prc) - strlen(prc) - 1);break;
-				case 3:strncat(prc, " <Large>", sizeof(prc) - strlen(prc) - 1);break;
-				case 4:strncat(prc, " <Extra>", sizeof(prc) - strlen(prc) - 1);break;
+				case 1:strcat(prc," <Small>");break;
+				case 2:strcat(prc," <Medium>");break;
+				case 3:strcat(prc," <Large>");break;
+				case 4:strcat(prc," <Extra>");break;
 				}
-				if (p->slotobj[i])
-					strncat(prc, " (Dropped)", sizeof(prc) - strlen(prc) - 1);
+				if (p->slotobj[i]) strcat(prc," (Dropped)");
 				XDrawString(d,w,dgrey,40,100+p->d.fh*n++,prc,strlen(prc));
 			} else {
-				snprintf(prc, sizeof(prc), "%d   Slot Empty", i+1);
+				sprintf(prc,"%d   Slot Empty", i+1);
 				XDrawString(d,w,dgrey,40,100+p->d.fh*n++,prc,14);
 			}
 		break;
@@ -297,24 +250,18 @@ static void show_shop_menu(struct player *p)
 		XDrawString(d,w,red,20,100+p->d.fh*n++,"Weapon Systems Fitted:",22);
 		for (i=0;i<MAX_WEAPS;i++)
 			if(p->weap_mask&(1<<i)) {
-				XDrawString(d,w,dgrey,40,100+p->d.fh*n,weap_name[i],
-							strlen(weap_name[i]));
-				if (i) {
-					snprintf(prc, sizeof(prc), "%d Ammo", p->ammo[i]);
-				} else {
-					snprintf(prc, sizeof(prc), "Inf. Ammo");
-				}
-					XDrawString(d,w,dgrey,WINWID/2+90,100+p->d.fh*n++,prc,
-								strlen(prc));
+				XDrawString(d,w,dgrey,40,100+p->d.fh*n,weap_name[i],strlen(weap_name[i]));
+				if (i) sprintf(prc,"%d Ammo",p->ammo[i]);
+				else sprintf(prc,"Inf. Ammo");
+				XDrawString(d,w,dgrey,WINWID/2+90,100+p->d.fh*n++,prc,strlen(prc));
 			}
 		break;
 	case SHOW_OTHER:
 		XDrawString(d,w,red,20,100+p->d.fh*n++,"Other Systems Installed:",24);
 		{
-			struct addon *ao;
-			for (ao=p->firstadd;ao;ao=ao->next) {
-				snprintf(prc, sizeof(prc), "   %s Mk.%d <%d/%d>", ao->is->name,
-						ao->level, ao->damage, ao->is->damage);
+			for (struct addon *ao=p->firstadd;ao;ao=ao->next) {
+				sprintf(prc,"   %s Mk.%d <%d/%d>",ao->is->name,
+						ao->level,ao->damage,ao->is->damage);
 				XDrawString(d,w,dgrey,20,100+p->d.fh*n++,prc,strlen(prc));
 			}
 		}
@@ -322,8 +269,7 @@ static void show_shop_menu(struct player *p)
 	};
 }
 
-extern void buy_shop(struct player *p,int n)
-{
+void buy_shop(struct player *p,int n) {
 	if (!p->shopmenu->item[n]) return;
 	if (p->shopmenu->item[n]->type==ITEM_NEXT) {
 		p->shopmenu=p->shopmenu->item[n]->sel.next;
@@ -414,24 +360,4 @@ static void buy_repr(struct player *p,struct item *it) {
 	p->cash-=l;
 	ao->damage++;
 	show_shop_menu(p);
-}
-
-
-extern void enter_shop(struct player *p) {
-	int x,y;
-	if ((p->body.xv<.1)&&(p->body.xv>-0.1)&&
-		(p->body.yv<0.1)&&(p->body.yv>-0.1)) {
-		x=(int) p->body.x;
-		y=(int) p->body.y;
-		x&=127;y&=127;
-		if ((x>32)&&(x<=96)&&(y>32)&&(y<=96)) {
-			p->body.xv=0;p->body.yv=0;p->body.xf=0;p->body.yf=0;
-			p->rv=0;p->rt=0;
-			p->flags&=(~(FLG_THRUST|FLG_BRAKING|FLG_ROTCLOCK|FLG_ROTACLOCK|
-						 FLG_FIRING));
-			remove_body(&p->body);
-			p->flags|=FLG_SHOPPING;
-			init_shop(p);
-		}
-	}
 }

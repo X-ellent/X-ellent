@@ -82,7 +82,7 @@ void stock_othr(struct item *i);
 void stock_repr(struct item *i);
 void init_shop(struct player *p);
 void exit_shop(struct player *p);
-void enter_shop(struct player *p);
+void init_shop(struct player *p);
 void buy_shop(struct player *p,int n);
 
 #endif

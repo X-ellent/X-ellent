@@ -38,7 +38,7 @@ void add_home(int l,int x,int y) {
 
 void exit_home(struct player *p) {
 	char txt[256];
-	add_body(&p->body);
+	add_pbody(p);
 	p->flags&=~FLG_HOME;
 	p->immune=START_IMMUNE_REJ;
 	snprintf(txt,sizeof(txt),"#HOME EXIT %d:%d,%d\n",p->body.l,(int)p->body.x,
@@ -58,7 +58,6 @@ void init_home(struct player *p) {
 }
 
 static void show_home(struct player *p) {
-	int i;
 	char txt[80];
 	Display *d=p->d.disp;
 	Pixmap w=p->d.backing;
@@ -70,7 +69,7 @@ static void show_home(struct player *p) {
 	DrawMeter(p,50+p->d.fw*7,p->d.fh*2,WINWID/2,4,p->maxfuel/50,p->homefuel/200);
 	XDrawString(d,w,red,10,p->d.fh*4,"#",1);
 	XDrawString(d,w,red,40,p->d.fh*4,"Contains",8);
-	for (i=0;i<9;i++) {
+	for (int i=0;i<9;i++) {
 		txt[0]='1'+i;
 		XDrawString(d,w,dgrey,10,p->d.fh*(i+5),txt,1);
 		if (p->slotobj[i]) XDrawString(d,w,dgrey,23,p->d.fh*(i+5),
@@ -92,8 +91,8 @@ static void show_home(struct player *p) {
 		XDrawString(d,w,dgrey,40,p->d.fh*(i+5),txt,strlen(txt));
 	}
 	XDrawString(d,w,red,WINWID/2+10,p->d.fh*4,"#",1);
-	XDrawString(d,w,red,WINWID/2+40,p->d.fh*4,"Stored",8);
-	for (i=0;i<9;i++) {
+	XDrawString(d,w,red,WINWID/2+40,p->d.fh*4,"Stored",6);
+	for (int i=0;i<9;i++) {
 		txt[0]='1'+i;
 		XDrawString(d,w,dgrey,WINWID/2+10,p->d.fh*(i+5),txt,1);
 		switch(p->homeslots[i]) {
@@ -132,7 +131,7 @@ void do_home(struct player *p) {
 		}
 	}
 	if (p->qflags&16) {
-		home_quit(p); // Why don't we do this in process_events?
+		home_quit(p); // TODO - Why don't we do this in process_events?
 		return;
 	}
 	if (c) show_home(p);
@@ -142,30 +141,28 @@ void home_mine(struct player *p,int s) {
 	int i;
 	if (p->flags&FLG_CTRL) {
 		if (p->slotobj[s]||(p->slots[s]==OBJ_EMPTY)) return;
-		for (i=0;i<9;i++)
-			if (p->homeslots[i]==OBJ_EMPTY) {
-				p->homeslots[i]=p->slots[s];
-				p->homesize[i]=p->size[s];
-				p->homemode[i]=p->mode[s];
-				p->slots[s]=OBJ_EMPTY;
-				p->size[s]=0;
-				p->mode[s]=0;
-				show_home(p);
-				return;
-			}
+		for (i=0;i<9;i++) if (p->homeslots[i]==OBJ_EMPTY) {
+			p->homeslots[i]=p->slots[s];
+			p->homesize[i]=p->size[s];
+			p->homemode[i]=p->mode[s];
+			p->slots[s]=OBJ_EMPTY;
+			p->size[s]=0;
+			p->mode[s]=0;
+			show_home(p);
+			return;
+		}
 	} else {
 		if (p->homeslots[s]==OBJ_EMPTY) return;
-		for (i=0;i<9;i++)
-			if (p->slots[i]==OBJ_EMPTY) {
-				p->slots[i]=p->homeslots[s];
-				p->size[i]=p->homesize[s];
-				p->mode[i]=p->homemode[s];
-				p->homeslots[s]=OBJ_EMPTY;
-				p->homesize[s]=0;
-				p->homemode[s]=0;
-				show_home(p);
-				return;
-			}
+		for (i=0;i<9;i++) if (p->slots[i]==OBJ_EMPTY) {
+			p->slots[i]=p->homeslots[s];
+			p->size[i]=p->homesize[s];
+			p->mode[i]=p->homemode[s];
+			p->homeslots[s]=OBJ_EMPTY;
+			p->homesize[s]=0;
+			p->homemode[s]=0;
+			show_home(p);
+			return;
+		}
 	}
 }
 
@@ -257,27 +254,27 @@ void take_home(struct player *p) {
 		p->home=h;
 		p->oldhome=h;
 		h->owner=p;
-		snprintf(txt,sizeof(txt),"#HOME NEW %d:%d,%d\n",h->l,h->x*128+64,h->y*128+64);
+		sprintf(txt,"#HOME NEW %d:%d,%d\n",h->l,h->x*128+64,h->y*128+64);
 		psend(p, txt);
 		return;
 	} else {
 		if (h->owner->rating>=p->rating) {
 			player_message(p,"You cannot take that home base!");
-			player_message(h->owner,(snprintf(txt,sizeof(txt),"%s just tried to steal your home base",p->name),txt));
+			player_message(h->owner,(sprintf(txt,"%s just tried to steal your home base",p->name),txt));
 			return;
 		}
 		p->homing=HOME_TAKE_TIME;
-		player_message(p,(snprintf(txt,sizeof(txt),"You steal this home base from %s.",
+		player_message(p,(sprintf(txt,"You steal this home base from %s.",
 				h->owner->name),txt));
-		player_message(h->owner,(snprintf(txt,sizeof(txt),"%s has stolen your home base.",
+		player_message(h->owner,(sprintf(txt,"%s has stolen your home base.",
 				p->name),txt));
-		player_message(h->owner,(snprintf(txt,sizeof(txt),"Your new home base is %d:%d,%d",
+		player_message(h->owner,(sprintf(txt,"Your new home base is %d:%d,%d",
 				p->home->l,p->home->x,p->home->y),txt));
-		snprintf(txt, sizeof(txt),"#HOME NEW %d:%d,%d\n",p->home->l,p->home->x*128+64,
+		sprintf(txt,"#HOME NEW %d:%d,%d\n",p->home->l,p->home->x*128+64,
 				p->home->y*128+64);
-		psend(h->owner, txt);
-		snprintf(txt, sizeof(txt),"#HOME NEW %d:%d,%d\n",h->l,h->x*128+64,h->y*128+64);
-		psend(p, txt);
+		psend(h->owner,txt);
+		sprintf(txt,"#HOME NEW %d:%d,%d\n",h->l,h->x*128+64,h->y*128+64);
+		psend(p,txt);
 		p->home->owner=h->owner; // This owner of this home is now the owner of our home
 		h->owner->home=p->home; // Our home is now the home of the owner of this home
 		h->owner->oldhome=p->home; // Our home is now the preferred home for the owner of this home

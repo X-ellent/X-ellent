@@ -15,7 +15,7 @@
 
 #include <setjmp.h>
 
-extern int jumpable;
+extern bool jumpable;
 extern jmp_buf jmpenv;
 
 void setup_error_handler();

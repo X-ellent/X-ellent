@@ -581,7 +581,7 @@ static void draw_msg(struct player *p) {
 }
 
 void draw_all(struct player *p) {
-	jumpable=-1;
+	jumpable=1;
 	switch (setjmp(jmpenv)) {
 	case 0:break;
 	case 1:return;

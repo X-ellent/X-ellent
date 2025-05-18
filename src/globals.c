@@ -27,18 +27,11 @@
 /* From xbits.h */
 XPoint pc[PCACHE];
 
-/* From xsetup.h */
-int jumpable = 0;
-jmp_buf jmpenv;
-
 /* From turret.h */
 struct turret *firstturret = NULL;
 
 /* From shop.h */
 struct menu m_root;
-
-/* From lift.h */
-struct lift *firstlift = NULL;
 
 /* From addon.h */
 struct addtype *firstaddtype = NULL;

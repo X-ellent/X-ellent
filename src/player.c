@@ -176,15 +176,13 @@ static void quit_player(struct player *p) {
 }
 
 static void lose_items(struct player *p) {
-	int i;
-	struct addon *ad;
-	for (i=0;i<9;i++) if (p->slots[i]&&(!p->slotobj[i])) {
+	for (int i=0;i<9;i++) if (p->slots[i]&&(!p->slotobj[i])) {
 		p->slots[i]=OBJ_EMPTY;
 		p->size[i]=0;
 		p->mode[i]=0;
 	}
-	for (ad=p->firstadd;ad;ad=ad->next)
-		ad->damage--;
+	for (struct addon *ad=p->firstadd;ad;ad=ad->next)
+		ad->damage--; // TODO we reduce damage?!
 	if (p->firstadd) p->firstadd=strip_addons(p,p->firstadd);
 }
 
@@ -227,7 +225,7 @@ void update_player(struct player *p) {
 	char tx[60];
 	double inertia;
 	jumpable=1;
-	switch (setjmp(jmpenv)) { // Log if this ever happens
+	switch (setjmp(jmpenv)) { // TODO - Log if this ever happens
 		case 0:break;
 		case 1:return;
 		case 2:bloody_errors(p);return;
@@ -428,39 +426,31 @@ void update_player(struct player *p) {
 	longjmp(jmpenv,1);
 }
 
-extern void damage_player(struct player *p,int d,struct player *who,int how)
-{
+void damage_player(struct player *p,int d,struct player *who,int how) {
 	char txt[1024];
 	int rat;
 	if ((who)&&(how==DAM_SHOT)&&((who->rating*2)<p->rating)) return;
-	if (p->shield<(d-100)) d=p->shield+100;
+	if (p->shield<(d-100)) d=p->shield+100; // TODO this feels wrong!
 	p->shield-=d;
-	if (who&&(who!=p)) {
-		who->score+=(d+9)/10;
-	}
+	if (who&&(who!=p)) who->score+=(d+9)/10;
 	if (p->shield<0) {
 		p->shield=0;
 		remove_body(&p->body);
 		if ((who)&&(who!=p)) {
 			who->score+=DEATH_BONUS;
-			if (who->rating<=p->rating) {
-				who->cash+=DEATH_CASH;
-			}
-			if (2*who->rating<=p->rating) {
-				who->cash+=DEATH_CASH-DEATH_CASH_MIN;
-			}
+			if (who->rating<=p->rating) who->cash+=DEATH_CASH;
+			if (2*who->rating<=p->rating) who->cash+=DEATH_CASH-DEATH_CASH_MIN;
 			if (who->rating<=(p->rating*2)) {
 				who->cash+=p->cash/10;
 				who->cash+=DEATH_CASH_MIN;
 			} else {
 				if (how==DAM_SHOT) {
-					int i;
 					p->cash+=who->cash/4;
 					who->cash=who->cash*3/4;
 					p->fuel+=who->fuel/4;
 					if (p->fuel>p->maxfuel) p->fuel=p->maxfuel;
 					who->fuel-=who->fuel/4;
-					for (i=0;i<MAX_WEAPS;i++) {
+					for (int i=0;i<MAX_WEAPS;i++) {
 						p->ammo[i]+=who->ammo[i]/4;
 						who->ammo[i]-=who->ammo[i]/4;
 					}
@@ -479,13 +469,8 @@ extern void damage_player(struct player *p,int d,struct player *who,int how)
 					if (rat>4) rat=4; /* Limit rating change to 4 */
 					who->rating+=rat;
 					if (rat>0) p->rating-=rat;
-					if (rat>0) {
-						player_message(who,"Your rating has risen....");
-					} else {
-						if (rat<0) {
-							player_message(who,"Your rating has fallen....");
-						}
-					}
+					if (rat>0) player_message(who,"Your rating has risen....");
+					else if (rat<0) player_message(who,"Your rating has fallen....");
 				} else {
 					who->rating++;
 					player_message(who,"Your rating has risen....");
@@ -521,8 +506,7 @@ extern void damage_player(struct player *p,int d,struct player *who,int how)
 		explode(p->body.l,p->body.x,p->body.y,30,10000,100,0);
 		p->flags|=FLG_DEAD;
 		p->delay=DEATH_DELAY;
-		p->body.xv=0;p->body.xf=0;
-		p->body.yv=0;p->body.yf=0;
+		p->body.xv=0;p->body.xf=0;p->body.yv=0;p->body.yf=0; // TOOD done by add_pbody?
 		p->deaths++;
 		lose_items(p);
 		p->shield=500;
@@ -530,7 +514,7 @@ extern void damage_player(struct player *p,int d,struct player *who,int how)
 	}
 }
 
-extern void init_all_weap() {
+void init_all_weap() {
 	weap_name[WEP_RIF]="Rifle";
 	weap_name[WEP_LMG]="Light Machine Gun";
 	weap_name[WEP_HMG]="Heavy Machine Gun";
@@ -631,7 +615,7 @@ void load_players() {
 		playone=p;
 
 		p->flags=0;
-		p->body.xv=0;p->body.yv=0;p->body.xf=0;p->body.yf=0;p->rv=0;p->rt=0;
+		p->body.xv=0;p->body.yv=0;p->body.xf=0;p->body.yf=0;p->rv=0;p->rt=0; // TODO can remove? (add_pbody)
 		p->playing=0;
 		remove_body(&p->body);
 		p->weap_mask=(1<<0);
