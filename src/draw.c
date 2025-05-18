@@ -20,7 +20,7 @@
 #include "turret.h"
 #include "mymath.h"
 //#include "debug.h"
-#include "particle.h"
+#include "particle.h" // For parts
 //#include "constants.h"
 #include "xsetup.h"
 #include "draw.h" // For DrawMeter

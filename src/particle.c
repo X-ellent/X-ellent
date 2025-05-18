@@ -20,6 +20,10 @@
 #include "player.h"
 #include "debug.h"
 
+struct explosion *firstbang, *freebang;
+struct particle *part_free, *parts[MAXDEPTH];
+int part_count;
+
 struct particle *alloc_particle() {
 	struct particle *p=part_free;
 	if (p) part_free=p->next;
