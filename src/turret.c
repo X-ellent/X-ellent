@@ -154,7 +154,7 @@ static void do_active_turret() {
 					if (f!=0) {
 						an=atan2((double)dx,(double)-dy);
 						an=an*180/PI;
-						t->targ=(int) an;
+						t->targ=(int)an;
 						t->targ+=360;
 						t->targ=t->targ%360;
 						pt=p;

@@ -67,7 +67,7 @@ int setup_player() {
 			return 0;
 		}
 		// TODO - give a daily bonus for connecting?
-	} else {
+	} else { // Set up a new player
 		for (struct player *op=playone;op;op=op->next) if (!strcmp(op->name,nm)) {
 			ctwrite("Selected username is in use. Failed to create player!");
 			return 0;
@@ -136,11 +136,11 @@ int setup_player() {
 	p->home->owner=p;
 	p->body.x=p->home->x*128+64; p->body.y=p->home->y*128+64; p->body.l=p->home->l;
 	p->msg[0][0]=p->msg[1][0]=p->msg[2][0]=p->msg[3][0]=0;
-	p->qflags=p->slot=p->scount=p->delay=p->onground=p->rot=p->delay=0;p->ptarg=0;
+	p->qflags=p->slot=p->scount=p->onground=p->rot=p->delay=0;p->ptarg=0;
 	remove_body(&p->body);
 	p->flags=FLG_HOME;
-	p->immune=DEATH_IMMUNE;
-	p->playing=1;
+	p->immune=DEATH_IMMUNE; // TODO - should this be here?
+	p->playing=1; // TODO redundant - use p->home
 	players++; // Connected and playing
 
 	init_home(p);
