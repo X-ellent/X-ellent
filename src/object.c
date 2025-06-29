@@ -50,7 +50,7 @@ void move_objects() {
 	struct player *p;
 	double dx,dy;
 	int rng,det,det2;
-	for (o=obj_first,n=o->next;o;o=n,o?n=o->next:0) {
+	for (o=obj_first,n=o?o->next:0;o;o=n,o?n=o->next:0) {
 		if (o->flags&OBJ_F_ARMING && !(--o->count)) {
 			o->flags|=OBJ_F_ARM;
 			o->flags&=(~OBJ_F_ARMING);

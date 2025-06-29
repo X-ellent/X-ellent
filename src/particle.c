@@ -180,7 +180,7 @@ void explode(int l,int x, int y,int s,int f,int d,struct player *who) {
 
 void move_explosions() {
 	struct explosion *e,*l=0,*n;
-	for (e=firstbang,n=e->next;e;l=e,e=n,e?n=e->next:0) {
+	for (e=firstbang,n=e?e->next:0;e;l=e,e=n,e?n=e->next:0) {
 		e->r+=10;
 		if (e->a++>e->s) {
 			if (l) l->next=e->next;
