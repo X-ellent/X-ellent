@@ -13,6 +13,9 @@
 #ifndef My_FIX_H
 #define My_FIX_H
 
+#include <stdlib.h>
+#include <stdbool.h>
+
 typedef unsigned char uchar;
 
 #ifdef NON_ANSI_HEADERS
@@ -39,9 +42,6 @@ extern int  fclose();
 extern int  atoi();
 extern int  ungetc();
 extern int  _filbuf();
+#endif // NON_ANSI_HEADERS
 
-#endif
-
-#include <stdlib.h>
-
-#endif
+#endif // My_FIX_H

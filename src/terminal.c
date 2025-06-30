@@ -798,7 +798,7 @@ extern int terminal_operand(struct player *p,char *s) {
 	return 3;
 }
 
-extern int terminal_command(struct player *p,char *sys,char *com) {
+int terminal_command(struct player *p,char *sys,char *com) {
 	struct addon *ad;
 	if (strcmp(sys,"SYS")==0) return system_command(p,com);
 	if (strcmp(sys,"TER")==0) return login_command(p,com);
@@ -806,8 +806,8 @@ extern int terminal_command(struct player *p,char *sys,char *com) {
 	if (strcmp(sys,"LIF")==0) return lift_command(p,com);
 	if (strcmp(sys,"WEP")==0) return weapons_command(p,com);
 	for (ad=p->firstadd;ad;ad=ad->next)
-		if (strcmp(ad->is->subs,sys)==0) return
-			addon_command(p,ad,(unsigned char *)com);
+		if (strcmp(ad->is->subs,sys)==0)
+			return addon_command(p,ad,(uchar *)com);
 	sprintf(txt,"!Unknown subsystem %s\n",sys);
 	psend(p,txt);
 	return 3;

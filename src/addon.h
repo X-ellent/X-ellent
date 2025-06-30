@@ -60,6 +60,6 @@ struct addon*	add_addon(int typ);
 void			free_addon(struct addon *a);
 struct addon*	strip_addons(struct player *p,struct addon *a);
 void			new_addon_level(struct player *p,struct addon *a);
-void			addon_command(struct player *p,struct addon *a,uchar *s);
+int				addon_command(struct player *p,struct addon *a,uchar *s);
 
 #endif
