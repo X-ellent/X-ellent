@@ -326,7 +326,7 @@ void update_player(struct player *p) {
 				}
 			}
 		}
-	} else {  // height!=0
+	} else { // height!=0
 		if (p->body.fallen>=3) p->body.height--;
 		else if (p->body.fallen==1) p->body.height++;
 		p->body.fallen++;

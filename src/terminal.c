@@ -236,10 +236,12 @@ static int find_label(char *s) {
 static int get_thing(char c,FILE *td,int pc) {
 	char str[16];str[0]=c;
 	int n;
-	for (n=1;n<15;n++) if (isspace(str[n]=getc(td))) {
-		str[n]=0; n=16;
+	for (n=1;n<15;n++) {
+		int ch=getc(td);
+		if (ch == EOF) break;
+		if (isspace((str[n]=ch))) break;
 	}
-	if (n==15) while(!isspace(getc(td)));
+	str[n]=0;
 
 /* DO NOT REMOVE OR ALTER THIS LINE **START**/
 	if (strcmp(str,"RTS")==0) {rom[pc++]=OP_RTS;return pc;};
@@ -459,20 +461,19 @@ int run_program(struct player *p) {
 			case OP_CLS:cts(p);break;
 			case OP_NEW:term_newline(p);return 1;
 			case OP_PSH:
-			{
-				ptr_int_t *pval;
-				pval = (ptr_int_t *)&rom[t->pc[t->psp]-ROMBASE];
+				{
+					ptr_int_t *pval = (ptr_int_t *)&rom[t->pc[t->psp]-ROMBASE];
 
-				#if defined(__LP64__) || defined(_LP64) || defined(__amd64) || defined(__x86_64__) || defined(__aarch64__)
-				/* On 64-bit systems, we need to read 8 bytes */
-				t->pc[t->psp]+=8;
-				#else
-				/* On 32-bit systems, we need to read 4 bytes */
-				t->pc[t->psp]+=4;
-				#endif
+#if defined(__LP64__) || defined(_LP64) || defined(__amd64) || defined(__x86_64__) || defined(__aarch64__)
+					/* On 64-bit systems, we need to read 8 bytes */
+					t->pc[t->psp]+=8;
+#else
+					/* On 32-bit systems, we need to read 4 bytes */
+					t->pc[t->psp]+=4;
+#endif
 
-				PUSH(*pval);
-			}
+					PUSH(*pval);
+				}
 				break;
 			case OP_STR:
 				if (!t->nsp) {
