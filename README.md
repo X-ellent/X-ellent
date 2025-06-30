@@ -1,4 +1,5 @@
 # X-ellent
+[![CLA assistant](https://cla-assistant.io/readme/badge/X-ellent/X-ellent)](https://cla-assistant.io/X-ellent/X-ellent)
 
 X-ellent is a complex, multiplayer game originally developed in the early 1990s by Daniel Stephens (cheesey@dcs.warwick.ac.uk). This repository contains the source code for the game, which has not been actively maintained since 1993.
 
