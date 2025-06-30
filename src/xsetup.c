@@ -87,10 +87,10 @@ int init_player_display(struct player *p,char *d) {
 	}
 	fprintf(stderr,"Display name is %s (%s)\n",d,p->user);
 	switch (setjmp(jmpenv)) {
-	    case 0:break;
-	    case 1:return -1;
-	    case 2:bloody_errors(p); // fallthrough
-	    case 3:return 0;
+		case 0:break;
+		case 1:return -1;
+		case 2:bloody_errors(p); // fallthrough
+		case 3:return 0;
 	}
 	p->d.screen=DefaultScreen(p->d.disp);
 	p->d.gc=DefaultGC(p->d.disp,p->d.screen);
