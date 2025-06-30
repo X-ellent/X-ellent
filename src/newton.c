@@ -51,7 +51,7 @@ void remove_body(struct body *b) {
 	b->last=b->next=0;b->on=0;
 }
 
-int is_stopped(struct body *b) {
+bool is_stopped(struct body *b) {
 	int x,y,xx,yy;
 	if ((b->xv<.1)&&(b->xv>-0.1)&&(b->yv<0.1)&&(b->yv>-0.1)) {
 		x=(int) b->x;
