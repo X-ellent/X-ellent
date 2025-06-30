@@ -753,9 +753,7 @@ int system_command(struct player *p,char *com) {
 	if (strncmp(com,"SPIN",4)==0) {			/* Sets Spin */
 		int n;
 		n=atoi(&com[4]);
-		if ((n<0)||(n>100)) {
-			psend(p,"!Spin out of range!\n");
-			return 3;};
+		if ((n<0)||(n>100)) { psend(p,"!Spin out of range!\n"); return 3;};
 		p->spin=n; return 3;
 	}
 	if (strcmp(com,"STATUS")==0) {			/* Shows my status */
@@ -1092,4 +1090,3 @@ int terminal_input(int n,int state,char *in) {
 	}
 	return state;
 }
-
