@@ -15,6 +15,7 @@
 
 #include "constants.h"
 #include "player.h"
+#include "fix.h"
 
 struct addtype {
     struct addtype *next;     /* Pointer to next one */
@@ -51,15 +52,14 @@ extern struct addon *freeaddon;
 #define ADD_VISUAL          10
 #define ADD_ANTICLOAK       11
 
-extern void           init_addons();
-extern struct addtype*find_addtyp(int typ);
-extern struct addon*  find_addon(struct addon *ad,int typ);
-extern int            addon_level(struct addon *ad,int typ);
-extern struct addon*  add_addon(int typ);
-extern void           free_addon(struct addon *a);
-extern struct addon*  strip_addons(struct player *p,struct addon *a);
-extern void           new_addon_level(struct player *p,struct addon *a);
-extern int            addon_command(struct player *p,struct addon *a,
-                                    unsigned char *s);
+void			init_addons();
+struct addtype*	find_addtyp(int typ);
+struct addon*	find_addon(struct addon *ad,int typ);
+int				addon_level(struct addon *ad,int typ);
+struct addon*	add_addon(int typ);
+void			free_addon(struct addon *a);
+struct addon*	strip_addons(struct player *p,struct addon *a);
+void			new_addon_level(struct player *p,struct addon *a);
+void			addon_command(struct player *p,struct addon *a, uchar *s);
 
 #endif

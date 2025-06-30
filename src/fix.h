@@ -13,8 +13,9 @@
 #ifndef My_FIX_H
 #define My_FIX_H
 
-#ifdef NON_ANSI_HEADERS
+typedef unsigned char uchar;
 
+#ifdef NON_ANSI_HEADERS
 extern void bzero();
 extern int  socket();
 extern void perror();
