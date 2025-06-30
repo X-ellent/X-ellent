@@ -142,14 +142,10 @@ static void get_bonus_mine(struct player *p) {
 			default:p->size[i]=1;break;
 		}
 		switch(random()%4) {
-			case 0:p->slots[i]=OBJ_MINE_TRIG;
-			    p->mode[i]=0;break;
-			case 1:p->slots[i]=OBJ_MINE_TIME;
-			    p->mode[i]=10*mult;break;
-			case 2:p->slots[i]=OBJ_MINE_PROX;
-			    p->mode[i]=20+5*p->size[i];break;
-			case 3:p->slots[i]=OBJ_MINE_VELY;
-			    p->mode[i]=50;break;
+			case 0:p->slots[i]=OBJ_MINE_TRIG;p->mode[i]=0;break;
+			case 1:p->slots[i]=OBJ_MINE_TIME;p->mode[i]=10;break;
+			case 2:p->slots[i]=OBJ_MINE_PROX;p->mode[i]=20+5*p->size[i];break;
+			case 3:p->slots[i]=OBJ_MINE_VELY;p->mode[i]=50;break;
 		}
 		player_message(p,"A bonus mine!!");
 		return;

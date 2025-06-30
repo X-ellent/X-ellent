@@ -28,14 +28,13 @@
 #include "beam.h"
 #include "addon.h"
 
-static void draw_map(struct player *p,int l,int x,int y);
 static void draw_me(struct player *p);
-static void draw_others(struct player *p,struct player *me);
+static void draw_others(struct player *p);
 static void draw_falling(struct player *p);
 static void draw_msg(struct player *p);
 
-static void draw_map(struct player *p,int l,int x,int y)
-{
+static void draw_map(struct player *p) {
+	int x=(int)p->body.x,y=(int)p->body.y,l=p->body.l;
 	Display *d;
 	Pixmap w;
 	GC red,blue,white,grey,dgrey,yellow;
@@ -203,8 +202,7 @@ static void draw_map(struct player *p,int l,int x,int y)
 					XDrawLines(d,w,dgrey,rc,5,CoordModeOrigin);break;
 				} // switch
 			} else if (rd(l,ix,iy)&MAP_OBSC) {
-				int a,b;
-				for (a=0;a<5;a++) for (b=0;b<5;b++) {
+				for (int a=0;a<5;a++) for (int b=0;b<5;b++) {
 					rc[a+5*b].x=xc+dx*a/4-dy*b/4;
 					rc[a+5*b].y=yc+dx*b/4+dy*a/4;
 				}
@@ -345,7 +343,7 @@ static void draw_map(struct player *p,int l,int x,int y)
 	}
 }
 
-extern void draw_all(struct player *p) {
+void draw_all(struct player *p) {
 	jumpable=-1;
 	switch (setjmp(jmpenv)) {
 	case 0:break;
@@ -369,8 +367,9 @@ extern void draw_all(struct player *p) {
 				if (p->delay>DEATH_SHOW) {
 					if (p->flags&FLG_FALLEN && p->body.l>=map.depth)
 						draw_falling(p);
-					else
+					else {
 						draw_map(p);draw_others(p);draw_msg(p);
+					}
 				} else
 					XDrawArc(p->d.disp,p->d.backing,p->d.gc_red,20,20,
 							WINWID-40,WINHGT-40,360*64*(p->delay-1)/DEATH_SHOW,
@@ -412,7 +411,9 @@ void draw_map_level(struct player *p,int l) {
 		if ((l==pl)&&(x==px)&&(y==py)) {
 			XFillRectangle(d,w,yellow,mx+x*wx,my+y*wx,wx+1,wx+1);continue;
 		}
-		if (rd(l,x,y)&(MAP_SOLID) switch(rd2(l,x,y)) {
+		switch(rd(l,x,y)&(MAP_SOLID|MAP_OBSC)) {
+		case MAP_SOLID:
+			switch(rd2(l,x,y)) {
 			case '-':
 				XDrawRectangle(d,w,p->d.gc_ice,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
 				break;
@@ -475,9 +476,15 @@ void draw_map_level(struct player *p,int l) {
 			default:
 				XDrawRectangle(d,w,dgrey,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
 				break;
-		} else if (rd(l,x,y)&MAP_OBSC)
+			}
+			break;
+		case MAP_OBSC:
 			for (a=0;a<5;a++) for (b=0;b<5;b++)
 				XDrawPoint(d,w,grey,mx+x*wx+wx*a/4,my+y*wx+wx*b/4);
+			break;
+		default:
+			break;
+		}
 	} // for x (and y)
 	for (y=0;y<map.hgt;y++) for (x=0;x<map.wid;x++) {
 		switch (rd(l,x,y)&(MAP_LWALL)) {
@@ -791,7 +798,7 @@ static void draw_others(struct player *p) {
 	GC red=p->d.gc_red,blue=p->d.gc_blue,white=p->d.gc_white;
 	double ms=-sn[(int) p->rot], mc=cs[(int) p->rot];
 	for (o=playone;o;o=o->next) if (!(o->flags&FLG_INVIS)&&(o->body.on)&&
-				(o!=me)&&(o->body.l==p->body.l)) {
+				(o!=p)&&(o->body.l==p->body.l)) {
 		int n;
 		n=1;
 		mx=(o->body.x-p->body.x); my=(o->body.y-p->body.y);

@@ -772,6 +772,7 @@ void Setup_color(char *dname,char *dcol) {
 }
 
 void draw_map(int n) {
+	int w=map.sqr;
 	if (displev!=n) {
 		scribble_map(n,&back);
 		change=1;
@@ -795,7 +796,7 @@ void draw_map(int n) {
 		change=1;
 		for(levs[1]=(levs[1]+1)&63;!map.data[levs[1]];levs[1]=(levs[1]+1)&63);
 	}
-	xo=(back.wid-(w*map.wid))/2;yo=(back.hgt-(w*map.hgt))/2;
+	int xo=(back.wid-(w*map.wid))/2, yo=(back.hgt-(w*map.hgt))/2;
 	if (change)
 		XCopyArea(disp,back.pix,win,gc,0,0,back.wid,back.hgt,0,0);
 	else {
@@ -846,14 +847,15 @@ void draw_map(int n) {
 	dashrot-=5;dashrot&=63;
 	XSetDashes(disp,stripea,(dashrot&63),"\040\040",2);
 	XSetDashes(disp,stripeb,(dashrot+32)&63,"\040\040",2);
-	for (t=firsttel;t;t=t->next) if (t->loc.l==me.l && td=find_teleport(t->dest)) {
+	struct teleport *t, *td;
+	for (t=firsttel;t;t=t->next) if (t->loc.l==me.l && (td=find_teleport(t->dest))) {
 		if (t->loc.l==td->loc.l) {
 			XDrawLine(disp,win,stripea,t->loc.x*w/128+xo,t->loc.y*w/128+yo,
 					td->loc.x*w/128+xo,td->loc.y*w/128+yo);
 			XDrawLine(disp,win,stripeb,t->loc.x*w/128+xo,t->loc.y*w/128+yo,
 					td->loc.x*w/128+xo,td->loc.y*w/128+yo);
-		} else for (i=0;i<3;i++) if (levs[i]==td->loc.l) {
-			m=map.tinymap[levs[i]];
+		} else for (int i=0;i<3;i++) if (levs[i]==td->loc.l) {
+			struct mypixmap *m=map.tinymap[levs[i]];
 			XDrawLine(disp,win,stripea,t->loc.x*w/128+xo,t->loc.y*w/128+yo,
 					td->loc.x*m->sqr/128+m->xo+(150*(i%3)),
 					td->loc.y*m->sqr/128+m->yo+MAPHGT+(150*((int)i/3)));
@@ -867,7 +869,7 @@ void draw_map(int n) {
 	while (XPending(disp)) {
 		struct lift *l;
 		struct teleport *t;
-		int lvl=-1;
+		int lvl=-1; XEvent xev;
 		XNextEvent(disp,&xev);
 		switch(xev.xany.type) {
 		case KeyPress:
@@ -972,8 +974,7 @@ void build_sintable() {
 	for (int i=0;i<360;i++) sintable[i+360]=sintable[i];
 	sn=sintable;cs=&sintable[90];
 }
-
-int load_map() {
+void load_map() {
 	FILE *mf;
 	if (!(mf=fopen(".xellent.map","rb"))) {
 		fprintf(stderr,"Cannot open .xellent.map\n");
@@ -984,7 +985,7 @@ int load_map() {
 	if (!fgets(inp,1023,mf)) {
 		fprintf(stderr, "Error reading from .xellent.map\n");
 		fclose(mf);
-		return 0;
+		return;
 	}
 	char *cc=inp, *oc;
 	oc=cc;cc=strchr(cc,' ');*cc++=0;map.wid=atoi(oc);
@@ -1012,8 +1013,6 @@ int load_map() {
 	}
 	fclose(mf);
 	for (n=0;n<64;n++) if (map.data[n]) update_map(n);
-
-	return 1;
 }
 
 void save_map() {
@@ -1188,18 +1187,15 @@ extern void special_command(char *s) {
 			if (t->loc.l==n) {
 				tt=find_teleport(t->dest);
 				if (tt) {
-					sprintf(otxt,
-							"Teleport %d %d:%d,%d Destination %d %d:%d,%d",
+					printf("Teleport %d %d:%d,%d Destination %d %d:%d,%d",
 							t->num,t->loc.l,(int)t->loc.x/128,
 							(int)t->loc.y/128,tt->num,tt->loc.l,
 							(int)tt->loc.x/128,(int)tt->loc.y/128);
 				} else {
-					sprintf(otxt,
-							"Teleport %d %d:%d,%d Destination %d",
+					printf("Teleport %d %d:%d,%d Destination %d",
 							t->num,t->loc.l,(int)t->loc.x/128,
 							(int)t->loc.y/128,t->dest);
 				}
-				print_text(otxt);
 			}
 		return;
 	}
@@ -1208,12 +1204,10 @@ extern void special_command(char *s) {
 		for (t=firsttel;t;t=t->next) {
 			tt=find_teleport(t->dest);
 			if ((tt)&&(tt->loc.l==n)) {
-				sprintf(otxt,
-						"Teleport %d %d:%d,%d Destination %d %d:%d,%d",
+				printf("Teleport %d %d:%d,%d Destination %d %d:%d,%d",
 						t->num,t->loc.l,(int)t->loc.x/128,
 						(int)t->loc.y/128,tt->num,tt->loc.l,
 						(int)tt->loc.x/128,(int)tt->loc.y/128);
-				print_text(otxt);
 			}
 		}
 		return;
