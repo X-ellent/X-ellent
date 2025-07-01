@@ -16,65 +16,56 @@
 #include "newton.h"
 
 struct object {
-    int type;
-    struct object *next;
-    int l;
-    double x,y;
-    double xv,yv;
-    double xf,yf;
-    int count;
-    int mode;
-    int flags;
-    int charge;
-    union {
-	struct player *owner;
-	struct object *same;
-    } has;
-    int slot;
+	int type;
+	struct object *next;
+	int l;
+	double x,y;
+	double xv,yv;
+	double xf,yf;
+	int count;
+	int mode;
+	int flags;
+	int charge;
+	union {
+		struct player *owner;
+		struct object *same;
+	} has;
+	int slot;
 };
 
 struct trolley {
-    struct body body;
-    struct trolley *next;
-    struct player *holder;
-    int falltime;
-    int ang;
-    struct checkpoint *cp;
+	struct body body;
+	struct trolley *next;
+	struct player *holder;
+	int falltime;
+	int ang;
+	struct checkpoint *cp;
 };
 
 extern struct trolley *firsttrol;
-extern struct trolley thetrol;
-extern struct trolley thetrolb;
-extern struct trolley thetrolc;
-extern struct trolley thetrold;
-
 extern struct object *obj_first;
 extern struct object *obj_freepool;
 
-extern int obj_used;
-extern int obj_free;
+#define OBJ_EMPTY			0
+#define OBJ_MINE_TRIG		1
+#define OBJ_MINE_TIME		2
+#define OBJ_MINE_PROX		3
+#define OBJ_MINE_VELY		4
+#define OBJ_MINE_SMART		5
+#define OBJ_BONUS			6
 
-#define OBJ_EMPTY           0
-#define OBJ_MINE_TRIG       1
-#define OBJ_MINE_TIME       2
-#define OBJ_MINE_PROX       3
-#define OBJ_MINE_VELY       4
-#define OBJ_MINE_SMART      5
-#define OBJ_BONUS           6
-
-#define OBJ_F_ARM        (1<<0)
-#define OBJ_F_ARMING     (1<<1)
-#define OBJ_F_TRIG       (1<<2)
-#define OBJ_F_FLASH      (1<<3)
-#define OBJ_F_EXPLODE    (1<<4)
-#define OBJ_F_CHAIN      (1<<5)
+#define OBJ_F_ARM		 (1<<0)
+#define OBJ_F_ARMING	 (1<<1)
+#define OBJ_F_TRIG		 (1<<2)
+#define OBJ_F_FLASH		 (1<<3)
+#define OBJ_F_EXPLODE	 (1<<4)
+#define OBJ_F_CHAIN		 (1<<5)
 
 struct object *alloc_object();
-extern void move_objects();
-extern void take_hold(struct player *p);
-extern void update_trolleys();
-extern void init_all_trolleys();
-extern void create_trolley(struct trolley *tr);
+void move_objects();
+void take_hold(struct player *p);
+void update_trolleys();
+void init_all_trolleys();
+void create_trolley(struct trolley *tr);
 
 #endif
-

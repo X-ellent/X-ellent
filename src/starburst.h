@@ -16,15 +16,15 @@
 #include "newton.h"
 
 struct starburst {
-    struct body body;
-    int rot;
-    int mode;
-    int wait;
-    int num;
-    int wid;
-    int dir;
-    int sleep;
-    struct starburst *next;
+	struct body body;
+	int rot;
+	int mode;
+	int wait;
+	int num;
+	int wid;
+	int dir;
+	int sleep;
+	struct starburst *next;
 };
 
 extern struct starburst *firststar;

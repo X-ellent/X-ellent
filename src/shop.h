@@ -14,49 +14,49 @@
 #define My_SHOP_H
 
 struct menu {
-    char name[64];
-    struct item *item[10];
-    struct menu *prev;
-    int show;
+	char name[64];
+	struct item *item[10];
+	struct menu *prev;
+	int show;
 };
 
 struct sh_mine {
-    int type;
-    int charge;
+	int type;
+	int charge;
 };
 
 struct sh_ammo {
-    int type;
-    int qty;
+	int type;
+	int qty;
 };
 
 struct sh_weap {
-    int type;
-    int ammo;
+	int type;
+	int ammo;
 };
 
 struct sh_othr {
-    int type;
+	int type;
 };
 
 struct sh_repr {
-    int type;
+	int type;
 };
 
 struct item {
-    char name[64];
-    int type;
-    union {
+	char name[64];
+	int type;
+	union {
 	struct menu *next;
 	int price;
-    } sel;
-    union {
+	} sel;
+	union {
 	struct sh_mine mine;
 	struct sh_ammo ammo;
 	struct sh_weap weap;
 	struct sh_othr othr;
 	struct sh_repr repr;
-    } obj;
+	} obj;
 };
 
 extern struct menu m_root;
@@ -73,17 +73,16 @@ extern struct menu m_root;
 #define SHOW_WEAPS     2
 #define SHOW_OTHER     3
 
-extern void init_all_shop();
-extern void read_menu(struct menu *m);
-extern void stock_mine(struct item *i);
-extern void stock_ammo(struct item *i);
-extern void stock_weap(struct item *i);
-extern void stock_othr(struct item *i);
-extern void stock_repr(struct item *i);
-extern void init_shop(struct player *p);
-extern void exit_shop(struct player *p);
-extern void enter_shop(struct player *p);
-extern void buy_shop(struct player *p,int n);
-
+void init_all_shop();
+void read_menu(struct menu *m);
+void stock_mine(struct item *i);
+void stock_ammo(struct item *i);
+void stock_weap(struct item *i);
+void stock_othr(struct item *i);
+void stock_repr(struct item *i);
+void init_shop(struct player *p);
+void exit_shop(struct player *p);
+void init_shop(struct player *p);
+void buy_shop(struct player *p,int n);
 
 #endif

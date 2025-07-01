@@ -18,35 +18,35 @@
 #include "fonts.h"
 
 struct player_display {
-    Display *disp;
-    int screen;
-    Window gamewin;
-    Pixmap backing;
-    GC gc;
-    
-    GC gc_black;
-    GC gc_white;
-    GC gc_ice;
-    GC gc_red;
-    GC gc_dred;   /* Dashed red line for lifts */
-    GC gc_blue;
-    GC gc_dgrey;
-    GC gc_fred;   /* For filling */
-    GC gc_fblue;
-    GC gc_fdgrey;
-    GC gc_grey;
-    GC gc_yellow;
-    GC gc_termhi;
-    GC gc_termlo;
+	Display *disp;
+	int screen;
+	Window gamewin;
+	Pixmap backing;
+	GC gc;
 
-    XFontStruct *font;
-    XFontStruct *tfont;
-    XFontStruct *bfont;
-    XFontStruct *lfont;
-    int fh,fw,fo;
-    int bh,bw,bo;
-    int th,tw,to;
-    char name[64];
+	GC gc_black;
+	GC gc_white;
+	GC gc_ice;
+	GC gc_red;
+	GC gc_dred;   /* Dashed red line for lifts */
+	GC gc_blue;
+	GC gc_dgrey;
+	GC gc_fred;   /* For filling */
+	GC gc_fblue;
+	GC gc_fdgrey;
+	GC gc_grey;
+	GC gc_yellow;
+	GC gc_termhi;
+	GC gc_termlo;
+
+	XFontStruct *font;
+	XFontStruct *tfont;
+	XFontStruct *bfont;
+	XFontStruct *lfont;
+	int fh,fw,fo;
+	int bh,bw,bo;
+	int th,tw,to;
+	char name[64];
 };
 
 #define PCACHE 8000

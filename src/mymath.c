@@ -12,6 +12,5 @@
 
 #include "mymath.h"
 
-double sintable[720];
-double *cs;
-double *sn;
+double sintable[450];
+double *cs, *sn;

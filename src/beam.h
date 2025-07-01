@@ -16,10 +16,10 @@
 #include "player.h"
 
 struct beam {
-    int x,y,l;
-    int xx,yy;
-    int type;
-    struct beam *next;
+	int x,y,l;
+	int xx,yy;
+	int type;
+	struct beam *next;
 };
 
 #define BEAM_BLUE 0
@@ -28,9 +28,9 @@ struct beam {
 extern struct beam *firstbeam;
 extern struct beam *freebeam;
 
-extern struct beam *alloc_beam();
-extern void free_beams();
-extern int fire_beam_weapon(struct player *p,struct body *src,double x,
-			    double y,int rot,int dam);
+struct beam *alloc_beam();
+void free_beams();
+int fire_beam_weapon(struct player *p,struct body *src,double x,
+							double y,int rot,int dam);
 
 #endif

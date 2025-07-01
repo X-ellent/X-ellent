@@ -13,8 +13,8 @@
 #ifndef My_BONUS_H
 #define My_BONUS_H
 
-extern void vape_bonus(struct object *o);
-extern void update_bonus();
-extern void get_bonus(struct player *p);
+void vape_bonus(struct object *o);
+void update_bonus();
+void get_bonus(struct player *p);
 
 #endif

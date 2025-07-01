@@ -13,10 +13,10 @@
 #ifndef My_MINES_H
 #define My_MINES_H
 
-extern void activate_slot(struct player *p);
-extern void arm_slot(struct player *p);
-extern void disarm_slot(struct player *p);
-extern void detonate_slot(struct player *p);
-extern void explode_mine(struct object *o);
+void activate_slot(struct player *p);
+void arm_slot(struct player *p);
+void disarm_slot(struct player *p);
+void detonate_slot(struct player *p);
+void explode_mine(struct object *o);
 
 #endif

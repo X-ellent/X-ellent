@@ -13,8 +13,8 @@
 #ifndef My_DRAW_H
 #define My_DRAW_H
 
-extern void draw_all(struct player *p);
-extern void draw_map_level(struct player *p,int l);
-extern void DrawMeter(struct player *p,int x,int y,int l,int h,int mx,int val);
+void draw_all(struct player *p);
+void draw_map_level(struct player *p,int l);
+void DrawMeter(struct player *p,int x,int y,int l,int h,int mx,int val);
 
 #endif

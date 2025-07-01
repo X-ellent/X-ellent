@@ -75,7 +75,7 @@ mploop JMP
 60 FET 0 SYSTEM
 KEY POP mapmenu JMP
 
-.cheesey "cheesey"
+.rebroad "rebroad"
 
 .pmtxt "Player Menu"
 .pm1  "   1  View Player List"
@@ -85,7 +85,7 @@ KEY POP mapmenu JMP
 NEW NEW THI pmtxt xlis STR STR NEW opt STR NEW
 .pmloop
 TLO pm1 STR NEW pm2 STR NEW
-cheesey 0 6 SYSTEM 0 CMP isnotme BNE
+rebroad 0 6 SYSTEM 0 CMP isnotme BNE
 pm9 STR NEW
 .isnotme
 POP
@@ -94,7 +94,7 @@ prompt STR INN
 POPA
 1 CMPA playlist BEQ
 2 CMPA playinfo BEQ
-cheesey 0 6 SYSTEM 0 CMP isnotmeb BNE
+rebroad 0 6 SYSTEM 0 CMP isnotmeb BNE
 8 CMPA extended BEQ
 .isnotmeb
 POP

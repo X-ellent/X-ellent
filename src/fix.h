@@ -13,8 +13,13 @@
 #ifndef My_FIX_H
 #define My_FIX_H
 
-#ifdef NON_ANSI_HEADERS
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
 
+typedef unsigned char uchar;
+
+#ifdef NON_ANSI_HEADERS
 extern void bzero();
 extern int  socket();
 extern void perror();
@@ -38,9 +43,11 @@ extern int  fclose();
 extern int  atoi();
 extern int  ungetc();
 extern int  _filbuf();
+#endif // NON_ANSI_HEADERS
 
-#endif
+static inline void safe_strcpy(char *dest, const char *src, size_t dest_size) {
+	size_t copy_len = strlen(src); if (copy_len >= dest_size) copy_len = dest_size - 1;
+	memcpy(dest, src, copy_len); dest[copy_len] = '\0';
+}
 
-#include <stdlib.h>
-
-#endif
+#endif // My_FIX_H

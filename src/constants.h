@@ -30,17 +30,17 @@
 #define GAME_SOCK 8765
 #define TERM_SOCK 8766
 
-#define START_CASH       180
-#define START_IMMUNE     100
+#define START_CASH		 180
+#define START_IMMUNE	 100
 #define START_IMMUNE_REJ 50
 
-#define DEATH_BONUS    200
-#define DEATH_CASH     500
+#define DEATH_BONUS	   200
+#define DEATH_CASH	   500
 #define DEATH_CASH_MIN 100
-#define DEATH_DELAY    100
-#define DEATH_SHOW     70
+#define DEATH_DELAY	   100
+#define DEATH_SHOW	   70
 #define DEATH_IMMUNE   60
-#define DEATH_MSG      "You Have Died.. Bogus."
+#define DEATH_MSG	   "You Have Died.. Bogus."
 
 #define GROUND_TIME 16
 #define FALL_MIN_SHIELD 5
@@ -54,8 +54,8 @@
 
 #define MIN_FUEL  20000
 
-#define FUEL_COST   2
-#define FUEL_PLUS   1500
+#define FUEL_COST	2
+#define FUEL_PLUS	1500
 
 #define SWEEP_FUEL_DRAIN 25
 #define CLOAK_FUEL_DRAIN 50
@@ -83,15 +83,15 @@
 #define TERM_NUMBER 8
 #define TERM_ROMSIZE 32000
 
-#define MAX_WEAPS   10
-#define MAX_OTHERS  10
-#define MAX_UPGRADE 10
-#define MAX_INFO    4
+#define MAX_WEAPS	10
+#define MAX_OTHERS	10
+#define MAX_UPGRADE	10
+#define MAX_INFO	4
 #define LOCATE_TIME 1
 #define LOCATE_TARGET_TIME 2
 
 #define RECHARGE_TARGLASER 2
-#define RECHARGE_LASER     10
+#define RECHARGE_LASER	   10
 
 #define DEFNAME "xellent"
 
