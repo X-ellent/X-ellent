@@ -138,7 +138,6 @@ struct label {
 	struct label *next;
 };
 
-// Global variables
 struct label *firstlabel;
 int startpc;
 struct login tty[TERM_NUMBER];
@@ -209,7 +208,7 @@ void init_term(struct player *p) {
 }
 
 static int get_string(FILE *td,int pc) {
-	while((rom[pc++]=getc(td))!='"');
+	while((rom[pc++]=(char)getc(td))!='"');
 	rom[pc-1]=0;
 	return pc;
 }
@@ -237,7 +236,7 @@ static int get_thing(char c,FILE *td,int pc) {
 	for (n=1;n<15;n++) {
 		int ch=getc(td);
 		if (ch == EOF) break;
-		if (isspace((str[n]=ch))) break;
+		if (isspace((str[n]=(char)ch))) break;
 	}
 	str[n]=0;
 
@@ -440,8 +439,7 @@ int run_program(struct player *p) {
 			return &rom[n-ROMBASE];
 		} else {
 			if (n>=RAM_SIZE) {
-				t->state=-1;
-				return NULL;
+				t->state=-1;return NULL;
 			}
 			return &t->ram[n];
 		}
@@ -458,18 +456,13 @@ int run_program(struct player *p) {
 			int opcode = rom[(t->pc[t->psp]++)-ROMBASE]; switch (opcode) {
 			case OP_CLS:cts(p);break;
 			case OP_NEW:term_newline(p);return 1;
-			case OP_PSH: {
-				int32_t val = 0;
-				for (int i=0; i<4; i++)
-					val |= ((int32_t)(uint8_t)rom[(t->pc[t->psp]++)-ROMBASE])<<(i*8);
-				PUSH(val);
-				break;
-			}
+			case OP_PSH: { int32_t val = 0;
+				for (int i=0; i<4; i++) val |= ((int32_t)(uint8_t)rom[(t->pc[t->psp]++)-ROMBASE])<<(i*8);
+				PUSH(val); break; }
 			case OP_STR:
 				if (!t->nsp) {
 					fprintf(stderr,"Stack underflow in terminal.\n");
-					t->state=-1;
-					break;
+					t->state=-1; break;
 				}
 				n=(int)t->num[--t->nsp];
 				s = (n>=ROMBASE) ? &rom[n-ROMBASE] : &t->ram[n];
@@ -478,8 +471,7 @@ int run_program(struct player *p) {
 			case OP_NUM:
 				if (!t->nsp) {
 					fprintf(stderr,"Stack underflow in terminal.\n");
-					t->state=-1;
-					break;
+					t->state=-1; break;
 				}
 				n=t->num[--t->nsp]; sprintf(txt,"%d",n);
 				term_print(p,txt,(int)strlen(txt),t->status&PFLG_HI);
@@ -488,13 +480,8 @@ int run_program(struct player *p) {
 			case OP_INS:t->tmp=POP;t->tmpb=POP;t->state=PSTAT_INS;return 1;
 			case OP_KEY:t->state=PSTAT_KEY;return 1;
 			case OP_RTS:
-				if (t->psp) {
-					t->psp--;
-					break;
-				} else {
-					exit_term(p);
-					return 1;
-				}
+				if (t->psp) { t->psp--; break; }
+				else { exit_term(p); return 1; }
 			case OP_FETA:
 				n=POP;s=get_mem_loc(n);ss=(char*)&t->a;memcpy(ss,s,4);
 				break;
@@ -508,8 +495,7 @@ int run_program(struct player *p) {
 			case OP_STO:
 			case OP_STOA:
 			case OP_STOB:n=POP;s=get_mem_loc(n);
-				aa=(opcode==OP_STO)?POP:(opcode==OP_STOA)?t->a:t->b;
-				memcpy(s,&aa,4); break;
+				aa=(opcode==OP_STO)?POP:(opcode==OP_STOA)?t->a:t->b;memcpy(s,&aa,4); break;
 			case OP_THI:t->status|=PFLG_HI;break;
 			case OP_TLO:t->status&=~PFLG_HI;break;
 			case OP_SPC:term_print(p," ",1,0);break;
@@ -543,19 +529,14 @@ int run_program(struct player *p) {
 			case OP_SYSTEM:n=t->num[--t->nsp];
 				switch(n) {
 				case 0:draw_map_level(p,POP);break; /* Draw this level */
-				case 1:
-					aa=POP;bb=POP;
+				case 1:aa=POP;bb=POP;
 					struct player *player_ptr = (struct player *)(uintptr_t)aa;
-					get_playerinfo(t, player_ptr, bb);
-					break;
+					get_playerinfo(t, player_ptr, bb);break;
 				case 2:PUSH((ptr_int_t) playone);break; /* Put playone onto stack */
-				case 3:aa=POP;
-					bb=getnextplayer((struct player *)(uintptr_t)aa);
+				case 3:aa=POP;bb=getnextplayer((struct player *)(uintptr_t)aa);
 					PUSH(bb);break; /* get next player */
 				case 4:aa=POP;PUSH((ptr_int_t)find_player(&t->ram[aa]));break;
-				case 5:aa=POP;
-					p->cash-=aa;
-					get_playerinfo(t,p,0);break;
+				case 5:aa=POP;p->cash-=aa;get_playerinfo(t,p,0);break;
 				case 6:aa=POP;bb=POP;s=get_mem_loc(aa);ss=get_mem_loc(bb);PUSH(strcmp(s,ss));break;
 				case 7:aa=POP;bb=POP;s=get_mem_loc(aa);ss=get_mem_loc(bb);strcpy(s,ss);break;
 				case 8:aa=POP;
@@ -564,14 +545,12 @@ int run_program(struct player *p) {
 				case 10:aa=POP;bb=POP;ss=get_mem_loc(bb);
 					player_message((struct player *)(uintptr_t)aa,ss);break;
 				case 11:aa=POP;s=get_mem_loc(aa);global_message(s);break;
-				case 12:ply=(struct player *)(uintptr_t)POP;aa=POP;
-					ply->cash+=(aa*95)/100;
+				case 12:ply=(struct player *)(uintptr_t)POP;aa=POP;ply->cash+=(aa*95)/100;
 					fprintf(stderr,"Money transfer from %s to %s of %d\n", p->user,ply->user,aa);
 					break;
 				case 13:aa=POP;bb=POP;s=get_mem_loc(aa);get_lift_info(t,bb,s);break;
 				default:fprintf(stderr,"Illegal system call %d\n",n);break;
-				}
-				break; // OP_SYSTEM
+				} break; // OP_SYSTEM
 			case OP_NOP:return 1;
 			case OP_BITA:aa=POP;
 				if (t->a&(1<<aa)) t->status&=~PFLG_EQ; else t->status|=PFLG_EQ;
@@ -580,9 +559,8 @@ int run_program(struct player *p) {
 				if (t->b&(1<<aa)) t->status&=~PFLG_EQ; else t->status|=PFLG_EQ;
 				break;
 			case OP_BIT:aa=POP;bb=POP;
-				if (bb&(1<<aa)) t->status&=~PFLG_EQ;
-				else t->status|=PFLG_EQ;
-				PUSH(bb);break;
+				if (bb&(1<<aa)) t->status&=~PFLG_EQ; else t->status|=PFLG_EQ;
+				PUSH(bb); break;
 			case OP_POPA:t->a=POP;break;
 			case OP_POPB:t->b=POP;break;
 			case OP_PSHA:PUSH(t->a);break;
@@ -603,12 +581,9 @@ int run_program(struct player *p) {
 				t->state=-1; break;
 			} // switch opcode within t->state==0
 			break;
-		case PSTAT_INN:
-			return 1;
-		case PSTAT_KEY:
-			return 1;
-		default:
-			exit_term(p); return 0; // Error, invalid state
+		case PSTAT_INN:return 1;
+		case PSTAT_KEY:return 1;
+		default:exit_term(p); return 0; // Error, invalid state
 		} // switch (t->state)
 	} // for loop done<50
 	return 1;
@@ -626,7 +601,7 @@ void term_option(struct player *p,int n) {
 		if ((n<'0')||(n>'9')) return;
 		t->state=0;
 		t->num[t->nsp++]=n-'0';  // Converts character to number and pushes to stack
-		b=n;
+		b=n; // TODO - why via b?
 		term_print(p,&b,1,1);
 		return;
 	}
@@ -639,7 +614,7 @@ void term_option(struct player *p,int n) {
 		if (n==1) { t->ram[t->tmpb]=0; t->state=0; return; }
 		else if (n>=' ' && t->tmp) {
 			t->ram[t->tmpb++]=n;
-			b=n;
+			b=n; // TODO - why via b?
 			term_print(p,&b,1,t->status&PFLG_HI);
 			t->tmp--;
 		}
@@ -688,11 +663,10 @@ int system_command(struct player *p,char *com) {
 	}
 	if (strncmp(com,"NAME",4)==0) {		 /* Sets Name */
 		struct player *op;
-		for (op=playone;op;op=op->next)
-			if (op!=p) {
-				if (strcmp(&com[4],op->name)==0) return 3;
-				if (strcmp(&com[4],op->user)==0) return 3;
-			}
+		for (op=playone;op;op=op->next) if (op!=p) {
+			if (strcmp(&com[4],op->name)==0) return 3;
+			if (strcmp(&com[4],op->user)==0) return 3;
+		}
 		strncpy(p->name,&com[4],31); return 3;
 	}
 	if (strncmp(com,"THRUST",5)==0) {		/* Sets Thrust */
@@ -712,11 +686,11 @@ int system_command(struct player *p,char *com) {
 				(p->locate)?"LOC":""),txt));
 		return 3;
 	}
-	if (strcmp(com,"LOCATE ON")==0) {			/* Shows my coordinates */
+	if (strcmp(com,"LOCATE ON")==0) {		/* Shows my coordinates */
 		psend(p,"=SYS LOCATE ON\n");
 		p->locate=-1; return 3;
 	}
-	if (strcmp(com,"LOCATE OFF")==0) {			/* Stops my coordinates */
+	if (strcmp(com,"LOCATE OFF")==0) {		/* Stops my coordinates */
 		psend(p,"=SYS LOCATE OFF\n");
 		p->locate=0; return 3;
 	}
@@ -730,25 +704,23 @@ int system_command(struct player *p,char *com) {
 	if (strcmp(com,"USERS")==0) {
 		struct player *pl;
 		psend(p,"=SYS USERS\n");
-		for(pl=playone;pl;pl=pl->next)
-			if (pl->body.on)
-				psend(p,(sprintf(txt,"=%s %d %s\n",pl->user,pl->rating,pl->name),txt));
+		for(pl=playone;pl;pl=pl->next) if (pl->body.on)
+			psend(p,(sprintf(txt,"=%s %d %s\n",pl->user,pl->rating,pl->name),txt));
 		return 3;
 	}
 	psend(p,"!Unknown command.\n"); return 3;
 }
 
 int login_command(struct player *p,char *com) {
-	int x,y;
 	if (!(p->term)) { psend(p,"!Not in a terminal!\n"); return 3; }
 	if (strcmp(com,"HELP")==0)
 		{ psend(p,"=TER HELP\n=HELP\n=MAP\n=TELEPORTS\n=LIFTS\n"); return 3; }
 	if (strcmp(com,"MAP")==0) {
 		psend(p,(sprintf(txt,"=TER MAP\n=%d %d:%d,%d\n",map.depth,p->body.l,
 						 map.wid,map.hgt),txt));
-		for (y=0;y<map.hgt;y++) {
+		for (int y=0;y<map.hgt;y++) {
 			txt[0]='=';
-			for (x=0;x<map.wid;x++) {
+			for (int x=0;x<map.wid;x++) {
 				txt[x+1]=rd2(p->body.l,x,y);
 				if (txt[x+1]==0) txt[x+1]=' ';
 			}
@@ -993,9 +965,8 @@ int terminal_command(struct player *p,char *sys,char *com) {
 	sprintf(txt,"!Unknown subsystem %s\n",sys); psend(p,txt); return 3;
 }
 
-int terminal_input(int n,int state,char *in) {
-	struct player *p;
-	p=tuser[n];
+int terminal_input(int n, int state, char *in) {
+	struct player *p=tuser[n];
 	switch (state) {
 	case -1: /* User disconnecting!!! */
 		terminal_disconnect(n);
