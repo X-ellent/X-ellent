@@ -32,6 +32,7 @@
 #include "terminal.h"
 
 #define ROMBASE 1024
+#define RAM_SIZE 512
 
 /* Define a type that can safely hold pointers on both 32-bit and 64-bit systems */
 #include <stdint.h>
@@ -100,8 +101,6 @@ typedef uintptr_t ptr_int_t; /* Use this type for pointer-integer conversions */
 #define PSTAT_INN 1
 #define PSTAT_KEY 2
 #define PSTAT_INS 3
-
-#define RAM_SIZE 512
 
  /* I have decided to treat the terminals as if they were all little */
  /* processorts which run their own assembly language, this WILL take */
@@ -216,13 +215,12 @@ static int get_string(FILE *td,int pc) {
 }
 
 static int get_number(char c,FILE *td,int pc) {
-	int8_t d, n=c-'0';
+	int d, n=c-'0';
 	if ((c=='-')||(c=='+')) n=0;
 	while (isdigit((d=getc(td)))) n=n*10+d-'0';
 	if (c=='-') n=-n;
 	rom[pc++]=OP_PSH;
-	for (int i=0;i<4;i++)
-		rom[pc++] = (n >> (i*8)) & 0xFF;
+	for (int i=0;i<4;i++) rom[pc++] = (char)((n >> (i*8)) & 0xFF);
 	return pc;
 }
 
@@ -308,7 +306,7 @@ static int get_thing(char c,FILE *td,int pc) {
 		}
 	}
 	rom[pc++]=OP_PSH;
-	for (int i=0;i<4;i++) rom[pc++]=(int8_t)(n >> (i*8)) & 0xFF;
+	for (int i=0;i<4;i++) rom[pc++]=(int8_t)((n >> (i*8)) & 0xFF);
 	return pc;
 }
 
@@ -321,7 +319,7 @@ static void get_label(FILE *td,int pc) {
 		if (isspace(c)) {
 			str[n]=0;
 			n=16;
-		} else str[n]=c;
+		} else str[n]=(char)c;
 	}
 	if (find_label(str)) return;
 	l=(struct label *) calloc(1,sizeof(struct label));
@@ -371,13 +369,14 @@ void init_all_term() {
 			case '7':
 			case '8':
 			case '9':
-				pc=get_number(c,td,pc);
+				pc=get_number((char)c,td,pc);
 				break;
 			default:
-				pc=get_thing(c,td,pc);
+				pc=get_thing((char)c,td,pc);
 				break;
 			}
-			while (isspace(c=getc(td)));
+			while (isspace((c=getc(td))) && c!=EOF);
+			if (c == EOF) break;
 		}
 
 		fclose(td);
@@ -408,18 +407,17 @@ static int term_print(struct player *p,char *c,int l, int high) {
 
 static void get_lift_info(struct login *t,int lift,char *rc) {
 	struct lift *l;
-	int *ri;
-	ri=(int *)rc;
+	int32_t *ri=(int32_t *)rc;
 	if (!(l=scan_lift(lift))) {
 		t->status&=~PFLG_EQ;
 		return;
 	}
 	t->status|=PFLG_EQ;
-	ri[0]=l->id;
-	ri[1]=l->l;
-	ri[2]=l->x;
-	ri[3]=l->y;
-	ri[4]=l->t;
+	ri[0]=(int32_t)l->id;
+	ri[1]=(int32_t)l->l;
+	ri[2]=(int32_t)l->x;
+	ri[3]=(int32_t)l->y;
+	ri[4]=(int32_t)l->t;
 	strcpy(&rc[20],l->pass);
 	ri[7]=0;
 	return;
@@ -460,21 +458,13 @@ int run_program(struct player *p) {
 			int opcode = rom[(t->pc[t->psp]++)-ROMBASE]; switch (opcode) {
 			case OP_CLS:cts(p);break;
 			case OP_NEW:term_newline(p);return 1;
-			case OP_PSH:
-				{
-					ptr_int_t *pval = (ptr_int_t *)&rom[t->pc[t->psp]-ROMBASE];
-
-#if defined(__LP64__) || defined(_LP64) || defined(__amd64) || defined(__x86_64__) || defined(__aarch64__)
-					/* On 64-bit systems, we need to read 8 bytes */
-					t->pc[t->psp]+=8;
-#else
-					/* On 32-bit systems, we need to read 4 bytes */
-					t->pc[t->psp]+=4;
-#endif
-
-					PUSH(*pval);
-				}
+			case OP_PSH: {
+				int32_t val = 0;
+				for (int i=0; i<4; i++)
+					val |= ((int32_t)(uint8_t)rom[(t->pc[t->psp]++)-ROMBASE])<<(i*8);
+				PUSH(val);
 				break;
+			}
 			case OP_STR:
 				if (!t->nsp) {
 					fprintf(stderr,"Stack underflow in terminal.\n");
@@ -491,9 +481,8 @@ int run_program(struct player *p) {
 					t->state=-1;
 					break;
 				}
-				n=(int)t->num[--t->nsp];
-				sprintf(txt,"%d",n);
-				term_print(p,txt,strlen(txt),t->status&PFLG_HI);
+				n=t->num[--t->nsp]; sprintf(txt,"%d",n);
+				term_print(p,txt,(int)strlen(txt),t->status&PFLG_HI);
 				break;
 			case OP_INN:t->state=PSTAT_INN;return 1;
 			case OP_INS:t->tmp=POP;t->tmpb=POP;t->state=PSTAT_INS;return 1;
@@ -563,67 +552,37 @@ int run_program(struct player *p) {
 				case 3:aa=POP;
 					bb=getnextplayer((struct player *)(uintptr_t)aa);
 					PUSH(bb);break; /* get next player */
-				case 4:aa=POP;
-					PUSH((ptr_int_t) find_player(&t->ram[aa]));break;
+				case 4:aa=POP;PUSH((ptr_int_t)find_player(&t->ram[aa]));break;
 				case 5:aa=POP;
 					p->cash-=aa;
 					get_playerinfo(t,p,0);break;
-				case 6:aa=POP;bb=POP;
-					s=(aa>=ROMBASE)?&rom[aa-ROMBASE]:&t->ram[aa];
-					ss=(bb>=ROMBASE)?&rom[bb-ROMBASE]:&t->ram[bb];
-					PUSH(strcmp(s,ss));break;
-				case 7:aa=POP;bb=POP;
-					s=(aa>=ROMBASE)?&rom[aa-ROMBASE]:&t->ram[aa];
-					ss=(bb>=ROMBASE)?&rom[bb-ROMBASE]:&t->ram[bb];
-					strcpy(s,ss);break;
+				case 6:aa=POP;bb=POP;s=get_mem_loc(aa);ss=get_mem_loc(bb);PUSH(strcmp(s,ss));break;
+				case 7:aa=POP;bb=POP;s=get_mem_loc(aa);ss=get_mem_loc(bb);strcpy(s,ss);break;
 				case 8:aa=POP;
-					s=(aa>=ROMBASE)?&rom[aa-ROMBASE]:&t->ram[aa];
-					PUSH(atoi(s));break;
-				case 9:aa=POP;bb=POP;
-					s=(aa>=ROMBASE)?&rom[aa-ROMBASE]:&t->ram[aa];
-					ss=(bb>=ROMBASE)?&rom[bb-ROMBASE]:&t->ram[bb];
-					strcat(s,ss);break;
-				case 10:aa=POP;bb=POP;
-					ss=(bb>=ROMBASE)?&rom[bb-ROMBASE]:&t->ram[bb];
+					s=(aa>=ROMBASE)?&rom[aa-ROMBASE]:&t->ram[aa];PUSH(atoi(s));break;
+				case 9:aa=POP;bb=POP;s=get_mem_loc(aa);ss=get_mem_loc(bb);strcat(s,ss);break;
+				case 10:aa=POP;bb=POP;ss=get_mem_loc(bb);
 					player_message((struct player *)(uintptr_t)aa,ss);break;
-				case 11:aa=POP;
-					s=(aa>=ROMBASE)?&rom[aa-ROMBASE]:&t->ram[aa];
-					global_message(s);break;
+				case 11:aa=POP;s=get_mem_loc(aa);global_message(s);break;
 				case 12:ply=(struct player *)(uintptr_t)POP;aa=POP;
 					ply->cash+=(aa*95)/100;
-					fprintf(stderr,"Money transfer from %s to %s of %d\n",
-							p->user,ply->user,aa);
+					fprintf(stderr,"Money transfer from %s to %s of %d\n", p->user,ply->user,aa);
 					break;
-				case 13:aa=POP;bb=POP;
-					s=(aa>=ROMBASE)?&rom[aa-ROMBASE]:&t->ram[aa];
-					get_lift_info(t,bb,s);break;
-				default:
-					fprintf(stderr,"Illegal system call %d\n",n);break;
+				case 13:aa=POP;bb=POP;s=get_mem_loc(aa);get_lift_info(t,bb,s);break;
+				default:fprintf(stderr,"Illegal system call %d\n",n);break;
 				}
-				break;
+				break; // OP_SYSTEM
 			case OP_NOP:return 1;
 			case OP_BITA:aa=POP;
-				if (t->a&(1<<aa)) {
-					t->status&=~PFLG_EQ;
-				} else {
-					t->status|=PFLG_EQ;
-				}
+				if (t->a&(1<<aa)) t->status&=~PFLG_EQ; else t->status|=PFLG_EQ;
 				break;
 			case OP_BITB:aa=POP;
-				if (t->b&(1<<aa)) {
-					t->status&=~PFLG_EQ;
-				} else {
-					t->status|=PFLG_EQ;
-				}
+				if (t->b&(1<<aa)) t->status&=~PFLG_EQ; else t->status|=PFLG_EQ;
 				break;
 			case OP_BIT:aa=POP;bb=POP;
-				if (bb&(1<<aa)) {
-					t->status&=~PFLG_EQ;
-				} else {
-					t->status|=PFLG_EQ;
-				}
-				PUSH(bb);
-				break;
+				if (bb&(1<<aa)) t->status&=~PFLG_EQ;
+				else t->status|=PFLG_EQ;
+				PUSH(bb);break;
 			case OP_POPA:t->a=POP;break;
 			case OP_POPB:t->b=POP;break;
 			case OP_PSHA:PUSH(t->a);break;
@@ -635,15 +594,14 @@ int run_program(struct player *p) {
 			case OP_ADD:bb=POP;aa=POP;PUSH((aa+bb));break;
 			case OP_SUB:bb=POP;aa=POP;PUSH((aa-bb));break;
 			case OP_MULT:bb=POP;aa=POP;PUSH((aa*bb));break;
-			case OP_DIV:bb=POP;aa=POP;PUSH((aa/bb));break;
-			case OP_MOD:bb=POP;aa=POP;PUSH((aa%bb));break;
+			case OP_DIV:bb=POP;aa=POP;if(bb!=0) PUSH((aa/bb)); else
+				{fprintf(stderr,"Division by zero in terminal\n");t->state=-1;} break;
+			case OP_MOD:bb=POP;aa=POP;if(bb!=0) PUSH((aa%bb)); else
+				{fprintf(stderr,"Modulo by zero in terminal\n");t->state=-1;} break;
 			case OP_DUP:aa=POP;PUSH(aa);PUSH(aa);break;
-			default:
-				fprintf(stderr,"Illegal opcode %d\n",
-						rom[t->pc[t->psp]-ROMBASE-1]);
-				t->state=-1; /* Error */
-				break;
-			}
+			default:fprintf(stderr,"Illegal opcode %d\n", opcode);
+				t->state=-1; break;
+			} // switch opcode within t->state==0
 			break;
 		case PSTAT_INN:
 			return 1;
@@ -657,40 +615,33 @@ int run_program(struct player *p) {
 }
 
 void term_option(struct player *p,int n) {
-	char b;
-	if (p->term->state==PSTAT_INN) {
+	char b; struct login *t=p->term;
+	if (t->state==PSTAT_INN) {
 		if (n==10) {
-			p->term->state=0;
-			p->term->num[p->term->nsp++]=-1;
+			t->state=0;
+			t->num[t->nsp++]=-1;  // Sets the -1 sentinel value when Enter is pressed
 			term_print(p,"ESC",3,1);
 			return;
 		}
 		if ((n<'0')||(n>'9')) return;
-		p->term->state=0;
-		p->term->num[p->term->nsp++]=n-'0';
+		t->state=0;
+		t->num[t->nsp++]=n-'0';  // Converts character to number and pushes to stack
 		b=n;
 		term_print(p,&b,1,1);
 		return;
 	}
-	if (p->term->state==PSTAT_KEY) {
-		p->term->state=0;
-		p->term->num[p->term->nsp++]=n-'0';
+	if (t->state==PSTAT_KEY) {
+		t->state=0;
+		t->num[t->nsp++]=n-'0';
 		return;
 	}
-	if (p->term->state==PSTAT_INS) {
-		if (n==1) {
-			p->term->ram[p->term->tmpb]=0;
-			p->term->state=0;
-			return;
-		} else {
-			if (n>=' ') {
-				if (p->term->tmp) {
-					p->term->ram[p->term->tmpb++]=n;
-					b=n;
-					term_print(p,&b,1,p->term->status&PFLG_HI);
-					p->term->tmp--;
-				}
-			}
+	if (t->state==PSTAT_INS) {
+		if (n==1) { t->ram[t->tmpb]=0; t->state=0; return; }
+		else if (n>=' ' && t->tmp) {
+			t->ram[t->tmpb++]=n;
+			b=n;
+			term_print(p,&b,1,t->status&PFLG_HI);
+			t->tmp--;
 		}
 	}
 }
@@ -703,11 +654,11 @@ void tsend(int n,char *s) { ssize_t ret = write(n,s,strlen(s)); (void)ret; }
 
 void psend(struct player *p,char *s) {
 	if (p->channel==-1) return;
-	ssize_t ret = write(p->channel,s,strlen(s)); (void)ret;
+	ssize_t ret=write(p->channel,s,strlen(s)); (void)ret;
 }
 
 int system_command(struct player *p,char *com) {
-/*    fprintf(stderr,"System command : %s %s\n",p->user,com);*/
+	//printf(stderr,"System command : %s %s\n",p->user,com);
 	if (strcmp(com,"HELP")==0) {			/* Lists accepted commands */
 		psend(p,"=SYS HELP\n");
 		psend(p,"=HELP\n");
@@ -745,14 +696,12 @@ int system_command(struct player *p,char *com) {
 		strncpy(p->name,&com[4],31); return 3;
 	}
 	if (strncmp(com,"THRUST",5)==0) {		/* Sets Thrust */
-		int n;
-		n=atoi(&com[5]);
+		int n=atoi(&com[5]);
 		if ((n<0)||(n>100)) { psend(p,"!Thrust out of range!\n"); return 3;};
 		p->thrust=n; return 3;
 	}
 	if (strncmp(com,"SPIN",4)==0) {			/* Sets Spin */
-		int n;
-		n=atoi(&com[4]);
+		int n=atoi(&com[4]);
 		if ((n<0)||(n>100)) { psend(p,"!Spin out of range!\n"); return 3;};
 		p->spin=n; return 3;
 	}
@@ -786,8 +735,7 @@ int system_command(struct player *p,char *com) {
 				psend(p,(sprintf(txt,"=%s %d %s\n",pl->user,pl->rating,pl->name),txt));
 		return 3;
 	}
-	psend(p,"!Unknown command.\n");
-	return 3;
+	psend(p,"!Unknown command.\n"); return 3;
 }
 
 int login_command(struct player *p,char *com) {
@@ -826,8 +774,7 @@ int login_command(struct player *p,char *com) {
 							li->x*128+64,li->y*128+64,li->t),txt));
 		return 3;
 	}
-	psend(p,"!Invalid command for terminal.\n");
-	return 3;
+	psend(p,"!Invalid command for terminal.\n"); return 3;
 }
 
 int teleport_command(struct player *p,char *com) {
@@ -959,8 +906,7 @@ int teleport_command(struct player *p,char *com) {
 		psend(p,"=TEL PASS\n=Password Set\n");
 		return 3;
 	}
-	psend(p,"!Invalid command for teleport.\n");
-	return 3;
+	psend(p,"!Invalid command for teleport.\n"); return 3;
 }
 
 int weapons_command(struct player *p,char *com) {
@@ -1009,13 +955,12 @@ int weapons_command(struct player *p,char *com) {
 		p->flags&=~FLG_FIRING;
 		return 3;
 	}
-	psend(p,"!Unknown command to weapons system.\n");
-	return 3;
+	psend(p,"!Unknown command to weapons system.\n"); return 3;
 }
 
 int terminal_command(struct player *,char *,char *);
 
-int terminal_operand(struct player *p,char *s) {
+bool terminal_operand(struct player *p,char *s) {
 	char sys[4];
 
 	sys[0]=s[1];sys[1]=s[2];sys[2]=s[3];sys[3]=0;
@@ -1029,11 +974,11 @@ int terminal_operand(struct player *p,char *s) {
 		terminal_disconnect(p->channel);
 		return 0;
 	case '*':
-		int ret=terminal_command(p,sys,&s[4]);
+		terminal_command(p,sys,&s[4]);
 		psend(p,"...\n");
-		return ret;
+		return 1;
 	}
-	return 3;
+	return 1;
 }
 
 int terminal_command(struct player *p,char *sys,char *com) {
@@ -1045,9 +990,7 @@ int terminal_command(struct player *p,char *sys,char *com) {
 	if (strcmp(sys,"WEP")==0) return weapons_command(p,com);
 	for (ad=p->firstadd;ad;ad=ad->next) if (strcmp(ad->is->subs,sys)==0)
 		return addon_command(p,ad,(uchar *)com);
-	sprintf(txt,"!Unknown subsystem %s\n",sys);
-	psend(p,txt);
-	return 3;
+	sprintf(txt,"!Unknown subsystem %s\n",sys); psend(p,txt); return 3;
 }
 
 int terminal_input(int n,int state,char *in) {
