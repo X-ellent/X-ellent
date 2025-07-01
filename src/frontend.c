@@ -945,6 +945,7 @@ void build_sintable() {
 	for (int i=0;i<360;i++) sintable[i+360]=sintable[i];
 	sn=sintable;cs=&sintable[90];
 }
+
 void load_map() {
 	FILE *mf;
 	if (!(mf=fopen(".xellent.map","rb"))) {
@@ -963,7 +964,9 @@ void load_map() {
 	oc=cc;cc=strchr(cc,' ');*cc++=0;map.hgt=atoi(oc);
 	oc=cc;cc=strchr(cc,' ');*cc++=0;map.dep=atoi(oc);
 	int n,x,y;
-	while(*inp=0,fgets(inp,1023,mf),cc=inp,(*inp)&&(strcmp(inp,"END\n"))) {
+	while(1) {
+		*inp=0;if (!fgets(inp,1023,mf)) break;
+		cc=inp; if (!*inp||!strcmp(inp,"END\n")) break;
 		n=atoi(inp);
 		int sx=MAPWID/map.wid,sy=MAPWID/map.wid;
 		map.sqr=(sx<sy)?sx:sy;
@@ -973,7 +976,7 @@ void load_map() {
 			if (!fgets(inp,1023,mf)) {
 				fprintf(stderr, "Unexpected end of file in .xellent.map\n");
 				fclose(mf);
-				return 0;
+				return;
 			}
 			cc=inp;
 			for (x=0;x<map.wid;x++) rd(n,x,y)=inp[x];
@@ -1084,12 +1087,14 @@ void scribble_map(int n,struct mypixmap *p) {
 		c1=(rd(n,x-1,y)==' ')?' ':'*';
 		c2=(rd(n,x,y-1)==' ')?' ':'*';
 		c3=(rd(n,x,y)==' ')?' ':'*';
-		if (c1!=c3)
+		if (c1!=c3) {
 			if (c1==' ') XDrawLine(disp,p->pix,white,cx,cy,cx,cy+w);
 			else XDrawLine(disp,p->pix,whiteb,cx,cy,cx,cy+w);
-		if (c2!=c3)
+		}
+		if (c2!=c3) {
 			if (c2==' ') XDrawLine(disp,p->pix,white,cx,cy,cx+w,cy);
 			else XDrawLine(disp,p->pix,whiteb,cx,cy,cx+w,cy);
+		}
 	}
 	return;
 }

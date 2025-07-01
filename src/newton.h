@@ -13,6 +13,8 @@
 #ifndef My_NEWTON_H
 #define My_NEWTON_H
 
+#include "fix.h"
+
 struct body {
 	struct body *next;
 	struct body *last;
@@ -42,6 +44,7 @@ void add_pbody(struct player *p);
 void remove_body(struct body *b);
 int  is_stopped(struct body *b);
 void do_collisions();
+void apply_forces(struct body *, bool);
 
 #endif
 

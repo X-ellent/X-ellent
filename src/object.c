@@ -157,7 +157,7 @@ static void move_trolley(struct trolley *p) {
 			if (o->lasthold) o->lasthold->nexthold=o->nexthold;
 			else p->holder=o->nexthold;
 			if (o->nexthold) o->nexthold->lasthold=o->lasthold;
-			o->lasthold=o->nexthold=o->holding=0;
+			o->lasthold=o->nexthold=0;o->holding=0;
 		}
 	apply_forces(&p->body,0);
 

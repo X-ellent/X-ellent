@@ -47,7 +47,7 @@ void remove_body(struct body *b) {
 	if (b->last) b->last->next=b->next;
 	else firstbody=b->next;
 	if (b->next) b->next->last=b->last;
-	b->last=b->next=b->on=0;
+	b->last=b->next=0;b->on=0;
 }
 
 int is_stopped(struct body *b) {

@@ -10,26 +10,20 @@
 ** some acknowledgement of the source (ie me!) 8-)
 */
 
-#include <math.h>
 #include <stdio.h>
-#include <malloc.h>
-#include <string.h>
-#include <setjmp.h>
 
-#include "fix.h"
-#include "constants.h"
-#include "mymath.h"
-#include "player.h"
-#include "debug.h"
-#include "particle.h"
-#include "telnet.h"
-#include "message.h"
-#include "turret.h"
-#include "home.h"
-#include "terminal.h"
-#include "xsetup.h"
-#include "beam.h"
-#include "addon.h"
+//#include "constants.h"
+#include "mymath.h" // For sn, cs
+#include "player.h" // For struct player
+//#include "debug.h"
+#include "home.h" // For struct home
+#include "xsetup.h" // For jumpable
+#include "addon.h" // For struct addon
+#include "particle.h" // For explode
+#include "beam.h" // For find_beam
+#include "message.h" // For player_message
+#include "events.h" // For process_events
+#include "telnet.h" // For ctwrite, ctquery, ctpass
 
 #define inthang(f,o) if (strcmp(chop[0],"f")==0) p->owned|=o
 
@@ -144,7 +138,7 @@ int setup_player() {
 	p->home->owner=p;
 	p->body.x=p->home->x*128+64; p->body.y=p->home->y*128+64; p->body.l=p->home->l;
 	p->msg[0][0]=p->msg[1][0]=p->msg[2][0]=p->msg[3][0]=0;
-	p->qflags=p->slot=p->ptarg=p->scount=p->delay=p->onground=p->rot=p->delay=0;
+	p->qflags=p->slot=p->scount=p->delay=p->onground=p->rot=p->delay=0;p->ptarg=0;
 	remove_body(&p->body);
 	p->flags=FLG_HOME;
 	p->immune=DEATH_IMMUNE;
@@ -232,11 +226,10 @@ static void away_stuff(struct player *p) {
 	return;
 }
 
-oid update_player(struct player *p) {
+void update_player(struct player *p) {
 	int xc,yc, t,i, bigfall=0;
-	double oxv,oyv;
 	char tx[60];
-	double friction,inertia;
+	double inertia;
 	jumpable=1;
 	switch (setjmp(jmpenv)) { // Log if this ever happens
 		case 0:break;
@@ -247,7 +240,7 @@ oid update_player(struct player *p) {
 	process_events(p);
 	if (!p->body.on) { away_stuff(p); jumpable=0; longjmp(jmpenv,1); }
 	if (p->qflags==7) quit_player(p);
-	if (p->homing && (!(--p->homing)) player_message(p,"Home base now available...");
+	if (p->homing && (!(--p->homing))) player_message(p,"Home base now available...");
 	if ((p->flags&FLG_FUELLING)&&(rd2(p->body.l,(int)p->body.x/128,(int)p->body.y/128)=='F')) {
 		int x=(int)p->body.x, y=(int)p->body.y;
 		x&=127;y&=127; // Takes the bottom 7 bits - so position within the square
@@ -678,9 +671,9 @@ void load_players() {
 		p->ammo[0]=-1;
 
 		mychop();
-		strncpy(p->user,chop[0],16);
-		strncpy(p->name,chop[1],31);
-		strncpy(p->pass,chop[2],8);
+		safe_strcpy(p->user,chop[0],16);
+		safe_strcpy(p->name,chop[1],31);
+		safe_strcpy(p->pass,chop[2],8);
 		p->score=atoi(chop[3]);
 		p->cash=atoi(chop[4]);
 		p->rating=atoi(chop[5]);

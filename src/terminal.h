@@ -15,6 +15,7 @@
 
 #include "constants.h"
 
+void psend(struct player *,char *);
 void init_term(struct player *);
 void exit_term(struct player *);
 void init_all_term();

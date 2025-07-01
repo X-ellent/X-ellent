@@ -163,19 +163,19 @@ int lift_command(struct player *p,char *com) {
 	int a,correct;
 	if (strcmp(com,"HELP")==0) {
 		psend(p,"=LIF HELP\n=HELP\n=MOVE<num> <pass> <dest>\n=PASS<num> <pass> <newpass>\n");
-		return;
+		return 3;
 	}
 	if (strncmp(com,"MOVE",4)==0) {
 		n=atoi(&com[4]);
 		li=scan_lift(n);
 		if (!li) {
 			psend(p,"!Invalid lift number\n");
-			return;
+			return 3;
 		}
 		ch=strchr(&com[4],' ');
 		if (!ch) {
 			psend(p,"!Invalid format\n");
-			return;
+			return 3;
 		}
 		ch++;
 		correct=0;
@@ -183,29 +183,29 @@ int lift_command(struct player *p,char *com) {
 			if (ch[a]==li->pass[a]) correct++;
 		if (correct==0) {
 			psend(p,"=LIF MOVE\n=PASS INCORRECT\n");
-			return;
+			return 3;
 		}
 		if (correct!=6) {
 			psend(p,"=LIF MOVE\n=PASS WRONG\n");
-			return;
+			return 3;
 		}
 		ch=strchr(ch,' ');
 		if (!ch) {
 			psend(p,"!Invalid format\n");
-			return;
+			return 3;
 		}
 		if (li->l!=li->t) {
 			psend(p,"=LIF MOVE\n=Lift busy\n");
-			return;
+			return 3;
 		}
 		n=atoi(ch);
 		if ((n<0)||(n>=map.depth)) {
 			psend(p,"!Level out of range\n");
-			return;
+			return 3;
 		}
 		psend(p,"=LIF MOVE\n=Lift activated\n");
 		li->t=n;
-		return;
+		return 3;
 
 	}
 	if (strncmp(com,"PASS",4)==0) {
@@ -213,35 +213,36 @@ int lift_command(struct player *p,char *com) {
 		li=scan_lift(n);
 		if (!li) {
 			psend(p,"!Invalid lift number\n");
-			return;
+			return 3;
 		}
 		ch=strchr(&com[4],' ');
 		if (!ch++) {
 			psend(p,"!Invalid format\n");
-			return;
+			return 3;
 		}
 		correct=0;
 		for (a=0;a<6;a++) if (ch[a]==li->pass[a]) correct++;
 		if (correct==0) {
 			psend(p,"=LIF PASS\n=PASS INCORRECT\n");
-			return;
+			return 3;
 		}
 		if (correct!=4) {
 			psend(p,"=LIF PASS\n=PASS WRONG\n");
-			return;
+			return 3;
 		}
 		ch=strchr(ch,' ');
 		if (!ch++) {
 			psend(p,"!Invalid format\n");
-			return;
+			return 3;
 		}
 		for (a=0;a<6;a++) if (!isdigit(ch[a])) {
 			psend(p,"!Invalid password format\n");
-			return;
+			return 3;
 		}
 		for (a=0;a<6;a++) li->pass[a]=ch[a];
 		psend(p,"=LIF PASS\n=Password Set\n");
-		return;
+		return 3;
 	}
 	psend(p,"!Invalid command for lift.\n");
+	return 3;
 }

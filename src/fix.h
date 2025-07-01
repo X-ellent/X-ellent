@@ -15,6 +15,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 typedef unsigned char uchar;
 
@@ -43,5 +44,10 @@ extern int  atoi();
 extern int  ungetc();
 extern int  _filbuf();
 #endif // NON_ANSI_HEADERS
+
+static inline void safe_strcpy(char *dest, const char *src, size_t dest_size) {
+	size_t copy_len = strlen(src); if (copy_len >= dest_size) copy_len = dest_size - 1;
+	memcpy(dest, src, copy_len); dest[copy_len] = '\0';
+}
 
 #endif // My_FIX_H

@@ -13,6 +13,8 @@
 #ifndef My_LIFT_H
 #define My_LIFT_H
 
+#include "player.h"
+
 #define LIFT_PASS_LENGTH 8
 
 struct lift {
@@ -30,14 +32,15 @@ extern struct lift *firstlift;
 #define LIFT_CALLED   1
 #define LIFT_BUSY     2
 
-void add_lift(int d,int x,int y);
-struct lift *find_lift(int x, int y);
-struct lift *scan_lift(int i);
+void add_lift(int,int,int);
+struct lift *find_lift(int, int);
+struct lift *scan_lift(int);
 void move_lifts();
-int move_lift_up(struct lift *l);
-int move_lift_down(struct lift *l);
-int can_lift_ascend(struct lift *l);
-int can_lift_descend(struct lift *l);
-int summon_lift(int l,int x,int y);
+int move_lift_up(struct lift *);
+int move_lift_down(struct lift *);
+int can_lift_ascend(struct lift *);
+int can_lift_descend(struct lift *);
+int summon_lift(int,int,int);
+int lift_command(struct player *,char *);
 
 #endif

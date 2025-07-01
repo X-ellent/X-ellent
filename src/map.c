@@ -52,9 +52,9 @@ void create_map() {
 		exit(1);
 	}
 	cpcount=0;
-	readin(buf);strncpy(map.name,buf,63);
-	readin(buf);strncpy(map.author,buf,63);
-	readin(buf);strncpy(map.comments,buf,255);
+	readin(buf);safe_strcpy(map.name,buf,sizeof(map.name));
+	readin(buf);safe_strcpy(map.author,buf,sizeof(map.author));
+	readin(buf);safe_strcpy(map.comments,buf,sizeof(map.comments));
 	readin(buf);map.wid=atoi(buf);
 	readin(buf);map.hgt=atoi(buf);
 	readin(buf);map.depth=atoi(buf);

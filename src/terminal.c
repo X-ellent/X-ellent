@@ -144,19 +144,6 @@ int startpc;
 struct login tty[TERM_NUMBER];
 char rom[TERM_ROMSIZE];
 
-static void cts(struct player *p);
-static void term_newline(struct player *p);
-static int term_hprint(struct player *p,char *c,int l);
-static int term_print(struct player *p,char *c,int l);
-static void get_label(FILE *td,int pc);
-static int get_string(FILE *td,int pc);
-static int get_number(char c,FILE *td,int pc);
-static int get_thing(char c,FILE *td,int pc);
-static int find_label(char *s);
-static void get_playerinfo(struct login *t,struct player *p,int a);
-static ptr_int_t getnextplayer(struct player *p);
-static void get_lift_info(struct login *t,int lift,char *rc);
-
 static int comperr;
 static char txt[256];
 static struct player *tuser[256];
@@ -345,6 +332,27 @@ static int get_thing(char c,FILE *td,int pc) {
 	return pc;
 }
 
+static void get_label(FILE *td,int pc) {
+	char str[16];
+	struct label *l;
+	int n;
+	for (n=0;n<15;n++) {
+		int c=getc(td); // int NOT char!
+		if (isspace(c)) {
+			str[n]=0;
+			n=16;
+		} else str[n]=c;
+	}
+	if (find_label(str)) return;
+	l=(struct label *) calloc(1,sizeof(struct label));
+	l->next=firstlabel;
+	firstlabel=l;
+	l->adr=pc;
+	strcpy(l->name,str);
+	if (n==15) while(!isspace(getc(td)));
+	if (strcmp(l->name,"start")==0) startpc=pc;
+}
+
 void init_all_term() {
 	FILE *td;
 	int c; // Was char (which is unsigned on some platforms so fails for EOF)
@@ -398,41 +406,16 @@ void init_all_term() {
 	if (comperr) exit(1);
 }
 
-static void get_label(FILE *td,int pc) {
-	char str[16];
-	struct label *l;
-	int n;
-	for (n=0;n<15;n++) {
-		int c=getc(td); // int NOT char!
-		if (isspace(c)) {
-			str[n]=0;
-			n=16;
-		} else str[n]=c;
-	}
-	if (find_label(str)) return;
-	l=(struct label *) calloc(1,sizeof(struct label));
-	l->next=firstlabel;
-	firstlabel=l;
-	l->adr=pc;
-	strcpy(l->name,str);
-	if (n==15) while(!isspace(getc(td)));
-	if (strcmp(l->name,"start")==0) startpc=pc;
+void exit_term(struct player *p) {
+	add_pbody(p);
+	p->term->p=0;p->term=0;
+	psend(p,"#TERM EXIT\n");
 }
 
 static void term_newline(struct player *p) {
 	p->term->x=0;
 	XCopyArea(p->d.disp,p->d.backing,p->d.backing,p->d.gc,0,p->d.th,WINWID,
 			  WINHGT-p->d.th,0,0);
-}
-
-static int term_hprint(struct player *p,char *c,int l) {
-	int wid;
-	wid=WINWID/p->d.tw-2;
-	XDrawString(p->d.disp,p->d.backing,p->d.gc_termhi,10+p->d.tw*p->term->x,
-				WINHGT-p->d.th*2,c,l);
-	p->term->x+=l;
-	if (p->term->x>=wid) term_newline(p);
-	return l;
 }
 
 static int term_print(struct player *p,char *c,int l) {
@@ -445,10 +428,38 @@ static int term_print(struct player *p,char *c,int l) {
 	return l;
 }
 
-void exit_term(struct player *p) {
-	add_pbody(p);
-	p->term->p=0;p->term=0;
-	psend(p,"#TERM EXIT\n");
+static int term_hprint(struct player *p,char *c,int l) {
+	int wid;
+	wid=WINWID/p->d.tw-2;
+	XDrawString(p->d.disp,p->d.backing,p->d.gc_termhi,10+p->d.tw*p->term->x,
+				WINHGT-p->d.th*2,c,l);
+	p->term->x+=l;
+	if (p->term->x>=wid) term_newline(p);
+	return l;
+}
+
+static void get_lift_info(struct login *t,int lift,char *rc) {
+	struct lift *l;
+	int *ri;
+	ri=(int *)rc;
+	if (!(l=scan_lift(lift))) {
+		t->status&=~PFLG_EQ;
+		return;
+	}
+	t->status|=PFLG_EQ;
+	ri[0]=l->id;
+	ri[1]=l->l;
+	ri[2]=l->x;
+	ri[3]=l->y;
+	ri[4]=l->t;
+	strcpy(&rc[20],l->pass);
+	ri[7]=0;
+	return;
+}
+
+static ptr_int_t getnextplayer(struct player *p) {
+	if (p) return (ptr_int_t) p->next;
+	return 0;
 }
 
 void run_program(struct player *p) {
@@ -752,7 +763,7 @@ void run_program(struct player *p) {
 	}
 }
 
-extern void term_option(struct player *p,int n) {
+void term_option(struct player *p,int n) {
 	char b;
 	if (p->term->state==PSTAT_INN) {
 		if (n==10) {
@@ -795,134 +806,20 @@ extern void term_option(struct player *p,int n) {
 	}
 }
 
-static ptr_int_t getnextplayer(struct player *p) {
-	if (p) return (ptr_int_t) p->next;
-	return 0;
+void terminal_disconnect(int n) {
+	if (tuser[n]) { tuser[n]->channel=-1; tuser[n]=0;}
 }
 
-static void get_lift_info(struct login *t,int lift,char *rc) {
-	struct lift *l;
-	int *ri;
-	ri=(int *)rc;
-	if (!(l=scan_lift(lift))) {
-		t->status&=~PFLG_EQ;
-		return;
-	}
-	t->status|=PFLG_EQ;
-	ri[0]=l->id;
-	ri[1]=l->l;
-	ri[2]=l->x;
-	ri[3]=l->y;
-	ri[4]=l->t;
-	strcpy(&rc[20],l->pass);
-	ri[7]=0;
-	return;
-}
+void tsend(int n,char *s) { ssize_t ret = write(n,s,strlen(s)); (void)ret; }
 
-extern int terminal_input(int n,int state,char *in) {
-	struct player *p;
-	p=tuser[n];
-	switch (state) {
-	case -1: /* User disconnecting!!! */
-		terminal_disconnect(n);
-		return 0;
-	case 1: /* New user, just logging in */
-		tuser[n]=find_player(in);
-		if (!tuser[n]) {
-			tsend(n,"!No such user.\n");
-			return 0;
-		}
-		if (tuser[n]->channel!=-1) {
-			tsend(n,"!That user has a connection already\n");
-			tuser[n]=0;
-			return 0;
-		}
-		tuser[n]->channel=n;
-		return 2;
-	case 2: /* Asking for authorisation */
-		if (!(*p->pass)) {
-			tsend(n,"!No Password Set!\n");
-			terminal_disconnect(n);
-			return 0;
-		}
-		if (strcmp(p->pass,in)) {
-			tsend(n,"!Invalid password\n");
-			terminal_disconnect(n);
-			return 0;
-		}
-		player_message(p,"Your influence has arrived.");
-		return 3;
-	case 3: /* Standard I/O */
-		return terminal_operand(p,in);
-	default:
-		fprintf(stderr,"Input: %d %d <%s>\n",n,state,in);
-	}
-	return state;
-}
-
-extern void terminal_disconnect(int n) {
-	if (tuser[n]) {
-		tuser[n]->channel=-1;
-		tuser[n]=0;
-	}
-}
-
-extern void tsend(int n,char *s) {
-	ssize_t ret;
-	ret = write(n,s,strlen(s));
-	(void)ret; /* Ignore return value */
-}
-
-extern void psend(struct player *p,char *s) {
-	ssize_t ret;
+void psend(struct player *p,char *s) {
 	if (p->channel==-1) return;
-	ret = write(p->channel,s,strlen(s));
-	(void)ret; /* Ignore return value */
+	ssize_t ret = write(p->channel,s,strlen(s)); (void)ret;
 }
 
-extern int terminal_operand(struct player *p,char *s) {
-	char sys[4];
-	int ret;
-
-	sys[0]=s[1];
-	sys[1]=s[2];
-	sys[2]=s[3];
-	sys[3]=0;
-	switch(s[0]) {
-	case '>':
-		sprintf(txt,"%s - %s",p->user,&s[1]);
-		player_message(p,txt);
-		break;
-	case 'X':
-		player_message(p,"Your influence has exited.");
-		terminal_disconnect(p->channel);
-		return 0;
-	case '*':
-		ret=terminal_command(p,sys,&s[4]);
-		psend(p,"...\n");
-		return ret;
-	}
-	return 3;
-}
-
-int terminal_command(struct player *p,char *sys,char *com) {
-	struct addon *ad;
-	if (strcmp(sys,"SYS")==0) return system_command(p,com);
-	if (strcmp(sys,"TER")==0) return login_command(p,com);
-	if (strcmp(sys,"TEL")==0) return teleport_command(p,com);
-	if (strcmp(sys,"LIF")==0) return lift_command(p,com);
-	if (strcmp(sys,"WEP")==0) return weapons_command(p,com);
-	for (ad=p->firstadd;ad;ad=ad->next)
-		if (strcmp(ad->is->subs,sys)==0)
-			return addon_command(p,ad,(uchar *)com);
-	sprintf(txt,"!Unknown subsystem %s\n",sys);
-	psend(p,txt);
-	return 3;
-}
-
-extern int system_command(struct player *p,char *com) {
+int system_command(struct player *p,char *com) {
 /*    fprintf(stderr,"System command : %s %s\n",p->user,com);*/
-	if (strcmp(com,"HELP")==0) {            /* Lists accepted commands */
+	if (strcmp(com,"HELP")==0) {			/* Lists accepted commands */
 		psend(p,"=SYS HELP\n");
 		psend(p,"=HELP\n");
 		psend(p,"=SUBSYSTEMS\n");
@@ -944,40 +841,35 @@ extern int system_command(struct player *p,char *com) {
 		}
 		return 3;
 	}
-	if (strcmp(com,"SYSTEMS")==0) {      /* Lists systems */
+	if (strcmp(com,"SYSTEMS")==0) {		 /* Lists systems */
 		psend(p,"=SYS SYSTEMS\n");
 		psend(p,"=TER Terminals\n=TEL Teleports\n=LIF Lifts\n=WEP Weapons\n");
 		return 3;
 	}
-	if (strncmp(com,"NAME",4)==0) {      /* Sets Name */
+	if (strncmp(com,"NAME",4)==0) {		 /* Sets Name */
 		struct player *op;
 		for (op=playone;op;op=op->next)
 			if (op!=p) {
 				if (strcmp(&com[4],op->name)==0) return 3;
 				if (strcmp(&com[4],op->user)==0) return 3;
 			}
-		strncpy(p->name,&com[4],31);
-		return 3;
+		strncpy(p->name,&com[4],31); return 3;
 	}
-	if (strncmp(com,"THRUST",5)==0) {      /* Sets Thrust */
+	if (strncmp(com,"THRUST",5)==0) {		/* Sets Thrust */
 		int n;
 		n=atoi(&com[5]);
-		if ((n<0)||(n>100)) {
-			psend(p,"!Thrust out of range!\n");
-			return 3;};
-		p->thrust=n;
-		return 3;
+		if ((n<0)||(n>100)) { psend(p,"!Thrust out of range!\n"); return 3;};
+		p->thrust=n; return 3;
 	}
-	if (strncmp(com,"SPIN",4)==0) {      /* Sets Spin */
+	if (strncmp(com,"SPIN",4)==0) {			/* Sets Spin */
 		int n;
 		n=atoi(&com[4]);
 		if ((n<0)||(n>100)) {
 			psend(p,"!Spin out of range!\n");
 			return 3;};
-		p->spin=n;
-		return 3;
+		p->spin=n; return 3;
 	}
-	if (strcmp(com,"STATUS")==0) {          /* Shows my status */
+	if (strcmp(com,"STATUS")==0) {			/* Shows my status */
 		psend(p,(sprintf(txt,"=SYS STATUS\n=F%d S%d $%d R%d Sc%d %s %s %s\n",
 						 p->fuel/200,
 						 p->shield/10,p->cash,p->rating,p->score,
@@ -986,24 +878,19 @@ extern int system_command(struct player *p,char *com) {
 						 (p->locate)?"LOC":""),txt));
 		return 3;
 	}
-	if (strcmp(com,"LOCATE ON")==0) {          /* Shows my coordinates */
+	if (strcmp(com,"LOCATE ON")==0) {			/* Shows my coordinates */
 		psend(p,"=SYS LOCATE ON\n");
-		p->locate=-1;
-		return 3;
+		p->locate=-1; return 3;
 	}
-	if (strcmp(com,"LOCATE OFF")==0) {          /* Stops my coordinates */
+	if (strcmp(com,"LOCATE OFF")==0) {			/* Stops my coordinates */
 		psend(p,"=SYS LOCATE OFF\n");
-		p->locate=0;
-		return 3;
+		p->locate=0; return 3;
 	}
-	if (strcmp(com,"HOME")==0) {            /* Shows my home coordinates */
-		if (p->home) {
+	if (strcmp(com,"HOME")==0) {			/* Shows my home coordinates */
+		if (p->home)
 			psend(p,(sprintf(txt,"=SYS HOME\n=%d:%d,%d\n",p->home->l,
-							(int) p->home->x*128+64,(int) p->home->y*128+64),
-					 txt));
-		} else {
-			psend(p,"=No home\n");
-		}
+							(int)p->home->x*128+64,(int)p->home->y*128+64),txt));
+		else psend(p,"=No home\n");
 		return 3;
 	}
 	if (strcmp(com,"USERS")==0) {
@@ -1011,15 +898,14 @@ extern int system_command(struct player *p,char *com) {
 		psend(p,"=SYS USERS\n");
 		for(pl=playone;pl;pl=pl->next)
 			if (pl->body.on)
-				psend(p,(sprintf(txt,"=%s %d %s\n",pl->user,pl->rating,
-								 pl->name),txt));
+				psend(p,(sprintf(txt,"=%s %d %s\n",pl->user,pl->rating,pl->name),txt));
 		return 3;
 	}
 	psend(p,"!Unknown command.\n");
 	return 3;
 }
 
-extern int login_command(struct player *p,char *com) {
+int login_command(struct player *p,char *com) {
 	int x,y;
 	if (!(p->flags&FLG_TERMINAL)) {
 		psend(p,"!Not in a terminal!\n");
@@ -1064,9 +950,8 @@ extern int login_command(struct player *p,char *com) {
 	return 3;
 }
 
-extern int teleport_command(struct player *p,char *com) {
-	struct teleport *tp;
-	struct teleport *tpb;
+int teleport_command(struct player *p,char *com) {
+	struct teleport *tp, *tpb;
 	int n;
 	char *ch;
 	int a,correct;
@@ -1198,8 +1083,7 @@ extern int teleport_command(struct player *p,char *com) {
 	return 3;
 }
 
-
-extern int weapons_command(struct player *p,char *com) {
+int weapons_command(struct player *p,char *com) {
 	int i,n;
 	if (strcmp(com,"HELP")==0) {            /* Lists accepted commands */
 		psend(p,"=WEP HELP\n=HELP\n=STATUS\n=SELECT\n=FIRE <ON/OFF>\n");
@@ -1252,3 +1136,82 @@ extern int weapons_command(struct player *p,char *com) {
 	psend(p,"!Unknown command to weapons system.\n");
 	return 3;
 }
+
+int terminal_command(struct player *,char *,char *);
+
+int terminal_operand(struct player *p,char *s) {
+	char sys[4];
+
+	sys[0]=s[1];sys[1]=s[2];sys[2]=s[3];sys[3]=0;
+	switch(s[0]) {
+	case '>':
+		sprintf(txt,"%s - %s",p->user,&s[1]);
+		player_message(p,txt);
+		break;
+	case 'X':
+		player_message(p,"Your influence has exited.");
+		terminal_disconnect(p->channel);
+		return 0;
+	case '*':
+		int ret=terminal_command(p,sys,&s[4]);
+		psend(p,"...\n");
+		return ret;
+	}
+	return 3;
+}
+
+int terminal_command(struct player *p,char *sys,char *com) {
+	struct addon *ad;
+	if (strcmp(sys,"SYS")==0) return system_command(p,com);
+	if (strcmp(sys,"TER")==0) return login_command(p,com);
+	if (strcmp(sys,"TEL")==0) return teleport_command(p,com);
+	if (strcmp(sys,"LIF")==0) return lift_command(p,com);
+	if (strcmp(sys,"WEP")==0) return weapons_command(p,com);
+	for (ad=p->firstadd;ad;ad=ad->next) if (strcmp(ad->is->subs,sys)==0)
+		return addon_command(p,ad,(uchar *)com);
+	sprintf(txt,"!Unknown subsystem %s\n",sys);
+	psend(p,txt);
+	return 3;
+}
+
+int terminal_input(int n,int state,char *in) {
+	struct player *p;
+	p=tuser[n];
+	switch (state) {
+	case -1: /* User disconnecting!!! */
+		terminal_disconnect(n);
+		return 0;
+	case 1: /* New user, just logging in */
+		tuser[n]=find_player(in);
+		if (!tuser[n]) {
+			tsend(n,"!No such user.\n");
+			return 0;
+		}
+		if (tuser[n]->channel!=-1) {
+			tsend(n,"!That user has a connection already\n");
+			tuser[n]=0;
+			return 0;
+		}
+		tuser[n]->channel=n;
+		return 2;
+	case 2: /* Asking for authorisation */
+		if (!(*p->pass)) {
+			tsend(n,"!No Password Set!\n");
+			terminal_disconnect(n);
+			return 0;
+		}
+		if (strcmp(p->pass,in)) {
+			tsend(n,"!Invalid password\n");
+			terminal_disconnect(n);
+			return 0;
+		}
+		player_message(p,"Your influence has arrived.");
+		return 3;
+	case 3: /* Standard I/O */
+		return terminal_operand(p,in);
+	default:
+		fprintf(stderr,"Input: %d %d <%s>\n",n,state,in);
+	}
+	return state;
+}
+

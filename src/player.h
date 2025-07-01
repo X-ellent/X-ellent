@@ -21,6 +21,7 @@
 #include "newton.h"
 #include "terminal.h"
 #include "damages.h"
+#include "fix.h"
 
 struct player {
 	char name[32];			// What name do I want to go by?
@@ -144,6 +145,6 @@ struct player *find_player(char *n);
 void save_players();
 void load_players();
 void next_target(struct player *p);
-int can_locate(struct player *p,struct player *t);
+bool can_locate(struct player *p,struct player *t);
 
 #endif

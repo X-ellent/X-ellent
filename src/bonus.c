@@ -10,20 +10,13 @@
 ** some acknowledgement of the source (ie me!) 8-)
 */
 
-#include <stdio.h>
+#include <stdio.h> // For sprintf()
+#include <stdlib.h> // For random()
 
-#include "object.h"
+#include "map.h"
 #include "player.h"
-#include "constants.h"
-#include "bonus.h"
 #include "message.h"
 #include "particle.h"
-#include "fix.h"
-
-static void add_bonus();
-static void get_bogus(struct player *p);
-static void get_bonus_mine(struct player *p);
-static void get_bonus_ammo(struct player *p);
 
 static struct object *firstbonus;
 static int bonuscount;
@@ -74,36 +67,6 @@ void update_bonus() {
 	}
 }
 
-void get_bonus(struct player *p) {
-	char *txt=0;
-	int r=random()%20;
-	switch (r) {
-	case 0:p->cash+=500;txt="BONUS!!!! Unprecedented cash!";break;
-	case 1:p->cash+=80;txt="BONUS!!!! Cash!";break;
-	case 2:p->cash+=90;txt="BONUS!!!! Cash!";break;
-	case 3:p->cash+=100;txt="Excellent! Bonus Cash!";break;
-	case 4:p->cash+=110;txt="Excellent! Bonus Cash!";break;
-	case 5:p->cash+=120;txt="Excellent! Bonus Cash!";break;
-	case 6:p->cash+=150;txt="Excellent! Bonus Cash!";break;
-	case 7:p->cash+=200;txt="Excellent! Bonus Cash!";break;
-	case 8:p->cash+=(random()%500+100);txt="BONUS!!!! A stash of cash!";break;
-	case 9:p->fuel+=20*200;txt="Wow! Some fuel!";break;
-	case 10:p->fuel+=80*200;txt="Wow! Some fuel!";break;
-	case 11:p->fuel+=150*200;txt="Wow! Some fuel!";break;
-	case 12:p->fuel+=400*200;txt="Wow Excellent! Load of fuel!";break;
-	case 13:get_bonus_mine(p);break;
-	case 14:
-	case 15:get_bonus_ammo(p);break;
-	case 16:
-	case 17:get_bonus(p);break;
-	case 18:
-	case 19:get_bogus(p);break;
-	}
-	if (p->fuel>p->maxfuel) p->fuel=p->maxfuel;
-	if (txt) player_message(p,txt);
-	bonuscount=BONUS_TIME;
-}
-
 static void get_bogus(struct player *p) {
 	int s; char *txt;
 	if ((random()%10)==1) {
@@ -124,6 +87,8 @@ static void get_bogus(struct player *p) {
 	explode(p->body.l,(int) p->body.x,(int) p->body.y,8+8*s,400*s,0,0);
 	if (txt) player_message(p,txt);
 }
+
+void get_bonus(struct player *);
 
 static void get_bonus_mine(struct player *p) {
 	for (int i=0;i<9;i++) if (p->slots[i]==OBJ_EMPTY) {
@@ -159,4 +124,34 @@ static void get_bonus_ammo(struct player *p) {
 		return;
 	}
 	get_bonus(p);
+}
+
+void get_bonus(struct player *p) {
+	char *txt=0;
+	int r=random()%20;
+	switch (r) {
+	case 0:p->cash+=500;txt="BONUS!!!! Unprecedented cash!";break;
+	case 1:p->cash+=80;txt="BONUS!!!! Cash!";break;
+	case 2:p->cash+=90;txt="BONUS!!!! Cash!";break;
+	case 3:p->cash+=100;txt="Excellent! Bonus Cash!";break;
+	case 4:p->cash+=110;txt="Excellent! Bonus Cash!";break;
+	case 5:p->cash+=120;txt="Excellent! Bonus Cash!";break;
+	case 6:p->cash+=150;txt="Excellent! Bonus Cash!";break;
+	case 7:p->cash+=200;txt="Excellent! Bonus Cash!";break;
+	case 8:p->cash+=(random()%500+100);txt="BONUS!!!! A stash of cash!";break;
+	case 9:p->fuel+=20*200;txt="Wow! Some fuel!";break;
+	case 10:p->fuel+=80*200;txt="Wow! Some fuel!";break;
+	case 11:p->fuel+=150*200;txt="Wow! Some fuel!";break;
+	case 12:p->fuel+=400*200;txt="Wow Excellent! Load of fuel!";break;
+	case 13:get_bonus_mine(p);break;
+	case 14:
+	case 15:get_bonus_ammo(p);break;
+	case 16:
+	case 17:get_bonus(p);break;
+	case 18:
+	case 19:get_bogus(p);break;
+	}
+	if (p->fuel>p->maxfuel) p->fuel=p->maxfuel;
+	if (txt) player_message(p,txt);
+	bonuscount=BONUS_TIME;
 }

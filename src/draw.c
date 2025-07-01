@@ -10,28 +10,23 @@
 ** some acknowledgement of the source (ie me!) 8-)
 */
 
-#include <stdio.h>
-#include <string.h>
-#include <setjmp.h>
+#include <stdio.h> // For sprintf
+//#include <string.h>
+//#include <setjmp.h>
 
-#include "fix.h"
-#include "player.h"
-#include "map.h"
+//#include "fix.h"
+//#include "player.h"
+//#include "map.h"
 #include "turret.h"
 #include "mymath.h"
-#include "debug.h"
+//#include "debug.h"
 #include "particle.h"
-#include "constants.h"
+//#include "constants.h"
 #include "xsetup.h"
-#include "draw.h"
+#include "draw.h" // For DrawMeter
 #include "lift.h"
 #include "beam.h"
 #include "addon.h"
-
-static void draw_me(struct player *p);
-static void draw_others(struct player *p);
-static void draw_falling(struct player *p);
-static void draw_msg(struct player *p);
 
 static void draw_map(struct player *p) {
 	int x=(int)p->body.x,y=(int)p->body.y,l=p->body.l;
@@ -287,162 +282,6 @@ static void draw_map(struct player *p) {
 	}
 }
 
-void draw_all(struct player *p) {
-	jumpable=-1;
-	switch (setjmp(jmpenv)) {
-	case 0:break;
-	case 1:return;
-	case 2:
-		bloody_errors(p);
-		return;
-	}
-	if (p->body.on) { draw_map(p);draw_others(p);draw_me(p); }
-	else if (p->flags&FLG_DEAD) {
-		if (p->delay==DEATH_SHOW) {
-			int l=strlen(DEATH_MSG);
-			XFillRectangle(p->d.disp,p->d.backing,p->d.gc_black,0,0,
-						   WINWID,WINHGT);
-			for (int a=-1;a<2;a++) for (int b=-1;b<2;b++)
-				XDrawString(p->d.disp,p->d.backing,p->d.gc_yellow,
-						WINWID/2-p->d.bw*l/2+a,WINHGT/2-p->d.bh+b,DEATH_MSG,l);
-			XDrawString(p->d.disp,p->d.backing,p->d.gc_black,WINWID/2-
-						p->d.bw*l/2,WINHGT/2-p->d.bh,DEATH_MSG,l);
-		} else if (p->delay>DEATH_SHOW) {
-			if (p->flags&FLG_FALLEN && p->body.l>=map.depth) draw_falling(p);
-			else { draw_map(p);draw_others(p);draw_msg(p); }
-		} else XDrawArc(p->d.disp,p->d.backing,p->d.gc_red,20,20,
-					WINWID-40,WINHGT-40,360*64*(p->delay-1)/DEATH_SHOW,
-					360*128/DEATH_SHOW);
-	}
-	XCopyArea(p->d.disp,p->d.backing,p->d.gamewin,p->d.gc,0,0,WINWID,WINHGT,0,0);
-	if (frame>=16) XFlush(p->d.disp);
-	jumpable=0;
-	longjmp(jmpenv,1);
-}
-
-void draw_map_level(struct player *p,int l) {
-	char txt[64];
-	Display *d=p->d.disp;
-	Pixmap w=p->d.backing;
-	GC red=p->d.gc_dred, blue=p->d.gc_blue, white=p->d.gc_white;
-	GC grey=p->d.gc_grey, dgrey=p->d.gc_dgrey, yellow=p->d.gc_yellow;
-	XFillRectangle(d,w,p->d.gc_black,0,0,WINWID,WINHGT);
-	sprintf(txt,"Map of level #%d",l);
-	XDrawString(d,w,p->d.gc_red,20,p->d.fh,txt,strlen(txt));
-	int wx=WINWID/((map.wid>map.hgt)?map.wid:map.hgt);
-	int mx=WINWID/2-wx*(map.wid)/2, my=WINHGT/2-wx*(map.hgt)/2;
-	int wwx=wx/2, pl=p->body.l;
-	int px=(int)p->body.x/128, py=(int)p->body.y/128;
-	for (int y=1;y<(map.hgt-1);y++) for (int x=1;x<(map.wid-1);x++) {
-		if ((l==pl)&&(x==px)&&(y==py))
-			{ XFillRectangle(d,w,yellow,mx+x*wx,my+y*wx,wx+1,wx+1);continue; }
-		switch(rd(l,x,y)&(MAP_SOLID|MAP_OBSC)) {
-		case MAP_SOLID:
-			switch(rd2(l,x,y)) {
-			case '-':
-				XDrawRectangle(d,w,p->d.gc_ice,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
-				break;
-			case '+':
-			case '0':
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
-				XDrawLine(d,w,p->d.gc_ice,mx+x*wx,my+y*wx,mx+x*wx+wx,my+y*wx+wx);
-				XDrawLine(d,w,p->d.gc_ice,mx+x*wx+wx,my+y*wx,mx+x*wx,my+y*wx+wx);
-				break;
-			case 'L':
-				XDrawLine(d,w,red,mx+x*wx+wx/4,my+y*wx+wx/4,
-						  mx+x*wx+wx*3/4,my+y*wx+wx*3/4);
-				XDrawLine(d,w,red,mx+x*wx+wx/4,my+y*wx+wx*3/4,
-						  mx+x*wx+wx*3/4,my+y*wx+wx/4);
-			case 'l':
-				XDrawRectangle(d,w,red,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
-				break;
-			case 'S':
-				XFillRectangle(d,w,p->d.gc_fblue,mx+x*wx+wx/4,
-							   my+y*wx+wx/4,wwx+1,wwx+1);
-				XDrawRectangle(d,w,white,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
-				break;
-			case 'H':
-				XDrawRectangle(d,w,blue,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
-				break;
-			case 'X':
-				XDrawRectangle(d,w,dgrey,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
-				XDrawArc(d,w,dgrey,mx+x*wx+wx/3,my+y*wx+wx/3,wx/3,wx/3,0,360*64);
-				break;
-			case 'Z':
-				XDrawArc(d,w,blue,mx+x*wx+wx/3,my+y*wx+wx/3,wx/3,wx/3,0,360*64);
-				break;
-			case 'F':
-				XFillRectangle(d,w,p->d.gc_fred,mx+x*wx+wx/4,
-							   my+y*wx+wx/4,wwx+1,wwx+1);
-				XDrawRectangle(d,w,white,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
-				break;
-			case 'T':
-				XFillRectangle(d,w,p->d.gc_fdgrey,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
-				XDrawRectangle(d,w,white,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
-				break;
-			case 'C':
-				XDrawArc(d,w,red,mx+x*wx+wx/4,my+y*wx+wx/4,wx/2+1,wx/2+1,0,360*64);
-				break;
-			case 'O':
-				struct turret *tur=find_turret(l,x,y);
-				if (!(tur->flags&TFLG_DESTROYED))
-					XDrawArc(d,w,white,mx+x*wx+wx/4,my+y*wx+wx/4,wx/2+1,wx/2+1,0,360*64);
-				else
-					XDrawArc(d,w,dgrey,mx+x*wx+wx/4,my+y*wx+wx/4,wx/2+1,wx/2+1,0,360*64);
-				break;
-			default:
-				XDrawRectangle(d,w,dgrey,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
-				break;
-			}
-			break;
-		case MAP_OBSC:
-			for (int a=0;a<5;a++) for (int b=0;b<5;b++)
-				XDrawPoint(d,w,grey,mx+x*wx+wx*a/4,my+y*wx+wx*b/4);
-			break;
-		default:
-			break;
-		}
-	} // for x (and y)
-	for (int y=0;y<map.hgt;y++) for (int x=0;x<map.wid;x++) {
-		switch (rd(l,x,y)&(MAP_LWALL)) {
-		case MAP_LWALL:
-			XDrawLine(d,w,white,mx+x*wx,my+y*wx,mx+x*wx,my+(y+1)*wx);
-			break;
-		case MAP_LWALL1:
-			XDrawLine(d,w,grey,mx+x*wx,my+y*wx,mx+x*wx,my+(y+1)*wx);
-			break;
-/*		case MAP_LWALL0:
-			XDrawLine(d,w,dgrey,mx+x*wx,my+y*wx,mx+x*wx,my+(y+1)*wx);
-			break;*/
-		default:
-			break;
-		}
-		switch (rd(l,x,y)&(MAP_TWALL)) {
-		case MAP_TWALL:
-			XDrawLine(d,w,white,mx+x*wx,my+y*wx,mx+(x+1)*wx,my+y*wx);
-			break;
-		case MAP_TWALL1:
-			XDrawLine(d,w,grey,mx+x*wx,my+y*wx,mx+(x+1)*wx,my+y*wx);
-			break;
-/*		case MAP_TWALL0:
-			XDrawLine(d,w,dgrey,mx+x*wx,my+y*wx,mx+(x+1)*wx,my+y*wx);
-			break;*/
-		default:
-			break;
-		}
-	}
-	XCopyArea(p->d.disp,p->d.backing,p->d.gamewin,p->d.gc,0,0,WINWID,WINHGT,0,0);
-	XFlush(p->d.disp);
-}
-
 static void draw_me(struct player *p) {
 	int rx,ry, dx,dy, i;
 	struct addon *radad, *tarad, *visad, *aclad;
@@ -675,22 +514,6 @@ static void draw_me(struct player *p) {
 	}
 }
 
-void DrawMeter(struct player *p,int x,int y,int l,int h,int max,int val) {
-	char v[32];
-	Display *d=p->d.disp; Pixmap w=p->d.backing;
-	GC red=p->d.gc_red,white=p->d.gc_white,grey=p->d.gc_grey;
-	sprintf(v,"%d",val);
-	XDrawString(d,w,red,x+l+10,y,v,strlen(v));
-	y=y-p->d.fh/2+2;
-	XDrawLine(d,w,white,x+l/4,y+h/2,x+l/4,y-h/2);
-	XDrawLine(d,w,white,x+l/2,y+h,x+l/2,y-h);
-	XDrawLine(d,w,white,x+3*l/4,y+h/2,x+3*l/4,y-h/2);
-	XDrawLine(d,w,grey,x+l,y,x+(l*val/max),y);
-	XDrawLine(d,w,red,x,y,x+(l*val/max),y);
-	XDrawLine(d,w,white,x,y+h,x,y-h);
-	XDrawLine(d,w,white,x+l,y+h,x+l,y-h);
-}
-
 static void draw_others(struct player *p) {
 	int cx,cy, rx,ry,dr, r;
 	char txt[256];
@@ -751,9 +574,180 @@ static void draw_falling(struct player *p) {
 				strlen(p->msg[i]));
 }
 
-
 static void draw_msg(struct player *p) {
 	if (!(p->flags&FLG_NOMSG)) for (int i=0;i<4;i++)
 		XDrawString(p->d.disp,p->d.backing,p->d.gc_blue,16,
 					WINHGT-p->d.fh*(i+1),p->msg[i],strlen(p->msg[i]));
+}
+
+void draw_all(struct player *p) {
+	jumpable=-1;
+	switch (setjmp(jmpenv)) {
+	case 0:break;
+	case 1:return;
+	case 2:
+		bloody_errors(p);
+		return;
+	}
+	if (p->body.on) { draw_map(p);draw_others(p);draw_me(p); }
+	else if (p->flags&FLG_DEAD) {
+		if (p->delay==DEATH_SHOW) {
+			int l=strlen(DEATH_MSG);
+			XFillRectangle(p->d.disp,p->d.backing,p->d.gc_black,0,0,
+						   WINWID,WINHGT);
+			for (int a=-1;a<2;a++) for (int b=-1;b<2;b++)
+				XDrawString(p->d.disp,p->d.backing,p->d.gc_yellow,
+						WINWID/2-p->d.bw*l/2+a,WINHGT/2-p->d.bh+b,DEATH_MSG,l);
+			XDrawString(p->d.disp,p->d.backing,p->d.gc_black,WINWID/2-
+						p->d.bw*l/2,WINHGT/2-p->d.bh,DEATH_MSG,l);
+		} else if (p->delay>DEATH_SHOW) {
+			if (p->flags&FLG_FALLEN && p->body.l>=map.depth) draw_falling(p);
+			else { draw_map(p);draw_others(p);draw_msg(p); }
+		} else XDrawArc(p->d.disp,p->d.backing,p->d.gc_red,20,20,
+					WINWID-40,WINHGT-40,360*64*(p->delay-1)/DEATH_SHOW,
+					360*128/DEATH_SHOW);
+	}
+	XCopyArea(p->d.disp,p->d.backing,p->d.gamewin,p->d.gc,0,0,WINWID,WINHGT,0,0);
+	if (frame>=16) XFlush(p->d.disp);
+	jumpable=0;
+	longjmp(jmpenv,1);
+}
+
+void draw_map_level(struct player *p,int l) {
+	char txt[64];
+	Display *d=p->d.disp;
+	Pixmap w=p->d.backing;
+	GC red=p->d.gc_dred, blue=p->d.gc_blue, white=p->d.gc_white;
+	GC grey=p->d.gc_grey, dgrey=p->d.gc_dgrey, yellow=p->d.gc_yellow;
+	XFillRectangle(d,w,p->d.gc_black,0,0,WINWID,WINHGT);
+	sprintf(txt,"Map of level #%d",l);
+	XDrawString(d,w,p->d.gc_red,20,p->d.fh,txt,strlen(txt));
+	int wx=WINWID/((map.wid>map.hgt)?map.wid:map.hgt);
+	int mx=WINWID/2-wx*(map.wid)/2, my=WINHGT/2-wx*(map.hgt)/2;
+	int wwx=wx/2, pl=p->body.l;
+	int px=(int)p->body.x/128, py=(int)p->body.y/128;
+	for (int y=1;y<(map.hgt-1);y++) for (int x=1;x<(map.wid-1);x++) {
+		if ((l==pl)&&(x==px)&&(y==py))
+			{ XFillRectangle(d,w,yellow,mx+x*wx,my+y*wx,wx+1,wx+1);continue; }
+		switch(rd(l,x,y)&(MAP_SOLID|MAP_OBSC)) {
+		case MAP_SOLID:
+			switch(rd2(l,x,y)) {
+			case '-':
+				XDrawRectangle(d,w,p->d.gc_ice,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
+				break;
+			case '+':
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+				XDrawLine(d,w,p->d.gc_ice,mx+x*wx,my+y*wx,mx+x*wx+wx,my+y*wx+wx);
+				XDrawLine(d,w,p->d.gc_ice,mx+x*wx+wx,my+y*wx,mx+x*wx,my+y*wx+wx);
+				break;
+			case 'L':
+				XDrawLine(d,w,red,mx+x*wx+wx/4,my+y*wx+wx/4,
+						  mx+x*wx+wx*3/4,my+y*wx+wx*3/4);
+				XDrawLine(d,w,red,mx+x*wx+wx/4,my+y*wx+wx*3/4,
+						  mx+x*wx+wx*3/4,my+y*wx+wx/4);
+			case 'l':
+				XDrawRectangle(d,w,red,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
+				break;
+			case 'S':
+				XFillRectangle(d,w,p->d.gc_fblue,mx+x*wx+wx/4,
+							   my+y*wx+wx/4,wwx+1,wwx+1);
+				XDrawRectangle(d,w,white,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
+				break;
+			case 'H':
+				XDrawRectangle(d,w,blue,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
+				break;
+			case 'X':
+				XDrawRectangle(d,w,dgrey,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
+				XDrawArc(d,w,dgrey,mx+x*wx+wx/3,my+y*wx+wx/3,wx/3,wx/3,0,360*64);
+				break;
+			case 'Z':
+				XDrawArc(d,w,blue,mx+x*wx+wx/3,my+y*wx+wx/3,wx/3,wx/3,0,360*64);
+				break;
+			case 'F':
+				XFillRectangle(d,w,p->d.gc_fred,mx+x*wx+wx/4,
+							   my+y*wx+wx/4,wwx+1,wwx+1);
+				XDrawRectangle(d,w,white,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
+				break;
+			case 'T':
+				XFillRectangle(d,w,p->d.gc_fdgrey,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
+				XDrawRectangle(d,w,white,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
+				break;
+			case 'C':
+				XDrawArc(d,w,red,mx+x*wx+wx/4,my+y*wx+wx/4,wx/2+1,wx/2+1,0,360*64);
+				break;
+			case 'O':
+				struct turret *tur=find_turret(l,x,y);
+				if (!(tur->flags&TFLG_DESTROYED))
+					XDrawArc(d,w,white,mx+x*wx+wx/4,my+y*wx+wx/4,wx/2+1,wx/2+1,0,360*64);
+				else
+					XDrawArc(d,w,dgrey,mx+x*wx+wx/4,my+y*wx+wx/4,wx/2+1,wx/2+1,0,360*64);
+				break;
+			default:
+				XDrawRectangle(d,w,dgrey,mx+x*wx+wx/4,my+y*wx+wx/4,wwx+1,wwx+1);
+				break;
+			}
+			break;
+		case MAP_OBSC:
+			for (int a=0;a<5;a++) for (int b=0;b<5;b++)
+				XDrawPoint(d,w,grey,mx+x*wx+wx*a/4,my+y*wx+wx*b/4);
+			break;
+		default:
+			break;
+		}
+	} // for x (and y)
+	for (int y=0;y<map.hgt;y++) for (int x=0;x<map.wid;x++) {
+		switch (rd(l,x,y)&(MAP_LWALL)) {
+		case MAP_LWALL:
+			XDrawLine(d,w,white,mx+x*wx,my+y*wx,mx+x*wx,my+(y+1)*wx);
+			break;
+		case MAP_LWALL1:
+			XDrawLine(d,w,grey,mx+x*wx,my+y*wx,mx+x*wx,my+(y+1)*wx);
+			break;
+/*		case MAP_LWALL0:
+			XDrawLine(d,w,dgrey,mx+x*wx,my+y*wx,mx+x*wx,my+(y+1)*wx);
+			break;*/
+		default:
+			break;
+		}
+		switch (rd(l,x,y)&(MAP_TWALL)) {
+		case MAP_TWALL:
+			XDrawLine(d,w,white,mx+x*wx,my+y*wx,mx+(x+1)*wx,my+y*wx);
+			break;
+		case MAP_TWALL1:
+			XDrawLine(d,w,grey,mx+x*wx,my+y*wx,mx+(x+1)*wx,my+y*wx);
+			break;
+/*		case MAP_TWALL0:
+			XDrawLine(d,w,dgrey,mx+x*wx,my+y*wx,mx+(x+1)*wx,my+y*wx);
+			break;*/
+		default:
+			break;
+		}
+	}
+	XCopyArea(p->d.disp,p->d.backing,p->d.gamewin,p->d.gc,0,0,WINWID,WINHGT,0,0);
+	XFlush(p->d.disp);
+}
+
+void DrawMeter(struct player *p,int x,int y,int l,int h,int max,int val) {
+	char v[32];
+	Display *d=p->d.disp; Pixmap w=p->d.backing;
+	GC red=p->d.gc_red,white=p->d.gc_white,grey=p->d.gc_grey;
+	sprintf(v,"%d",val);
+	XDrawString(d,w,red,x+l+10,y,v,strlen(v));
+	y=y-p->d.fh/2+2;
+	XDrawLine(d,w,white,x+l/4,y+h/2,x+l/4,y-h/2);
+	XDrawLine(d,w,white,x+l/2,y+h,x+l/2,y-h);
+	XDrawLine(d,w,white,x+3*l/4,y+h/2,x+3*l/4,y-h/2);
+	XDrawLine(d,w,grey,x+l,y,x+(l*val/max),y);
+	XDrawLine(d,w,red,x,y,x+(l*val/max),y);
+	XDrawLine(d,w,white,x,y+h,x,y-h);
+	XDrawLine(d,w,white,x+l,y+h,x+l,y-h);
 }

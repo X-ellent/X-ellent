@@ -170,7 +170,6 @@ void home_mine(struct player *p,int s) {
 }
 
 void home_quit(struct player *p) {
-	int i;
 	char txt[128];
 	p->playing=0;
 	p->home->owner=0;

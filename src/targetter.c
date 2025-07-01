@@ -20,7 +20,9 @@
 
 static char txt[256];
 
-extern void targetter_command(struct player *p,struct addon *a,char *s) {
+void psend(struct player *,char *);
+
+void targetter_command(struct player *p,char *s) {
 	if (strcmp(s,"HELP")==0) {
 		psend(p,"=TAR HELP\n=HELP\n");
 		psend(p,"=INFO\n");
@@ -33,22 +35,16 @@ extern void targetter_command(struct player *p,struct addon *a,char *s) {
 	}
 	if (strcmp(s,"STATUS")==0) {
 		psend(p,"=TAR STATUS\n");
-		if (p->ptarg) {
-			psend(p,(sprintf(txt,"=T1P%s %s\n",p->ptarg->user,
-							 p->ptarg->name),txt));
-		} else {
-			psend(p,"=T1-\n");
-		}
+		if (p->ptarg)
+			psend(p,(sprintf(txt,"=T1P%s %s\n",p->ptarg->user,p->ptarg->name),txt));
+		else psend(p,"=T1-\n");
 		return;
 	}
 	if (strcmp(s,"1NEXTP")==0) {
 		psend(p,"=TAR NEXT\n");
 		next_target(p);
-		if (p->ptarg) {
-			psend(p,(sprintf(txt,"=T1P%s\n",p->ptarg->user),txt));
-		} else {
-			psend(p,"=T1-\n");
-		}
+		if (p->ptarg) psend(p,(sprintf(txt,"=T1P%s\n",p->ptarg->user),txt));
+		else psend(p,"=T1-\n");
 		return;
 	}
 	if (strncmp(s,"1SETP",5)==0) {
@@ -64,32 +60,23 @@ extern void targetter_command(struct player *p,struct addon *a,char *s) {
 	}
 	if (strcmp(s,"1DATA")==0) {
 		psend(p,"=TAR DATA\n");
-		if (!p->ptarg) {
-			psend(p,"=No Target");
-		} else {
-			psend(p,"=Service withdrawn by popular demand\n");
-		}
+		if (!p->ptarg) psend(p,"=No Target");
+		else psend(p,"=Service withdrawn by popular demand\n");
 		return;
 	}
 	psend(p,(sprintf(txt,"!Unknown command to targetter\n"),txt));
 	return;
 }
 
-extern void next_target(struct player *p)
-{
+void next_target(struct player *p) {
 	if (!addon_level(p->firstadd,ADD_TARGET)) {
 		p->ptarg=0;
 		return;
 	}
-	if (p->ptarg) {
-		p->ptarg=p->ptarg->next;
-	} else {
-		p->ptarg=p->next;
-	}
+	if (p->ptarg) p->ptarg=p->ptarg->next;
+	else p->ptarg=p->next;
 	if (p->ptarg==0) p->ptarg=playone;
 	if (p->ptarg==p) p->ptarg=0;
 	if (p->ptarg&&!p->ptarg->body.on) next_target(p);
 	if (p->ptarg&&!can_locate(p,p->ptarg)) next_target(p);
 }
-
-

@@ -12,13 +12,8 @@
 
 #include <stdio.h>
 
-#include "fix.h"
-
 #ifdef EBUG
 
-extern void logmsg(char *s)
-{
-	fprintf(stderr,"%s\n",s);
-}
+extern void logmsg(char *s) { fprintf(stderr,"%s\n",s); }
 
 #endif

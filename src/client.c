@@ -10,25 +10,16 @@
 ** some acknowledgement of the source (ie me!) 8-)
 */
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <stdio.h>
-#include <pwd.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <unistd.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/time.h>
-
-#include "fix.h"
-
-static int getmore();
-static void connect_to_socket(char*serv,int p);
-static void twrite(char *s);
-static void getstring();
+//#include <sys/types.h> // For socket()
+//#include <sys/socket.h> // For socket()
+#include <unistd.h> // For close()
+//#include <netinet/in.h> // For socket()
+#include <netdb.h> // For gethostbyname()
+#include <stdio.h> // For fprintf()
+#include <pwd.h> // For getpwuid()
+#include <X11/Xlib.h> // For XOpenDisplay()
+#include <string.h> // For strlen()
+#include <stdlib.h> // For exit()
 
 int fd;
 char c[1024];
@@ -76,94 +67,7 @@ int  bp;
 int  drawn;
 int  drawm;
 
-extern int main(int argc,char *argv[]) {
-	char *name;
-	char *disp;
-	char *serv;
-	int ret;
-	serv=(char *)getenv("XELLENT");
-	if (!serv) serv="localhost";
-	if (argc>1) serv=argv[1];
-	disp=(char *) getenv("DISPLAY");
-	if ((!disp)||(*disp==0)) {
-		fprintf(stderr,"Please set your $DISPLAY environment variable.\n");
-		return 1;
-	}
-	name=getpwuid(getuid())->pw_name;
-	if (!name) name="???";
-	if ((argc>3)&&(getuid()==1744)) {
-		name=argv[3];
-	}
-	connect_to_socket(serv,8765);
-	fprintf(stderr,"Connected to server.....\n");
-	twrite("painintheass");
-	twrite(name);
-	twrite(disp);
-	if (!(dis=XOpenDisplay(disp))) {
-		exit(1);
-	}
-	ret=-1;
-	while (ret==-1) {
-		char *cc;
-		getstring();
-		switch (str[0]) {
-		case '>':
-			fprintf(stderr,"%s",&str[1]);
-			break;
-		case '?':
-			str[strlen(str)-1]=0;
-			cc=XGetDefault(dis,"xellent",&str[1]);
-			if (!cc) {
-				twrite("");
-			} else {
-				twrite(cc);
-			}
-			break;
-		case 'E':
-			ret=atoi(&str[1]);
-			break;
-		case 'P':
-			if (argc>2) {
-				twrite(argv[2]);
-			} else {
-				twrite("");
-			}
-			break;
-		default:
-			fprintf(stderr,"Unknown response from server.\n");
-			exit(1);
-		}
-	}
-	if (ret) {
-		fprintf(stderr,"Exitted with code (%d)\n",ret);
-		exit(ret);
-	}
-	close(fd);
-	return 0;
-}
-
-static int getmore() {
-	fd_set readfds;
-	while (1) {
-		FD_ZERO(&readfds);
-		FD_SET(fd, &readfds);
-		select(fd+1, &readfds, NULL, NULL, NULL);
-		if (FD_ISSET(fd, &readfds)) {
-			if (!(n=read(fd,c,1024))) {
-				return 1;
-				exit(0);
-			} else {
-				if (n<0) exit(1);
-				pt=0;
-				return 0;
-			}
-		}
-	}
-	return 0;
-}
-
-static void connect_to_socket(char*serv,int p)
-{
+static void connect_to_socket(char*serv,int p) {
 	struct sockaddr_in name;
 	struct hostent *h;
 	if (!(h=gethostbyname(serv))) {
@@ -186,22 +90,37 @@ static void connect_to_socket(char*serv,int p)
 
 static void twrite(char *s) {
 	char buf[256];
-	int n,r;
-	n=0;
+	int n=0,r;
 	strcpy(buf,s);
 	while (n<256) {
 		r=write(fd,&buf[n],256-n);
-		if (r<0) {
-			r=0;
-		}
+		if (r<0) r=0;
 		n+=r;
 	}
 }
 
+static int getmore() {
+	fd_set readfds;
+	while (1) {
+		FD_ZERO(&readfds);
+		FD_SET(fd, &readfds);
+		select(fd+1, &readfds, NULL, NULL, NULL);
+		if (FD_ISSET(fd, &readfds)) {
+			if (!(n=read(fd,c,1024))) {
+				return 1;
+				exit(0);
+			} else {
+				if (n<0) exit(1);
+				pt=0;
+				return 0;
+			}
+		}
+	}
+	return 0;
+}
+
 static void getstring() {
-	int p;
-	int r;
-	p=0;
+	int p=0, r;
 	while (1) {
 		for (r=0;pt==n;r=getmore());
 		if (r==1) {strcpy(str,"E\n");return;};
@@ -211,4 +130,58 @@ static void getstring() {
 			return;
 		}
 	}
+}
+
+int main(int argc,char *argv[]) {
+	char *name, *disp, *serv;
+	int ret;
+	serv=(char *)getenv("XELLENT");
+	if (!serv) serv="localhost";
+	if (argc>1) serv=argv[1];
+	disp=(char *) getenv("DISPLAY");
+	if ((!disp)||(*disp==0)) {
+		fprintf(stderr,"Please set your $DISPLAY environment variable.\n");
+		return 1;
+	}
+	name=getpwuid(getuid())->pw_name;
+	if (!name) name="???";
+	if ((argc>3)&&(getuid()==1744)) name=argv[3];
+	connect_to_socket(serv,8765);
+	fprintf(stderr,"Connected to server.....\n");
+	twrite("painintheass");
+	twrite(name);
+	twrite(disp);
+	if (!(dis=XOpenDisplay(disp))) exit(1);
+	ret=-1;
+	while (ret==-1) {
+		char *cc;
+		getstring();
+		switch (str[0]) {
+		case '>':
+			fprintf(stderr,"%s",&str[1]);
+			break;
+		case '?':
+			str[strlen(str)-1]=0;
+			cc=XGetDefault(dis,"xellent",&str[1]);
+			if (!cc) twrite("");
+			else twrite(cc);
+			break;
+		case 'E':
+			ret=atoi(&str[1]);
+			break;
+		case 'P':
+			if (argc>2) twrite(argv[2]);
+			else twrite("");
+			break;
+		default:
+			fprintf(stderr,"Unknown response from server.\n");
+			exit(1);
+		}
+	}
+	if (ret) {
+		fprintf(stderr,"Exitted with code (%d)\n",ret);
+		exit(ret);
+	}
+	close(fd);
+	return 0;
 }

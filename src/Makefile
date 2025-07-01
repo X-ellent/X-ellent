@@ -29,7 +29,7 @@ else
 endif
 
 # Base CFLAGS with all necessary flags
-CFLAGS=     -g -Wall -O2 -MMD
+CFLAGS=     -g -Wall -O2
 #CFLAGS=	-g -Wall -O2 -fno-common -fstack-protector-all -Wextra -MMD
 #CFLAGS=	-g -Wall -O0 -fno-omit-frame-pointer -fstack-protector-all -Wextra -Wconversion -MMD
 DEFINES=	-DLIB=\"$(LIBDIR)\" -DEBUG -DSHOW_THIRD_LEVEL

@@ -13,14 +13,8 @@
  /* Well, snow has hassled me enough and finally got round to half */
  /* writing this so I guess here come beam weapons... Hmmmm.....   */
 
-#include <stdio.h>
-#include <malloc.h>
-
 #include "beam.h"
-#include "player.h"
 #include "mymath.h"
-#include "newton.h"
-#include "fix.h"
 #include "turret.h"
 
 struct beam *alloc_beam() {
@@ -40,22 +34,18 @@ void free_beams() {
 	if (freebeam) {
 		for (b=freebeam;b->next;b=b->next);
 		b->next=firstbeam;
-	} else
-		freebeam=firstbeam;
+	} else freebeam=firstbeam;
 	firstbeam=0;
 }
 
 int fire_beam_weapon(struct player *p,struct body *src,double x, double y,int r,int dam) {
-	struct body *b;
-	struct body *targ=0;
+	struct body *b, *targ=0;
 	struct beam *be;
-	struct turret *ttarg=0;
-	struct turret *t;
-	double dx,dy,xx,yy;
+	struct turret *ttarg=0, *t;
+	double xx,yy;
 	double near=0,n,m;
 	int l=src->l;
-	dx=sn[r];
-	dy=-cs[r];
+	double dx=sn[r], dy=-cs[r];
 	for (b=firstbody;b;b=b->next) if ((b->on)&&(b!=src)&&(l==b->l)) {
 		xx=x-b->x; yy=y-b->y;
 		n=(xx*dy)-(yy*dx);

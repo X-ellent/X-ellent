@@ -10,19 +10,19 @@
 ** some acknowledgement of the source (ie me!) 8-)
 */
 
-#include <stdio.h>
-#include <X11/keysym.h>
-#include <X11/XKBlib.h>  /* For XkbKeycodeToKeysym */
+//#include <stdio.h>
+//#include <X11/keysym.h>
+#include <X11/XKBlib.h>  // For XkbKeycodeToKeysym
 
 #include "player.h"
-#include "debug.h"
-#include "constants.h"
-#include "map.h"
-#include "home.h"
-#include "terminal.h"
-#include "shop.h"
-#include "newton.h"
-#include "mines.h"
+//#include "debug.h"
+//#include "constants.h"
+//#include "map.h"
+#include "home.h" // For go_home
+//#include "terminal.h"
+#include "shop.h" // For enter_shop
+//#include "newton.h"
+#include "mines.h" // For detonate_slot
 #include "message.h"
 #include "lift.h"
 #include "addon.h"
